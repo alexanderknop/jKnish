@@ -1,5 +1,8 @@
 package org.github.alexanderknop.jknish;
 
+import org.github.alexanderknop.jknish.scanner.Token;
+import org.github.alexanderknop.jknish.scanner.TokenType;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -9,6 +12,14 @@ public final class ErrorReporter {
 
     public ErrorReporter(Writer writer) {
         this.writer = writer;
+    }
+
+    public void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message);
+        } else {
+            report(token.line, " at '" + token.lexeme + "'", message);
+        }
     }
 
     public void error(int line, String message) {

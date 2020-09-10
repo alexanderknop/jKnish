@@ -74,8 +74,43 @@ public class TokenBuilder {
         return this;
     }
 
+    public TokenBuilder aWhile() {
+        tokensList.add(new Token(WHILE, "while", null, line));
+        return this;
+    }
+
     public TokenBuilder anElse() {
         tokensList.add(new Token(ELSE, "if", null, line));
+        return this;
+    }
+
+    public TokenBuilder dot() {
+        tokensList.add(new Token(DOT, ".", null, line));
+        return this;
+    }
+
+    public TokenBuilder comma() {
+        tokensList.add(new Token(COMMA, ",", null, line));
+        return this;
+    }
+
+    public TokenBuilder plus() {
+        tokensList.add(new Token(PLUS, "+", null, line));
+        return this;
+    }
+
+    public TokenBuilder minus() {
+        tokensList.add(new Token(MINUS, "-", null, line));
+        return this;
+    }
+
+    public TokenBuilder star() {
+        tokensList.add(new Token(STAR, "*", null, line));
+        return this;
+    }
+
+    public TokenBuilder slash() {
+        tokensList.add(new Token(SLASH, "/", null, line));
         return this;
     }
 

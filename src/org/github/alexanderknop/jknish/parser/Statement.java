@@ -1,6 +1,7 @@
 package org.github.alexanderknop.jknish.parser;
 
 import java.util.List;
+import java.util.Objects;
 
 public abstract class Statement {
     public final int line;
@@ -32,6 +33,26 @@ public abstract class Statement {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Expression that = (Expression) o;
+            return Objects.equals(expression, that.expression);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(expression);
+        }
+
+        @Override
+        public String toString() {
+            return "Expression{" +
+                    "expression=" + expression +
+                    '}';
+        }
+
+        @Override
         <N> N accept(Visitor<N> visitor) {
             return visitor.visitExpressionStatement(this);
         }
@@ -48,6 +69,30 @@ public abstract class Statement {
             this.condition = condition;
             this.thenBranch = thenBranch;
             this.elseBranch = elseBranch;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            If anIf = (If) o;
+            return Objects.equals(condition, anIf.condition) &&
+                    Objects.equals(thenBranch, anIf.thenBranch) &&
+                    Objects.equals(elseBranch, anIf.elseBranch);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(condition, thenBranch, elseBranch);
+        }
+
+        @Override
+        public String toString() {
+            return "If{" +
+                    "condition=" + condition +
+                    ", thenBranch=" + thenBranch +
+                    ", elseBranch=" + elseBranch +
+                    '}';
         }
 
         @Override
@@ -68,6 +113,28 @@ public abstract class Statement {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            While aWhile = (While) o;
+            return Objects.equals(condition, aWhile.condition) &&
+                    Objects.equals(body, aWhile.body);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(condition, body);
+        }
+
+        @Override
+        public String toString() {
+            return "While{" +
+                    "condition=" + condition +
+                    ", body=" + body +
+                    '}';
+        }
+
+        @Override
         <N> N accept(Visitor<N> visitor) {
             return visitor.visitWhileStatement(this);
         }
@@ -85,6 +152,28 @@ public abstract class Statement {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Var var = (Var) o;
+            return Objects.equals(name, var.name) &&
+                    Objects.equals(initializer, var.initializer);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, initializer);
+        }
+
+        @Override
+        public String toString() {
+            return "Var{" +
+                    "name='" + name + '\'' +
+                    ", initializer=" + initializer +
+                    '}';
+        }
+
+        @Override
         <N> N accept(Visitor<N> visitor) {
             return visitor.visitVarStatement(this);
         }
@@ -99,6 +188,26 @@ public abstract class Statement {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Return aReturn = (Return) o;
+            return Objects.equals(expression, aReturn.expression);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(expression);
+        }
+
+        @Override
+        public String toString() {
+            return "Return{" +
+                    "expression=" + expression +
+                    '}';
+        }
+
+        @Override
         <N> N accept(Visitor<N> visitor) {
             return visitor.visitReturnStatement(this);
         }
@@ -110,6 +219,26 @@ public abstract class Statement {
         public Block(int line, List<Statement> statements) {
             super(line);
             this.statements = statements;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Block block = (Block) o;
+            return Objects.equals(statements, block.statements);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(statements);
+        }
+
+        @Override
+        public String toString() {
+            return "Block{" +
+                    "statements=" + statements +
+                    '}';
         }
 
         @Override
