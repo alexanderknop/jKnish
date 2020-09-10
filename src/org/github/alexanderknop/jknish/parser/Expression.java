@@ -23,7 +23,7 @@ public abstract class Expression {
         V visitLogicalExpression(Logical logical);
     }
 
-    static class Assign extends Expression {
+    public static class Assign extends Expression {
         public final String variable;
         public final Expression value;
 
@@ -61,7 +61,7 @@ public abstract class Expression {
         }
     }
 
-    static class Call extends Expression {
+    public static class Call extends Expression {
         private final Expression object;
         public final String method;
         public final List<Expression> arguments;
@@ -114,7 +114,7 @@ public abstract class Expression {
         }
     }
 
-    static class Literal extends Expression {
+    public static class Literal extends Expression {
         public final Object value;
 
         public Literal(int line, Object value) {
@@ -148,7 +148,7 @@ public abstract class Expression {
         }
     }
 
-    static class Variable extends Expression {
+    public static class Variable extends Expression {
         public final String name;
 
         public Variable(int line, String name) {
@@ -183,7 +183,7 @@ public abstract class Expression {
 
     }
 
-    static class Logical extends Expression {
+    public static class Logical extends Expression {
         public final Expression expression;
         public final LogicalOperator operator;
         public final Expression right;

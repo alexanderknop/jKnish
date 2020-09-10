@@ -10,7 +10,7 @@ public abstract class Statement {
         this.line = line;
     }
 
-    interface Visitor<N> {
+    public interface Visitor<N> {
         N visitExpressionStatement(Expression expression);
 
         N visitorIfStatement(If anIf);
@@ -24,7 +24,7 @@ public abstract class Statement {
         N visitBlockStatement(Block block);
     }
 
-    static class Expression extends Statement {
+    public static class Expression extends Statement {
         public final org.github.alexanderknop.jknish.parser.Expression expression;
 
         public Expression(int line, org.github.alexanderknop.jknish.parser.Expression expression) {
@@ -58,7 +58,7 @@ public abstract class Statement {
         }
     }
 
-    static class If extends Statement {
+    public static class If extends Statement {
         public final org.github.alexanderknop.jknish.parser.Expression condition;
         public final Statement thenBranch;
         public final Statement elseBranch;
@@ -101,7 +101,7 @@ public abstract class Statement {
         }
     }
 
-    static class While extends Statement {
+    public static class While extends Statement {
         public final org.github.alexanderknop.jknish.parser.Expression condition;
         public final Statement body;
 
@@ -140,7 +140,7 @@ public abstract class Statement {
         }
     }
 
-    static class Var extends Statement {
+    public static class Var extends Statement {
         public final String name;
         public final org.github.alexanderknop.jknish.parser.Expression initializer;
 
@@ -179,7 +179,7 @@ public abstract class Statement {
         }
     }
 
-    static class Return extends Statement {
+    public static class Return extends Statement {
         public final org.github.alexanderknop.jknish.parser.Expression expression;
 
         public Return(int line, org.github.alexanderknop.jknish.parser.Expression expression) {
@@ -213,7 +213,7 @@ public abstract class Statement {
         }
     }
 
-    static class Block extends Statement {
+    public static class Block extends Statement {
         public final List<Statement> statements;
 
         public Block(int line, List<Statement> statements) {
