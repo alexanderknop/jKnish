@@ -17,7 +17,7 @@ public abstract class Expression {
         V visitVariableExpression(Variable variable);
     }
 
-    class Assign extends Expression {
+    static class Assign extends Expression {
         public final String variable;
         public final Expression value;
 
@@ -33,7 +33,7 @@ public abstract class Expression {
         }
     }
 
-    class Call extends Expression {
+    static class Call extends Expression {
         public final String method;
         public final Expression object;
 
@@ -49,7 +49,7 @@ public abstract class Expression {
         }
     }
 
-    class Literal extends Expression {
+    static class Literal extends Expression {
         public final Object value;
 
         public Literal(int line, Object value) {
@@ -63,7 +63,7 @@ public abstract class Expression {
         }
     }
 
-    class Variable extends Expression {
+    static class Variable extends Expression {
         public final String name;
 
         public Variable(int line, String name) {
