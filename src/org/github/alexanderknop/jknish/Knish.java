@@ -1,18 +1,22 @@
 package org.github.alexanderknop.jknish;
 
+import org.github.alexanderknop.jknish.scanner.Scanner;
+import org.github.alexanderknop.jknish.scanner.Token;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Knish {
     public static void run(
             String source,
             Writer output,
             ErrorReporter reporter) {
-        // TODO
+        List<Token> tokens = Scanner.tokens(source, reporter);
     }
 
     private static void runFile(String path) throws IOException {
