@@ -1,5 +1,7 @@
 package org.github.alexanderknop.jknish;
 
+import org.github.alexanderknop.jknish.parser.Parser;
+import org.github.alexanderknop.jknish.parser.Statement;
 import org.github.alexanderknop.jknish.scanner.Scanner;
 import org.github.alexanderknop.jknish.scanner.Token;
 
@@ -17,6 +19,7 @@ public class Knish {
             Writer output,
             ErrorReporter reporter) {
         List<Token> tokens = Scanner.tokens(source, reporter);
+        List<Statement> script = Parser.parse(tokens, reporter);
     }
 
     private static void runFile(String path) throws IOException {
