@@ -61,7 +61,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
 
     @Override
     public KnishObject visitAssignExpression(Expression.Assign assign) {
-        return environment.set(assign.variable, evaluate(assign.value));
+        return environment.set(assign.line, assign.variable, evaluate(assign.value));
     }
 
     @Override
@@ -76,7 +76,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
 
     @Override
     public KnishObject visitLiteralExpression(Expression.Literal literal) {
-        if (literal == null) {
+        if (literal.value == null) {
             return KnishNull.NULL;
         }
 
@@ -159,23 +159,22 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
 
     @Override
     public Void visitWhileStatement(Statement.While aWhile) {
-        KnishObject conditionValue = evaluate(aWhile.condition);
-
         while (true) {
+            KnishObject conditionValue = evaluate(aWhile.condition);
             if (conditionValue == KnishNull.NULL) {
                 throw new KnishRuntimeException(aWhile.line, "While condition cannot be nil.");
-            }
-
-            if (conditionValue instanceof KnishBoolean) {
+            } else if (conditionValue instanceof KnishBoolean) {
                 if (conditionValue.equals(KnishBoolean.TRUE)) {
                     execute(aWhile.body);
                 } else {
                     break;
                 }
+            } else {
+                throw new KnishRuntimeException(aWhile.line, "Condition must have type Boolean.");
             }
         }
 
-        throw new KnishRuntimeException(aWhile.line, "Condition must have type Boolean.");
+        return null;
     }
 
     @Override

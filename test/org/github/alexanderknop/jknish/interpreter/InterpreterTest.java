@@ -157,6 +157,23 @@ class InterpreterTest {
                 ),
                 "-1"
         );
+
+        testCorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Call(1,
+                                                new Expression.Literal(1, "hello "),
+                                                "+",
+                                                new Expression.Literal(1, "world!")
+                                        )
+                                )
+                        )
+                ),
+                "hello world!"
+        );
     }
 
     @Test
@@ -390,6 +407,60 @@ class InterpreterTest {
                 ),
                 "1"
         );
+
+        testCorrect(
+                List.of(
+                        new Statement.Var(1, "x",
+                                new Expression.Literal(1, 1L)),
+                        new Statement.Block(1,
+                                List.of(
+                                        new Statement.Expression(2,
+                                                new Expression.Assign(2,
+                                                        "x",
+                                                        new Expression.Literal(2, 2L)
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(2,
+                                new Expression.Call(2,
+                                        new Expression.Variable(2, "System"),
+                                        "print",
+                                        new Expression.Variable(2, "x")
+                                )
+                        )
+                ),
+                "2"
+        );
+
+        testCorrect(
+                List.of(
+                        new Statement.Var(1, "x",
+                                new Expression.Literal(1, 1L)),
+                        new Statement.Block(1,
+                                List.of(
+                                        new Statement.Expression(2,
+                                                new Expression.Assign(2,
+                                                        "x",
+                                                        new Expression.Call(2,
+                                                                new Expression.Variable(2, "x"),
+                                                                "+",
+                                                                new Expression.Literal(2, 1L)
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(3,
+                                new Expression.Call(3,
+                                        new Expression.Variable(3, "System"),
+                                        "print",
+                                        new Expression.Variable(3, "x")
+                                )
+                        )
+                ),
+                "2"
+        );
     }
 
     @Test
@@ -467,18 +538,104 @@ class InterpreterTest {
                 ),
                 "[line 1] Error: Condition must have type Boolean."
         );
+
+        testIncorrect(
+                List.of(
+                        new Statement.If(1,
+                                new Expression.Literal(1, null),
+                                new Statement.Expression(2,
+                                        new Expression.Call(2,
+                                                new Expression.Variable(2, "System"),
+                                                "print",
+                                                new Expression.Literal(2, 1L)
+                                        )
+                                ),
+                                null
+                        )
+                ),
+                "[line 1] Error: If condition cannot be nil."
+        );
+    }
+
+    @Test
+    void testWhile() {
+        testCorrect(
+                List.of(
+                        new Statement.Var(1, "x",
+                                new Expression.Literal(1, 0L)),
+                        new Statement.While(2,
+                                new Expression.Call(2,
+                                        new Expression.Variable(2, "x"),
+                                        "<",
+                                        new Expression.Literal(2, 3L)),
+                                new Statement.Block(3,
+                                        List.of(
+                                                new Statement.Expression(4,
+                                                        new Expression.Call(4,
+                                                                new Expression.Variable(4, "System"),
+                                                                "print",
+                                                                new Expression.Variable(4, "x")
+                                                        )
+                                                ),
+                                                new Statement.Expression(5,
+                                                        new Expression.Assign(5,
+                                                                "x",
+                                                                new Expression.Call(5,
+                                                                        new Expression.Variable(5, "x"),
+                                                                        "+",
+                                                                        new Expression.Literal(5, 1L)
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                ),
+                "0\n1\n2\n"
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Var(1, "x",
+                                new Expression.Literal(1, 0L)),
+                        new Statement.While(2,
+                                new Expression.Variable(2, "x"),
+                                new Statement.Block(3,
+                                        List.of()
+                                )
+                        )
+                ),
+                "[line 2] Error: Condition must have type Boolean."
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Var(1, "x",
+                                new Expression.Literal(1, null)),
+                        new Statement.While(2,
+                                new Expression.Variable(2, "x"),
+                                new Statement.Block(3,
+                                        List.of()
+                                )
+                        )
+                ),
+                "[line 2] Error: While condition cannot be nil."
+        );
     }
 
     void testCorrect(List<Statement> statements, String expectedOutput) {
         StringWriter errorWriter = new StringWriter();
         ErrorReporter reporter = new ErrorReporter(errorWriter);
 
-        Interpreter.interpret(statements, errorWriter, reporter);
+        StringWriter outputWriter = new StringWriter();
+
+
+        Interpreter.interpret(statements, outputWriter, reporter);
 
         assertFalse(reporter.hadError(), "The script is correct;" +
                 " the error message is:\n" + errorWriter.toString());
-        String actual = errorWriter.toString().strip();
-        assertEquals(expectedOutput, actual,
+        String actual = outputWriter.toString().strip();
+        assertEquals(expectedOutput.strip(), actual,
                 "The output is supposed to be '" +
                         expectedOutput.strip() + "' instead of '" +
                         actual + "'.");

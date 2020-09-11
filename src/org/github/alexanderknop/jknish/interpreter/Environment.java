@@ -34,9 +34,16 @@ public class Environment {
         objects.put(name, value);
     }
 
-    public KnishObject set(String name, KnishObject value) {
-        objects.put(name, value);
+    public KnishObject set(int line, String name, KnishObject value) {
+        if (objects.containsKey(name)) {
+            objects.put(name, value);
+            return value;
+        }
 
-        return value;
+        if (enclosing != null) {
+            return enclosing.set(line, name, value);
+        }
+
+        throw new KnishRuntimeException(line, "Undefined variable " + name + ".");
     }
 }

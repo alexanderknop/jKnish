@@ -46,6 +46,55 @@ public class KnishNumber extends AbstractKnishObject {
                 throw new KnishRuntimeException(line, "Right operand must be a number.");
             }
         });
+
+        register("<", 1, (line, arguments) -> {
+            if (arguments.get(0) instanceof KnishNumber) {
+                KnishNumber right = (KnishNumber) arguments.get(0);
+                return KnishBoolean.valueOf(value < right.value);
+            } else {
+                throw new KnishRuntimeException(line, "Right operand must be a number.");
+            }
+        });
+        register(">", 1, (line, arguments) -> {
+            if (arguments.get(0) instanceof KnishNumber) {
+                KnishNumber right = (KnishNumber) arguments.get(0);
+                return KnishBoolean.valueOf(value > right.value);
+            } else {
+                throw new KnishRuntimeException(line, "Right operand must be a number.");
+            }
+        });
+        register("<=", 1, (line, arguments) -> {
+            if (arguments.get(0) instanceof KnishNumber) {
+                KnishNumber right = (KnishNumber) arguments.get(0);
+                return KnishBoolean.valueOf(value <= right.value);
+            } else {
+                throw new KnishRuntimeException(line, "Right operand must be a number.");
+            }
+        });
+        register(">=", 1, (line, arguments) -> {
+            if (arguments.get(0) instanceof KnishNumber) {
+                KnishNumber right = (KnishNumber) arguments.get(0);
+                return KnishBoolean.valueOf(value >= right.value);
+            } else {
+                throw new KnishRuntimeException(line, "Right operand must be a number.");
+            }
+        });
+        register("==", 1, (line, arguments) -> {
+            if (arguments.get(0) instanceof KnishNumber) {
+                KnishNumber right = (KnishNumber) arguments.get(0);
+                return KnishBoolean.valueOf(value.equals(right.value));
+            } else {
+                throw new KnishRuntimeException(line, "Right operand must be a number.");
+            }
+        });
+        register("!=", 1, (line, arguments) -> {
+            if (arguments.get(0) instanceof KnishNumber) {
+                KnishNumber right = (KnishNumber) arguments.get(0);
+                return KnishBoolean.valueOf(!value.equals(right.value));
+            } else {
+                throw new KnishRuntimeException(line, "Right operand must be a number.");
+            }
+        });
     }
 
     @Override
