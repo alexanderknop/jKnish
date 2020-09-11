@@ -12,7 +12,7 @@ public enum LogicalOperator {
         return tokenToOperator.get(tokenType);
     }
 
-    static Map<TokenType, LogicalOperator> tokenToOperator = new EnumMap<>(TokenType.class);
+    private static final Map<TokenType, LogicalOperator> tokenToOperator = new EnumMap<>(TokenType.class);
 
     static {
         tokenToOperator.put(TokenType.AND, AND);

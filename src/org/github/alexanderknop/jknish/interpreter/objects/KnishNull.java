@@ -6,7 +6,7 @@ import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
 import java.util.List;
 
 public class KnishNull implements KnishObject {
-    public static KnishNull NULL = new KnishNull();
+    public final static KnishNull NULL = new KnishNull();
 
     private KnishNull() {
     }

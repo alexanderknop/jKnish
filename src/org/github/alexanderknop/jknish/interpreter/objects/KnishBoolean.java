@@ -1,9 +1,5 @@
 package org.github.alexanderknop.jknish.interpreter.objects;
 
-import org.github.alexanderknop.jknish.KnishObject;
-import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
-
-import java.util.List;
 import java.util.Objects;
 
 public class KnishBoolean extends AbstractKnishObject {

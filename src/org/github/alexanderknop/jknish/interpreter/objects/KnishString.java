@@ -1,10 +1,5 @@
 package org.github.alexanderknop.jknish.interpreter.objects;
 
-import org.github.alexanderknop.jknish.KnishObject;
-import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
-
-import java.util.List;
-
 public class KnishString extends AbstractKnishObject {
     private final String value;
 

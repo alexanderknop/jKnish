@@ -1,6 +1,5 @@
 package org.github.alexanderknop.jknish;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
