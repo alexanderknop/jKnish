@@ -2,6 +2,7 @@ package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.ErrorReporter;
 import org.github.alexanderknop.jknish.parser.Expression;
+import org.github.alexanderknop.jknish.parser.LogicalOperator;
 import org.github.alexanderknop.jknish.parser.Statement;
 import org.junit.jupiter.api.Test;
 
@@ -620,6 +621,145 @@ class InterpreterTest {
                         )
                 ),
                 "[line 2] Error: While condition cannot be nil."
+        );
+    }
+
+    @Test
+    void testLogical() {
+        testCorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, TRUE),
+                                                LogicalOperator.AND,
+                                                new Expression.Literal(1, FALSE)
+                                        )
+                                )
+                        )
+                ),
+                "false"
+        );
+
+        testCorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, TRUE),
+                                                LogicalOperator.OR,
+                                                new Expression.Literal(1, FALSE)
+                                        )
+                                )
+                        )
+                ),
+                "true"
+        );
+
+        testCorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, TRUE),
+                                                LogicalOperator.OR,
+                                                new Expression.Literal(1, 1L)
+                                        )
+                                )
+                        )
+                ),
+                "true"
+        );
+
+        testCorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, FALSE),
+                                                LogicalOperator.AND,
+                                                new Expression.Literal(1, 1L)
+                                        )
+                                )
+                        )
+                ),
+                "false"
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, FALSE),
+                                                LogicalOperator.OR,
+                                                new Expression.Literal(1, 1L)
+                                        )
+                                )
+                        )
+                ),
+                "[line 1] Error: Right operand must be boolean."
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, TRUE),
+                                                LogicalOperator.AND,
+                                                new Expression.Literal(1, 1L)
+                                        )
+                                )
+                        )
+                ),
+                "[line 1] Error: Right operand must be boolean."
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, 1L),
+                                                LogicalOperator.AND,
+                                                new Expression.Literal(1, TRUE)
+                                        )
+                                )
+                        )
+                ),
+                "[line 1] Error: Left operand must be boolean."
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "System"),
+                                        "print",
+                                        new Expression.Logical(1,
+                                                new Expression.Literal(1, 1L),
+                                                LogicalOperator.OR,
+                                                new Expression.Literal(1, FALSE)
+                                        )
+                                )
+                        )
+                ),
+                "[line 1] Error: Left operand must be boolean."
         );
     }
 

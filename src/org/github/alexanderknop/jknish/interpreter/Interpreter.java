@@ -103,8 +103,8 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
     @Override
     public KnishObject visitLogicalExpression(Expression.Logical logical) {
         KnishObject left = evaluate(logical.left);
-        if (left.equals(KnishNull.NULL)) {
-            throw new KnishRuntimeException(logical.line, "Null pointer exception.");
+        if (!(left instanceof KnishBoolean)) {
+            throw new KnishRuntimeException(logical.line, "Left operand must be boolean.");
         }
 
         return switch (logical.operator) {
@@ -112,7 +112,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
                 if (left.equals(KnishBoolean.TRUE)) {
                     KnishObject right = evaluate(logical.right);
                     if (!(right instanceof KnishBoolean)) {
-                        throw new KnishRuntimeException(logical.line, "Null pointer exception.");
+                        throw new KnishRuntimeException(logical.line, "Right operand must be boolean.");
                     }
                     yield right;
                 }
@@ -122,7 +122,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
                 if (left.equals(KnishBoolean.FALSE)) {
                     KnishObject right = evaluate(logical.right);
                     if (!(right instanceof KnishBoolean)) {
-                        throw new KnishRuntimeException(logical.line, "Null pointer exception.");
+                        throw new KnishRuntimeException(logical.line, "Right operand must be boolean.");
                     }
                     yield right;
                 }

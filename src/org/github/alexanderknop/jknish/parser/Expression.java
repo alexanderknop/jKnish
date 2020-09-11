@@ -188,7 +188,7 @@ public abstract class Expression {
         public final LogicalOperator operator;
         public final Expression right;
 
-        Logical(int line, Expression left, LogicalOperator operator, Expression right) {
+        public Logical(int line, Expression left, LogicalOperator operator, Expression right) {
             super(line);
             this.left = left;
             this.operator = operator;
