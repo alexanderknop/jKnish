@@ -5,7 +5,7 @@ import org.github.alexanderknop.jknish.objects.KnishObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Environment {
+class Environment {
     private final Environment enclosing;
     private final Map<String, KnishObject> objects;
 
