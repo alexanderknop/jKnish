@@ -1,7 +1,4 @@
-package org.github.alexanderknop.jknish.interpreter.objects;
-
-import org.github.alexanderknop.jknish.KnishObject;
-import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
+package org.github.alexanderknop.jknish.objects;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -13,13 +10,13 @@ public class KnishSystem extends AbstractKnishObject {
                 KnishObject string =
                         arguments.get(0).call(line, "toString", null);
                 if (!(string instanceof KnishString)) {
-                    throw new KnishRuntimeException(line, "toString must return a String.");
+                    throw new KnishRuntimeException("toString must return a String.");
                 }
                 output.write(string.toString());
                 output.write("\n");
                 output.flush();
             } catch (IOException e) {
-                throw new KnishRuntimeException(line, e.getMessage());
+                throw new KnishRuntimeException(e.getMessage());
             }
             return KnishNull.NULL;
         });

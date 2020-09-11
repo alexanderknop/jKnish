@@ -1,6 +1,4 @@
-package org.github.alexanderknop.jknish.interpreter.objects;
-
-import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
+package org.github.alexanderknop.jknish.objects;
 
 public class KnishString extends AbstractKnishObject {
     private final String value;
@@ -14,7 +12,7 @@ public class KnishString extends AbstractKnishObject {
                 KnishString right = (KnishString) arguments.get(0);
                 return new KnishString(value + right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a string.");
+                throw new KnishRuntimeException("Right operand must be a string.");
             }
         });
     }

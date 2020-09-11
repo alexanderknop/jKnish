@@ -1,6 +1,4 @@
-package org.github.alexanderknop.jknish.interpreter.objects;
-
-import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
+package org.github.alexanderknop.jknish.objects;
 
 public class KnishNumber extends AbstractKnishObject {
     public static KnishNumber valueOf(long value) {
@@ -18,7 +16,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return valueOf(value + right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register("-", 1, (line, arguments) -> {
@@ -26,7 +24,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return valueOf(value - right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register("-", null, (line, arguments) -> valueOf(-value));
@@ -35,7 +33,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return valueOf(value * right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register("/", 1, (line, arguments) -> {
@@ -43,7 +41,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return valueOf(value / right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
 
@@ -52,7 +50,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return KnishBoolean.valueOf(value < right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register(">", 1, (line, arguments) -> {
@@ -60,7 +58,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return KnishBoolean.valueOf(value > right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register("<=", 1, (line, arguments) -> {
@@ -68,7 +66,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return KnishBoolean.valueOf(value <= right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register(">=", 1, (line, arguments) -> {
@@ -76,7 +74,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return KnishBoolean.valueOf(value >= right.value);
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register("==", 1, (line, arguments) -> {
@@ -84,7 +82,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return KnishBoolean.valueOf(value.equals(right.value));
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
         register("!=", 1, (line, arguments) -> {
@@ -92,7 +90,7 @@ public class KnishNumber extends AbstractKnishObject {
                 KnishNumber right = (KnishNumber) arguments.get(0);
                 return KnishBoolean.valueOf(!value.equals(right.value));
             } else {
-                throw new KnishRuntimeException(line, "Right operand must be a number.");
+                throw new KnishRuntimeException("Right operand must be a number.");
             }
         });
     }

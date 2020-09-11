@@ -1,6 +1,4 @@
-package org.github.alexanderknop.jknish.interpreter.objects;
-
-import org.github.alexanderknop.jknish.KnishObject;
+package org.github.alexanderknop.jknish.objects;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +25,7 @@ public abstract class AbstractKnishObject implements KnishObject {
         Integer arity = (arguments == null) ? null : arguments.size();
         KnishMethod method = methods.getOrDefault(methodName, emptyMap()).get(arity);
         if (method == null) {
-            throw new KnishMethodNotFoundException(line, getClassName(), methodName, arity);
+            throw new KnishMethodNotFoundExceptionWithLine(line, getClassName(), methodName, arity);
         }
         return method.call(line, arguments);
     }

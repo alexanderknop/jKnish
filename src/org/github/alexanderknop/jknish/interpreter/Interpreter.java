@@ -1,8 +1,8 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.ErrorReporter;
-import org.github.alexanderknop.jknish.KnishObject;
-import org.github.alexanderknop.jknish.interpreter.objects.*;
+import org.github.alexanderknop.jknish.objects.KnishObject;
+import org.github.alexanderknop.jknish.objects.*;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.Statement;
 
@@ -35,8 +35,8 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
     private void interpret() {
         try {
             executeBlock(statements);
-        } catch (KnishRuntimeException e) {
-            reporter.error(e.line, e.message);
+        } catch (KnishRuntimeExceptionWithLine e) {
+            reporter.error(e.getLine(), e.getMessage());
         }
     }
 
@@ -71,7 +71,11 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
             arguments = call.arguments.stream().map(this::evaluate).collect(Collectors.toList());
         }
 
-        return evaluate(call.object).call(call.line, call.method, arguments);
+        try {
+            return evaluate(call.object).call(call.line, call.method, arguments);
+        } catch (KnishRuntimeException e) {
+            throw new KnishRuntimeExceptionWithLine(call.line, e);
+        }
     }
 
     @Override
@@ -104,7 +108,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
     public KnishObject visitLogicalExpression(Expression.Logical logical) {
         KnishObject left = evaluate(logical.left);
         if (!(left instanceof KnishBoolean)) {
-            throw new KnishRuntimeException(logical.line, "Left operand must be boolean.");
+            throw new KnishRuntimeExceptionWithLine(logical.line, "Left operand must be boolean.");
         }
 
         return switch (logical.operator) {
@@ -112,7 +116,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
                 if (left.equals(KnishBoolean.TRUE)) {
                     KnishObject right = evaluate(logical.right);
                     if (!(right instanceof KnishBoolean)) {
-                        throw new KnishRuntimeException(logical.line, "Right operand must be boolean.");
+                        throw new KnishRuntimeExceptionWithLine(logical.line, "Right operand must be boolean.");
                     }
                     yield right;
                 }
@@ -122,7 +126,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
                 if (left.equals(KnishBoolean.FALSE)) {
                     KnishObject right = evaluate(logical.right);
                     if (!(right instanceof KnishBoolean)) {
-                        throw new KnishRuntimeException(logical.line, "Right operand must be boolean.");
+                        throw new KnishRuntimeExceptionWithLine(logical.line, "Right operand must be boolean.");
                     }
                     yield right;
                 }
@@ -142,7 +146,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
         KnishObject conditionValue = evaluate(anIf.condition);
 
         if (conditionValue == KnishNull.NULL) {
-            throw new KnishRuntimeException(anIf.line, "If condition cannot be nil.");
+            throw new KnishRuntimeExceptionWithLine(anIf.line, "If condition cannot be nil.");
         }
 
         if (conditionValue instanceof KnishBoolean) {
@@ -154,7 +158,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
             return null;
         }
 
-        throw new KnishRuntimeException(anIf.line, "Condition must have type Boolean.");
+        throw new KnishRuntimeExceptionWithLine(anIf.line, "Condition must have type Boolean.");
     }
 
     @Override
@@ -162,7 +166,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
         while (true) {
             KnishObject conditionValue = evaluate(aWhile.condition);
             if (conditionValue == KnishNull.NULL) {
-                throw new KnishRuntimeException(aWhile.line, "While condition cannot be nil.");
+                throw new KnishRuntimeExceptionWithLine(aWhile.line, "While condition cannot be nil.");
             } else if (conditionValue instanceof KnishBoolean) {
                 if (conditionValue.equals(KnishBoolean.TRUE)) {
                     execute(aWhile.body);
@@ -170,7 +174,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
                     break;
                 }
             } else {
-                throw new KnishRuntimeException(aWhile.line, "Condition must have type Boolean.");
+                throw new KnishRuntimeExceptionWithLine(aWhile.line, "Condition must have type Boolean.");
             }
         }
 

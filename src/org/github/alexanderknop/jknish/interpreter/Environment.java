@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.interpreter;
 
-import org.github.alexanderknop.jknish.KnishObject;
+import org.github.alexanderknop.jknish.objects.KnishObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +27,7 @@ public class Environment {
             return enclosing.get(line, name);
         }
 
-        throw new KnishRuntimeException(line, "Undefined variable " + name + ".");
+        throw new KnishRuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
     }
 
     public void define(String name, KnishObject value) {
@@ -44,6 +44,6 @@ public class Environment {
             return enclosing.set(line, name, value);
         }
 
-        throw new KnishRuntimeException(line, "Undefined variable " + name + ".");
+        throw new KnishRuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
     }
 }

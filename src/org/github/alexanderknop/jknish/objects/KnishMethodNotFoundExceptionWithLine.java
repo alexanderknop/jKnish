@@ -1,11 +1,9 @@
-package org.github.alexanderknop.jknish.interpreter.objects;
+package org.github.alexanderknop.jknish.objects;
 
-import org.github.alexanderknop.jknish.interpreter.KnishRuntimeException;
-
-public class KnishMethodNotFoundException extends KnishRuntimeException {
-    public KnishMethodNotFoundException(int line,
-                                        String className, String method, Integer argumentsCount) {
-        super(line, className + " does not implement '" + method +
+public class KnishMethodNotFoundExceptionWithLine extends KnishRuntimeException {
+    public KnishMethodNotFoundExceptionWithLine(int line,
+                                                String className, String method, Integer argumentsCount) {
+        super(className + " does not implement '" + method +
                 argumentCountToString(argumentsCount) + "'.");
     }
 

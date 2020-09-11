@@ -1,4 +1,4 @@
-package org.github.alexanderknop.jknish;
+package org.github.alexanderknop.jknish.objects;
 
 import java.util.List;
 

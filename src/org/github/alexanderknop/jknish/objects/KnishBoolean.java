@@ -1,4 +1,4 @@
-package org.github.alexanderknop.jknish.interpreter.objects;
+package org.github.alexanderknop.jknish.objects;
 
 import java.util.Objects;
 
