@@ -29,4 +29,8 @@ public abstract class AbstractKnishObject implements KnishObject {
         }
         return method.call(arguments);
     }
+
+    public interface KnishMethod {
+        KnishObject call(List<KnishObject> arguments);
+    }
 }
