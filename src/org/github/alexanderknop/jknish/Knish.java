@@ -5,6 +5,7 @@ import org.github.alexanderknop.jknish.parser.Parser;
 import org.github.alexanderknop.jknish.parser.Statement;
 import org.github.alexanderknop.jknish.scanner.Scanner;
 import org.github.alexanderknop.jknish.scanner.Token;
+import org.github.alexanderknop.jknish.typechecker.TypeChecker;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -25,6 +26,11 @@ public class Knish {
         }
 
         List<Statement> statements = Parser.parse(tokens, reporter);
+        if (reporter.hadError()) {
+            return;
+        }
+
+        TypeChecker.check(statements, reporter);
         if (reporter.hadError()) {
             return;
         }
