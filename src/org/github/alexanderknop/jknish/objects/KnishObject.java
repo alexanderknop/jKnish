@@ -12,5 +12,5 @@ public interface KnishObject {
      *                  call of a getter.
      * @return the result of the method call.
      */
-    KnishObject call(int line, String method, List<KnishObject> arguments);
+    KnishObject call(String method, List<KnishObject> arguments);
 }

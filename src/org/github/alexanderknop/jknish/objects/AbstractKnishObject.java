@@ -21,16 +21,12 @@ public abstract class AbstractKnishObject implements KnishObject {
     }
 
     @Override
-    public KnishObject call(int line, String methodName, List<KnishObject> arguments) {
+    public KnishObject call(String methodName, List<KnishObject> arguments) {
         Integer arity = (arguments == null) ? null : arguments.size();
         KnishMethod method = methods.getOrDefault(methodName, emptyMap()).get(arity);
         if (method == null) {
-            throw new KnishMethodNotFoundExceptionWithLine(line, getClassName(), methodName, arity);
+            throw new KnishMethodNotFoundException(getClassName(), methodName, arity);
         }
-        return method.call(line, arguments);
-    }
-
-    public interface KnishMethod {
-        KnishObject call(int line, List<KnishObject> arguments);
+        return method.call(arguments);
     }
 }
