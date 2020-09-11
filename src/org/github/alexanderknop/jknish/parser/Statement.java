@@ -53,7 +53,7 @@ public abstract class Statement {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitExpressionStatement(this);
         }
     }
@@ -96,7 +96,7 @@ public abstract class Statement {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitorIfStatement(this);
         }
     }
@@ -135,7 +135,7 @@ public abstract class Statement {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitWhileStatement(this);
         }
     }
@@ -174,7 +174,7 @@ public abstract class Statement {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitVarStatement(this);
         }
     }
@@ -208,7 +208,7 @@ public abstract class Statement {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitReturnStatement(this);
         }
     }
@@ -242,10 +242,10 @@ public abstract class Statement {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitBlockStatement(this);
         }
     }
 
-    abstract <N> N accept(Visitor<N> visitor);
+    public abstract <N> N accept(Visitor<N> visitor);
 }

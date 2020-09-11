@@ -56,13 +56,13 @@ public abstract class Expression {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitAssignExpression(this);
         }
     }
 
     public static class Call extends Expression {
-        private final Expression object;
+        public final Expression object;
         public final String method;
         public final List<Expression> arguments;
 
@@ -109,7 +109,7 @@ public abstract class Expression {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitCallExpression(this);
         }
     }
@@ -143,7 +143,7 @@ public abstract class Expression {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitLiteralExpression(this);
         }
     }
@@ -177,20 +177,20 @@ public abstract class Expression {
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitVariableExpression(this);
         }
 
     }
 
     public static class Logical extends Expression {
-        public final Expression expression;
+        public final Expression left;
         public final LogicalOperator operator;
         public final Expression right;
 
-        Logical(int line, Expression expression, LogicalOperator operator, Expression right) {
+        Logical(int line, Expression left, LogicalOperator operator, Expression right) {
             super(line);
-            this.expression = expression;
+            this.left = left;
             this.operator = operator;
             this.right = right;
         }
@@ -200,30 +200,30 @@ public abstract class Expression {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Logical logical = (Logical) o;
-            return Objects.equals(expression, logical.expression) &&
+            return Objects.equals(left, logical.left) &&
                     operator == logical.operator &&
                     Objects.equals(right, logical.right);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(expression, operator, right);
+            return Objects.hash(left, operator, right);
         }
 
         @Override
         public String toString() {
             return "Logical{" +
-                    "expression=" + expression +
+                    "expression=" + left +
                     ", operator=" + operator +
                     ", right=" + right +
                     '}';
         }
 
         @Override
-        <N> N accept(Visitor<N> visitor) {
+        public <N> N accept(Visitor<N> visitor) {
             return visitor.visitLogicalExpression(this);
         }
     }
 
-    abstract <N> N accept(Visitor<N> visitor);
+    public abstract <N> N accept(Visitor<N> visitor);
 }

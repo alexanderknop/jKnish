@@ -1,0 +1,42 @@
+package org.github.alexanderknop.jknish.interpreter;
+
+import org.github.alexanderknop.jknish.KnishObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class Environment {
+    private final Environment enclosing;
+    private final Map<String, KnishObject> objects;
+
+    public Environment() {
+        this(null);
+    }
+
+    public Environment(Environment enclosing) {
+        this.enclosing = enclosing;
+        this.objects = new HashMap<>();
+    }
+
+    public KnishObject get(int line, String name) {
+        if (objects.containsKey(name)) {
+            return objects.get(name);
+        }
+
+        if (enclosing != null) {
+            return enclosing.get(line, name);
+        }
+
+        throw new KnishRuntimeException(line, "Undefined variable " + name + ".");
+    }
+
+    public void define(String name, KnishObject value) {
+        objects.put(name, value);
+    }
+
+    public KnishObject set(String name, KnishObject value) {
+        objects.put(name, value);
+
+        return value;
+    }
+}
