@@ -11,7 +11,28 @@ public class KnishCore implements KnishModule {
 
     public KnishCore(Writer output) {
         objects = Map.of(
-                "System", new KnishSystem(output)
+                "System",
+                KnishWrappedObject.<Writer>object("System metaclass")
+                        .method("print", 1,
+                                (writer, arguments) -> {
+                                    try {
+                                        KnishObject string =
+                                                arguments.get(0).call("toString", null);
+                                        if (!(string instanceof KnishString)) {
+                                            throw new KnishRuntimeException("toString must return a String.");
+                                        }
+                                        writer.write(string.toString());
+                                        writer.write("\n");
+                                        writer.flush();
+                                    } catch (IOException e) {
+                                        throw new KnishRuntimeException(e.getMessage());
+                                    }
+                                    return KnishNull.NULL;
+                                })
+                        .getter("clock",
+                                (writer, arguments) ->
+                                        KnishNumber.valueOf(System.currentTimeMillis()))
+                        .construct(output)
         );
     }
 
@@ -118,31 +139,6 @@ public class KnishCore implements KnishModule {
         @Override
         protected String getClassName() {
             return "Number";
-        }
-    }
-
-    public static class KnishSystem extends AbstractKnishObject {
-        public KnishSystem(Writer output) {
-            register("print", 1, arguments -> {
-                try {
-                    KnishObject string =
-                            arguments.get(0).call("toString", null);
-                    if (!(string instanceof KnishString)) {
-                        throw new KnishRuntimeException("toString must return a String.");
-                    }
-                    output.write(string.toString());
-                    output.write("\n");
-                    output.flush();
-                } catch (IOException e) {
-                    throw new KnishRuntimeException(e.getMessage());
-                }
-                return KnishNull.NULL;
-            });
-        }
-
-        @Override
-        protected String getClassName() {
-            return "System metaclass";
         }
     }
 
