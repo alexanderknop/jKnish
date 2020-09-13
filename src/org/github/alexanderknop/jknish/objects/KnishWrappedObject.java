@@ -4,15 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
-
 public class KnishWrappedObject<V> implements KnishObject {
     private final V value;
-    private final Map<String, Map<Integer, Method<V>>> methods;
+    private final Map<MethodId, Method<V>> methods;
     private final String name;
 
     private KnishWrappedObject(String name, V value,
-                               Map<String, Map<Integer, Method<V>>> methods) {
+                               Map<MethodId, Method<V>> methods) {
         this.value = value;
         this.methods = methods;
         this.name = name;
@@ -21,9 +19,10 @@ public class KnishWrappedObject<V> implements KnishObject {
     @Override
     public KnishObject call(String methodName, List<KnishObject> arguments) {
         Integer arity = (arguments == null) ? null : arguments.size();
-        Method<V> method = methods.getOrDefault(methodName, emptyMap()).get(arity);
+        MethodId methodId = new MethodId(methodName, arity);
+        Method<V> method = methods.get(methodId);
         if (method == null) {
-            throw new KnishMethodNotFoundException(name, methodName, arity);
+            throw new KnishMethodNotFoundException(name, methodId);
         }
         return method.call(value, arguments);
     }
@@ -32,13 +31,13 @@ public class KnishWrappedObject<V> implements KnishObject {
         KnishObject call(V value, List<KnishObject> arguments);
     }
 
-    public static  <V> OpenKnishWrappedObject<V> object(String name) {
+    public static <V> OpenKnishWrappedObject<V> object(String name) {
         return new OpenKnishWrappedObject<>(name);
     }
 
     public static class OpenKnishWrappedObject<V> {
         private final String name;
-        private final Map<String, Map<Integer, Method<V>>> methods;
+        private final Map<MethodId, Method<V>> methods;
         private boolean closed = false;
 
         private OpenKnishWrappedObject(String name) {
@@ -50,11 +49,8 @@ public class KnishWrappedObject<V> implements KnishObject {
             if (closed) {
                 throw new UnsupportedOperationException("The class is already closed.");
             }
-            if (!methods.containsKey(field)) {
-                methods.put(field, new HashMap<>());
-            }
 
-            methods.get(field).put(null, method);
+            methods.put(new MethodId(field, null), method);
             return this;
         }
 
@@ -62,11 +58,8 @@ public class KnishWrappedObject<V> implements KnishObject {
             if (closed) {
                 throw new UnsupportedOperationException("The class is already closed.");
             }
-            if (!methods.containsKey(field)) {
-                methods.put(field, new HashMap<>());
-            }
 
-            methods.get(field).put(arity, method);
+            methods.put(new MethodId(field, arity), method);
             return this;
         }
 

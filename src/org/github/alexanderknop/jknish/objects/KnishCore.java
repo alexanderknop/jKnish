@@ -2,15 +2,40 @@ package org.github.alexanderknop.jknish.objects;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-public class KnishCore implements KnishModule {
-    private final Map<String, KnishObject> objects;
-
+public class KnishCore extends KnishModule {
     public KnishCore(Writer output) {
-        objects = Map.of(
+        KnishClassBuilder str = declareClass("String");
+        KnishClassBuilder num = declareClass("Number");
+        KnishClassBuilder bool = declareClass("Boolean");
+        KnishClassBuilder unit = declareClass("Unit");
+
+        bool.getter("toString", str)
+                .getter("!", bool);
+
+        str.getter("toString", str)
+                .method("+", List.of(str), str);
+
+        num.getter("toString", str)
+                .getter("-", num)
+                .method("+", List.of(num), num)
+                .method("-", List.of(num), num)
+                .method("*", List.of(num), num)
+                .method("/", List.of(num), num)
+                .method(">", List.of(num), bool)
+                .method("<", List.of(num), bool)
+                .method(">=", List.of(num), bool)
+                .method("<=", List.of(num), bool);
+
+        KnishClassBuilder systemMetaclass =
+                declareClass("System metaclass")
+                        .method("print", Collections.emptyList(), unit)
+                        .getter("clock", num);
+
+        define(
                 "System",
                 KnishWrappedObject.<Writer>object("System metaclass")
                         .method("print", 1,
@@ -29,16 +54,11 @@ public class KnishCore implements KnishModule {
                                     }
                                     return KnishNull.NULL;
                                 })
-                        .getter("clock",
-                                (writer, arguments) ->
-                                        KnishNumber.valueOf(System.currentTimeMillis()))
-                        .construct(output)
+                        .construct(output),
+                systemMetaclass
         );
-    }
 
-    @Override
-    public Map<String, KnishObject> getObjects() {
-        return objects;
+        finishBuilding();
     }
 
     public static class KnishNumber extends AbstractKnishObject {
