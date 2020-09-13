@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 
 public abstract class KnishModule {
     private final Map<String, Class> classBuilders = new HashMap<>();
@@ -13,7 +13,7 @@ public abstract class KnishModule {
     private final Map<String, Class> objectsClasses = new HashMap<>();
 
     public Map<String, KnishObject> getObjects() {
-        return objects;
+        return unmodifiableMap(objects);
     }
 
     public Class getClass(String className) {
@@ -74,6 +74,10 @@ public abstract class KnishModule {
         private Union(Set<KnishType> types) {
             this.types = types;
         }
+
+        public Set<KnishType> getTypes() {
+            return unmodifiableSet(types);
+        }
     }
 
     public final static class Intersection extends KnishType {
@@ -81,6 +85,10 @@ public abstract class KnishModule {
 
         private Intersection(Set<KnishType> types) {
             this.types = types;
+        }
+
+        public Set<KnishType> getTypes() {
+            return unmodifiableSet(types);
         }
     }
 
@@ -105,6 +113,10 @@ public abstract class KnishModule {
                     new Method(emptyList(), value));
             return this;
         }
+
+        public Map<MethodId, Method> getMethods() {
+            return unmodifiableMap(methods);
+        }
     }
 
     private static class Method {
@@ -114,6 +126,14 @@ public abstract class KnishModule {
         private Method(List<Class> arguments, Class value) {
             this.arguments = arguments;
             this.value = value;
+        }
+
+        public List<Class> getArguments() {
+            return unmodifiableList(arguments);
+        }
+
+        public Class getValue() {
+            return value;
         }
     }
 }
