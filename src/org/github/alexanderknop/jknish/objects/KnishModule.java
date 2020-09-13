@@ -3,122 +3,115 @@ package org.github.alexanderknop.jknish.objects;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
 
 public abstract class KnishModule {
-    private final Map<String, KnishClassBuilder> classBuilders = new HashMap<>();
-    private Map<String, KnishClass> classes;
+    private final Map<String, Class> classBuilders = new HashMap<>();
     private final Map<String, KnishObject> objects = new HashMap<>();
-    private final Map<String, String> objectsClasses = new HashMap<>();
+    private final Map<String, Class> objectsClasses = new HashMap<>();
 
     public Map<String, KnishObject> getObjects() {
         return objects;
     }
 
-    public KnishClass getClass(String className) {
-        return classes.get(className);
-    }
-    public KnishClass getObjectType(String objectName) {
-        return getClass(objectsClasses.get(objectName));
+    public Class getClass(String className) {
+        return classBuilders.get(className);
     }
 
-    protected KnishClassBuilder declareClass(String className) {
-        KnishClassBuilder builder = new KnishClassBuilder(className);
+    public Class getObjectType(String objectName) {
+        return objectsClasses.get(objectName);
+    }
+
+    protected Class declareClass(String className) {
+        Class builder = new Class();
         classBuilders.put(className, builder);
         return builder;
     }
 
+    protected Class anonymousClass() {
+        return new Class();
+    }
+
+    protected KnishType top() {
+        return new Top();
+    }
+
+    protected KnishType bottom() {
+        return new Bottom();
+    }
+
+    protected KnishType union(Set<KnishType> types) {
+        return new Union(types);
+    }
+
+    protected KnishType intersection(Set<KnishType> types) {
+        return new Intersection(types);
+    }
+
     protected void define(String name,
-                          KnishObject object, KnishClassBuilder classBuilder) {
+                          KnishObject object, Class klass) {
         objects.put(name, object);
-        objectsClasses.put(name, classBuilder.name);
+        objectsClasses.put(name, klass);
     }
 
-    protected void finishBuilding() {
-        if (classes != null) {
-            throw new UnsupportedOperationException("Module construction is already finished");
-        }
+    public static class KnishType {
 
-        classes = new HashMap<>();
-        classBuilders.keySet().forEach(name -> classes.put(name, new KnishClass()));
-        for (String name : classBuilders.keySet()) {
-            Map<MethodId, MethodBuilder> builderMethods = classBuilders.get(name).methods;
-            Map<MethodId, Method> methods = new HashMap<>();
-            builderMethods.forEach(
-                    (methodName, methodBuilder) -> methods.put(
-                            methodName,
-                            new Method(
-                                    methodBuilder.arguments == null ? null :
-                                            unmodifiableList(methodBuilder.arguments.stream().map(
-                                                    argument -> classes.get(argument.name)
-                                            ).collect(Collectors.toList())),
-                                    classes.get(methodBuilder.value.name)
-                            )
-                    )
-            );
-            classes.get(name).methods = methods;
+        private KnishType() {
         }
     }
 
-    protected KnishClassBuilder top() {
-        // TODO
-        throw new UnsupportedOperationException("Top is not supported, yet");
+    public final static class Top extends KnishType {
     }
 
-    protected static class KnishClassBuilder {
-        private final String name;
-        private final Map<MethodId, MethodBuilder> methods;
+    public static final class Bottom extends KnishType {
+    }
 
-        private KnishClassBuilder(String name) {
-            this.name = name;
+    public final static class Union extends KnishType {
+        private final Set<KnishType> types;
+
+        private Union(Set<KnishType> types) {
+            this.types = types;
+        }
+    }
+
+    public final static class Intersection extends KnishType {
+        private final Set<KnishType> types;
+
+        private Intersection(Set<KnishType> types) {
+            this.types = types;
+        }
+    }
+
+    public static final class Class extends KnishType {
+        private final Map<MethodId, Method> methods;
+
+        private Class() {
             methods = new HashMap<>();
         }
 
-        public KnishClassBuilder method(String methodName,
-                                        List<KnishClassBuilder> arguments,
-                                        KnishClassBuilder value) {
+        protected Class method(String methodName,
+                               List<Class> arguments,
+                               Class value) {
             methods.put(new MethodId(methodName, arguments.size()),
-                    new MethodBuilder(arguments, value));
+                    new Method(arguments, value));
             return this;
         }
 
-        public KnishClassBuilder getter(String field,
-                                        KnishClassBuilder value) {
+        protected Class getter(String field,
+                               Class value) {
             methods.put(new MethodId(field, null),
-                    new MethodBuilder(emptyList(), value));
+                    new Method(emptyList(), value));
             return this;
         }
     }
 
-    private static class MethodBuilder {
-        private final List<KnishClassBuilder> arguments;
-        private final KnishClassBuilder value;
+    private static class Method {
+        private final List<Class> arguments;
+        private final Class value;
 
-        private MethodBuilder(List<KnishClassBuilder> arguments, KnishClassBuilder value) {
-            this.arguments = arguments;
-            this.value = value;
-        }
-    }
-
-    public static class KnishClass {
-        private Map<MethodId, Method> methods;
-
-        private KnishClass() {
-        }
-
-        public Map<MethodId, Method> getMethods() {
-            return methods;
-        }
-    }
-
-    public static class Method {
-        public final List<KnishClass> arguments;
-        public final KnishClass value;
-
-        private Method(List<KnishClass> arguments, KnishClass value) {
+        private Method(List<Class> arguments, Class value) {
             this.arguments = arguments;
             this.value = value;
         }

@@ -2,16 +2,15 @@ package org.github.alexanderknop.jknish.objects;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class KnishCore extends KnishModule {
     public KnishCore(Writer output) {
-        KnishClassBuilder str = declareClass("String");
-        KnishClassBuilder num = declareClass("Number");
-        KnishClassBuilder bool = declareClass("Boolean");
-        KnishClassBuilder unit = declareClass("Unit");
+        Class str = declareClass("String");
+        Class num = declareClass("Number");
+        Class bool = declareClass("Boolean");
+        Class unit = declareClass("Unit");
 
         bool.getter("toString", str)
                 .getter("!", bool);
@@ -30,9 +29,10 @@ public class KnishCore extends KnishModule {
                 .method(">=", List.of(num), bool)
                 .method("<=", List.of(num), bool);
 
-        KnishClassBuilder systemMetaclass =
+        Class systemMetaclass =
                 declareClass("System metaclass")
-                        .method("print", Collections.emptyList(), unit)
+                        .method("print",
+                                List.of(anonymousClass().getter("toString", str)), unit)
                         .getter("clock", num);
 
         define(
@@ -57,15 +57,25 @@ public class KnishCore extends KnishModule {
                         .construct(output),
                 systemMetaclass
         );
+    }
 
-        finishBuilding();
+    public static KnishObject num(long value) {
+        return new KnishNumber(value);
+    }
+
+    public static KnishObject str(String value) {
+        return new KnishString(value);
+    }
+
+    public static KnishObject bool(boolean value) {
+        return new KnishBoolean(value);
+    }
+
+    public static KnishObject nil() {
+        return KnishNull.NULL;
     }
 
     public static class KnishNumber extends AbstractKnishObject {
-        public static KnishNumber valueOf(long value) {
-            return new KnishNumber(value);
-        }
-
         private final Long value;
 
         private KnishNumber(Long value) {
@@ -75,7 +85,7 @@ public class KnishCore extends KnishModule {
             register("+", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return valueOf(value + right.value);
+                    return num(value + right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -83,16 +93,16 @@ public class KnishCore extends KnishModule {
             register("-", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return valueOf(value - right.value);
+                    return num(value - right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
             });
-            register("-", null, arguments -> valueOf(-value));
+            register("-", null, arguments -> num(-value));
             register("*", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return valueOf(value * right.value);
+                    return num(value * right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -100,7 +110,7 @@ public class KnishCore extends KnishModule {
             register("/", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return valueOf(value / right.value);
+                    return num(value / right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -109,7 +119,7 @@ public class KnishCore extends KnishModule {
             register("<", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return KnishBoolean.valueOf(value < right.value);
+                    return bool(value < right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -117,7 +127,7 @@ public class KnishCore extends KnishModule {
             register(">", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return KnishBoolean.valueOf(value > right.value);
+                    return bool(value > right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -125,7 +135,7 @@ public class KnishCore extends KnishModule {
             register("<=", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return KnishBoolean.valueOf(value <= right.value);
+                    return bool(value <= right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -133,7 +143,7 @@ public class KnishCore extends KnishModule {
             register(">=", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return KnishBoolean.valueOf(value >= right.value);
+                    return bool(value >= right.value);
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -141,7 +151,7 @@ public class KnishCore extends KnishModule {
             register("==", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return KnishBoolean.valueOf(value.equals(right.value));
+                    return bool(value.equals(right.value));
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -149,7 +159,7 @@ public class KnishCore extends KnishModule {
             register("!=", 1, arguments -> {
                 if (arguments.get(0) instanceof KnishNumber) {
                     KnishNumber right = (KnishNumber) arguments.get(0);
-                    return KnishBoolean.valueOf(!value.equals(right.value));
+                    return bool(!value.equals(right.value));
                 } else {
                     throw new KnishRuntimeException("Right operand must be a number.");
                 }
@@ -165,7 +175,7 @@ public class KnishCore extends KnishModule {
     public static class KnishString extends AbstractKnishObject {
         private final String value;
 
-        public KnishString(String value) {
+        private KnishString(String value) {
             this.value = value;
 
             register("toString", null, (arguments) -> this);
@@ -191,7 +201,7 @@ public class KnishCore extends KnishModule {
     }
 
     public static class KnishNull implements KnishObject {
-        public final static KnishNull NULL = new KnishNull();
+        private final static KnishNull NULL = new KnishNull();
 
         private KnishNull() {
         }
@@ -205,14 +215,6 @@ public class KnishCore extends KnishModule {
     public static class KnishBoolean extends AbstractKnishObject {
         public static final KnishBoolean TRUE = new KnishBoolean(true);
         public static final KnishBoolean FALSE = new KnishBoolean(false);
-
-        public static KnishBoolean valueOf(Boolean value) {
-            if (value) {
-                return TRUE;
-            } else {
-                return FALSE;
-            }
-        }
 
         private final Boolean value;
 

@@ -65,7 +65,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
 
     private KnishObject evaluate(Expression expression) {
         if (expression == null) {
-            return KnishCore.KnishNull.NULL;
+            return KnishCore.nil();
         }
         return expression.accept(this);
     }
@@ -92,19 +92,19 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
     @Override
     public KnishObject visitLiteralExpression(Expression.Literal literal) {
         if (literal.value == null) {
-            return KnishCore.KnishNull.NULL;
+            return KnishCore.nil();
         }
 
         if (literal.value instanceof Boolean) {
-            return KnishCore.KnishBoolean.valueOf((Boolean) literal.value);
+            return KnishCore.bool((Boolean) literal.value);
         }
 
         if (literal.value instanceof String) {
-            return new KnishCore.KnishString((String) literal.value);
+            return KnishCore.str((String) literal.value);
         }
 
         if (literal.value instanceof Long) {
-            return KnishCore.KnishNumber.valueOf((Long) literal.value);
+            return KnishCore.num((Long) literal.value);
         }
 
         throw new UnsupportedOperationException("Unknown type of literal " + literal.value);
@@ -156,7 +156,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
     public Void visitorIfStatement(Statement.If anIf) {
         KnishObject conditionValue = evaluate(anIf.condition);
 
-        if (conditionValue == KnishCore.KnishNull.NULL) {
+        if (conditionValue == KnishCore.nil()) {
             throw new KnishRuntimeExceptionWithLine(anIf.line, "If condition cannot be nil.");
         }
 
@@ -176,7 +176,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
     public Void visitWhileStatement(Statement.While aWhile) {
         while (true) {
             KnishObject conditionValue = evaluate(aWhile.condition);
-            if (conditionValue == KnishCore.KnishNull.NULL) {
+            if (conditionValue == KnishCore.nil()) {
                 throw new KnishRuntimeExceptionWithLine(aWhile.line, "While condition cannot be nil.");
             } else if (conditionValue instanceof KnishCore.KnishBoolean) {
                 if (conditionValue.equals(KnishCore.KnishBoolean.TRUE)) {
@@ -197,7 +197,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
         environment.define(var.name, evaluate(var.initializer));
         return null;
     }
-    
+
     @Override
     public Void visitBlockStatement(Statement.Block block) {
         Environment previous = environment;
