@@ -60,7 +60,6 @@ public class Parser {
         if (match(LEFT_BRACE)) return new Statement.Block(previous().line, block());
         if (match(IF)) return ifStatement();
         if (match(WHILE)) return whileStatement();
-        if (match(RETURN)) return returnStatement();
         if (match(VAR)) return varStatement();
 
         return expressionStatement();
@@ -112,17 +111,6 @@ public class Parser {
         Statement body = statement();
 
         return new Statement.While(line, condition, body);
-    }
-
-    private Statement returnStatement() {
-        int line = previous().line;
-        Expression value = null;
-        if (!check(SEMICOLON)) {
-            value = expression();
-        }
-
-        consume(SEMICOLON, "Expect ';' after return value.");
-        return new Statement.Return(line, value);
     }
 
     private Statement expressionStatement() {

@@ -197,12 +197,7 @@ public class Interpreter implements Expression.Visitor<KnishObject>, Statement.V
         environment.define(var.name, evaluate(var.initializer));
         return null;
     }
-
-    @Override
-    public Void visitReturnStatement(Statement.Return aReturn) {
-        throw new UnsupportedOperationException("Return is not supported, yet.");
-    }
-
+    
     @Override
     public Void visitBlockStatement(Statement.Block block) {
         Environment previous = environment;

@@ -19,8 +19,6 @@ public abstract class Statement {
 
         N visitVarStatement(Var var);
 
-        N visitReturnStatement(Return aReturn);
-
         N visitBlockStatement(Block block);
     }
 
@@ -176,40 +174,6 @@ public abstract class Statement {
         @Override
         public <N> N accept(Visitor<N> visitor) {
             return visitor.visitVarStatement(this);
-        }
-    }
-
-    public static class Return extends Statement {
-        public final org.github.alexanderknop.jknish.parser.Expression expression;
-
-        public Return(int line, org.github.alexanderknop.jknish.parser.Expression expression) {
-            super(line);
-            this.expression = expression;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Return aReturn = (Return) o;
-            return Objects.equals(expression, aReturn.expression);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(expression);
-        }
-
-        @Override
-        public String toString() {
-            return "Return{" +
-                    "expression=" + expression +
-                    '}';
-        }
-
-        @Override
-        public <N> N accept(Visitor<N> visitor) {
-            return visitor.visitReturnStatement(this);
         }
     }
 

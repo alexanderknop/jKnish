@@ -38,7 +38,7 @@ class ParserTest {
         TokenBuilder builder = new TokenBuilder();
         builder
                 .anIf().leftParen().number(1).rightParen().nextLine()
-                .aReturn().number(1).nextLine().semicolon()
+                .number(1).nextLine().semicolon()
                 .eof();
 
 
@@ -47,7 +47,7 @@ class ParserTest {
                         new Statement.If(
                                 1,
                                 new Expression.Literal(1, 1L),
-                                new Statement.Return(2, new Expression.Literal(2, 1L)),
+                                new Statement.Expression(2, new Expression.Literal(2, 1L)),
                                 null
                         )
                 );
@@ -57,8 +57,8 @@ class ParserTest {
         builder = new TokenBuilder();
         builder
                 .anIf().leftParen().number(1).rightParen().nextLine()
-                .aReturn().number(1).nextLine().semicolon().nextLine()
-                .anElse().aReturn().number(2).semicolon()
+                .number(1).nextLine().semicolon().nextLine()
+                .anElse().number(2).semicolon()
                 .eof();
 
 
@@ -67,8 +67,8 @@ class ParserTest {
                         new Statement.If(
                                 1,
                                 new Expression.Literal(1, 1L),
-                                new Statement.Return(2, new Expression.Literal(1, 1L)),
-                                new Statement.Return(3, new Expression.Literal(1, 2L))
+                                new Statement.Expression(2, new Expression.Literal(1, 1L)),
+                                new Statement.Expression(3, new Expression.Literal(1, 2L))
                         )
                 );
 
