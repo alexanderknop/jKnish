@@ -64,6 +64,7 @@ public abstract class KnishModule {
     }
 
     protected KnishClassBuilder top() {
+        // TODO
         throw new UnsupportedOperationException("Top is not supported, yet");
     }
 
