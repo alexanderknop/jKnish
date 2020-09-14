@@ -4,11 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.*;
 
 public abstract class KnishModule {
-    private final Map<String, Class> classBuilders = new HashMap<>();
+    private final Map<String, Class> classes = new HashMap<>();
     private final Map<String, KnishObject> objects = new HashMap<>();
     private final Map<String, Class> objectsClasses = new HashMap<>();
 
@@ -17,7 +18,7 @@ public abstract class KnishModule {
     }
 
     public Class getClass(String className) {
-        return classBuilders.get(className);
+        return classes.get(className);
     }
 
     public Class getObjectType(String objectName) {
@@ -26,7 +27,7 @@ public abstract class KnishModule {
 
     protected Class declareClass(String className) {
         Class builder = new Class();
-        classBuilders.put(className, builder);
+        classes.put(className, builder);
         return builder;
     }
 
@@ -34,19 +35,19 @@ public abstract class KnishModule {
         return new Class();
     }
 
-    protected KnishType top() {
-        return new Top();
+    protected Intersection top() {
+        return new Intersection(emptySet());
     }
 
-    protected KnishType bottom() {
-        return new Bottom();
+    protected Union bottom() {
+        return new Union(emptySet());
     }
 
-    protected KnishType union(Set<KnishType> types) {
+    protected Union union(Set<Class> types) {
         return new Union(types);
     }
 
-    protected KnishType intersection(Set<KnishType> types) {
+    protected Intersection intersection(Set<Class> types) {
         return new Intersection(types);
     }
 
@@ -56,47 +57,52 @@ public abstract class KnishModule {
         objectsClasses.put(name, klass);
     }
 
-    public static class KnishType {
+    public Map<String, Class> getClasses() {
+        return unmodifiableMap(classes);
+    }
 
+    public static abstract class KnishType {
         private KnishType() {
         }
     }
 
-    public final static class Top extends KnishType {
-    }
+    public final static class Union {
+        private final Set<Class> types;
 
-    public static final class Bottom extends KnishType {
-    }
-
-    public final static class Union extends KnishType {
-        private final Set<KnishType> types;
-
-        private Union(Set<KnishType> types) {
+        private Union(Set<Class> types) {
             this.types = types;
         }
 
-        public Set<KnishType> getTypes() {
+        public Set<Class> getTypes() {
             return unmodifiableSet(types);
         }
     }
 
-    public final static class Intersection extends KnishType {
-        private final Set<KnishType> types;
+    public final static class Intersection {
+        private final Set<Class> types;
 
-        private Intersection(Set<KnishType> types) {
+        private Intersection(Set<Class> types) {
             this.types = types;
         }
 
-        public Set<KnishType> getTypes() {
+        public Set<Class> getTypes() {
             return unmodifiableSet(types);
         }
     }
 
-    public static final class Class extends KnishType {
+    public static final class Class {
         private final Map<MethodId, Method> methods;
 
         private Class() {
             methods = new HashMap<>();
+        }
+
+        protected Class method(String methodName,
+                               List<Intersection> arguments,
+                               Union value) {
+            methods.put(new MethodId(methodName, arguments.size()),
+                    new Method(arguments, value));
+            return this;
         }
 
         protected Class method(String methodName,
@@ -108,9 +114,16 @@ public abstract class KnishModule {
         }
 
         protected Class getter(String field,
+                               Union value) {
+            methods.put(new MethodId(field, null),
+                    new Method(null, value));
+            return this;
+        }
+
+        protected Class getter(String field,
                                Class value) {
             methods.put(new MethodId(field, null),
-                    new Method(emptyList(), value));
+                    new Method(null, value));
             return this;
         }
 
@@ -119,20 +132,30 @@ public abstract class KnishModule {
         }
     }
 
-    private static class Method {
-        private final List<Class> arguments;
-        private final Class value;
+    public static class Method {
+        private final List<Intersection> arguments;
+        private final Union value;
 
-        private Method(List<Class> arguments, Class value) {
+        private Method(List<Intersection> arguments, Union value) {
             this.arguments = arguments;
             this.value = value;
         }
 
-        public List<Class> getArguments() {
-            return unmodifiableList(arguments);
+        public Method(List<Class> arguments, Class value) {
+            this(
+                    arguments == null ? null :
+                            arguments.stream()
+                                    .map(t -> new Intersection(singleton(t)))
+                                    .collect(Collectors.toList()),
+                    new Union(singleton(value))
+            );
         }
 
-        public Class getValue() {
+        public List<Intersection> getArguments() {
+            return arguments != null ? unmodifiableList(arguments) : null;
+        }
+
+        public Union getValue() {
             return value;
         }
     }
