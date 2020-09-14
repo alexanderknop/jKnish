@@ -1,6 +1,7 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.LogicalOperator;
 import org.github.alexanderknop.jknish.parser.Statement;
@@ -768,9 +769,10 @@ class InterpreterTest {
         ErrorReporter reporter = new ErrorReporter(errorWriter);
 
         StringWriter outputWriter = new StringWriter();
+        KnishCore core = new KnishCore(outputWriter);
 
 
-        Interpreter.interpret(statements, outputWriter, reporter);
+        Interpreter.interpret(core, statements, reporter);
 
         assertFalse(reporter.hadError(), "The script is correct;" +
                 " the error message is:\n" + errorWriter.toString());
@@ -784,8 +786,9 @@ class InterpreterTest {
     void testIncorrect(List<Statement> statements, String expectedError) {
         StringWriter error = new StringWriter();
         ErrorReporter reporter = new ErrorReporter(error);
+        KnishCore core = new KnishCore(new StringWriter());
 
-        Interpreter.interpret(statements, new StringWriter(), reporter);
+        Interpreter.interpret(core, statements, reporter);
 
         assertTrue(reporter.hadError(), "The script is incorrect.");
         String actual = error.toString().strip();

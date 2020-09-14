@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 
 public class Interpreter implements Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
 
-    public static void interpret(List<Statement> statements, Writer output, ErrorReporter reporter) {
-        Environment globals = createEnvironment(new KnishCore(output));
+    public static void interpret(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
+        Environment globals = createEnvironment(core);
 
         Interpreter interpreter = new Interpreter(statements, globals, reporter);
 
