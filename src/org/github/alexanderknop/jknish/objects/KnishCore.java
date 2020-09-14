@@ -54,6 +54,7 @@ public class KnishCore extends KnishModule {
                                     }
                                     return KnishNull.NULL;
                                 })
+                        .getter("clock", (writer, arguments) -> num(System.currentTimeMillis()))
                         .construct(output),
                 systemMetaclass
         );
