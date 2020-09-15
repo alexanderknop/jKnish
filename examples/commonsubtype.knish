@@ -1,0 +1,6 @@
+var x = 1;
+// expect: 1
+System.print(x);
+x = "hello!";
+// expect: hello!
+System.print(x);

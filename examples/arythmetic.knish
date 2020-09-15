@@ -1,0 +1,14 @@
+var x = 1;
+var y = 2;
+// expect: 3
+System.print(1 + 2);
+// expect: 3
+System.print(x + y);
+// expect: -1
+System.print(x - y);
+// expect: -2
+System.print(-y);
+// expect: 2
+System.print(x * y);
+// expect: 0
+System.print(x / y);
