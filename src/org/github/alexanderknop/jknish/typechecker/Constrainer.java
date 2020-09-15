@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class Constrainer {
+class Constrainer {
     private final Set<Inequality> cash = new HashSet<>();
 
     void constrain(SimpleType left, SimpleType right, TypeErrorMessage message) {
