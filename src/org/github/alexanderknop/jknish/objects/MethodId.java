@@ -30,8 +30,8 @@ public final class MethodId {
         String arguments;
         if (arity == null) {
             arguments = "";
-        } else if (arity == 1) {
-            arguments = "(_)";
+        } else if (arity == 0) {
+            arguments = "()";
         } else {
             arguments = "_, ".repeat(arity);
             arguments = "(" + arguments.substring(0, arguments.length() - 2) + ")";
