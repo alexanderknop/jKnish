@@ -1,0 +1,12 @@
+var a = 1;
+var b = 1;
+
+var i = 2;
+while (i < 11) {
+    System.print(a);
+    var tmp = a;
+    a = b;
+    b = b + tmp;
+
+    i = i + 1;
+}

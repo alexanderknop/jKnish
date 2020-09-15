@@ -8,9 +8,13 @@ public class Constrainer {
     private Set<Inequality> cash = new HashSet<>();
 
     void constrain(SimpleType left, SimpleType right, TypeErrorMessage message) {
-        if (cash.contains(new Inequality(left, right))) {
+        final Inequality inequality = new Inequality(left, right);
+        if (cash.contains(inequality)) {
             return;
+        } else {
+            cash.add(inequality);
         }
+
 
         if (left instanceof SimpleType.Labeled && right instanceof SimpleType.Labeled) {
             SimpleType.Labeled labeledLeft = (SimpleType.Labeled) left;
