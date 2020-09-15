@@ -220,8 +220,7 @@ public abstract class Statement {
         public final String name;
 
         public Class(int line, String name,
-                     List<Method> methods,
-                     List<Method> constructors, List<Method> staticMethods) {
+                     List<Method> staticMethods, List<Method> constructors, List<Method> methods) {
             super(line);
             this.name = name;
             this.methods = methods;

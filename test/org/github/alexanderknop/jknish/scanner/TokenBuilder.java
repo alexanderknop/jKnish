@@ -114,12 +114,22 @@ public class TokenBuilder {
         return this;
     }
 
-    public void eof() {
-        tokensList.add(new Token(EOF, null, null, line));
-    }
-
     public TokenBuilder aClass() {
         tokensList.add(new Token(CLASS, "class", null, line));
         return this;
+    }
+
+    public TokenBuilder aStatic() {
+        tokensList.add(new Token(STATIC, "static", null, line));
+        return this;
+    }
+
+    public TokenBuilder construct() {
+        tokensList.add(new Token(CONSTRUCT, "construct", null, line));
+        return this;
+    }
+
+    public void eof() {
+        tokensList.add(new Token(EOF, null, null, line));
     }
 }

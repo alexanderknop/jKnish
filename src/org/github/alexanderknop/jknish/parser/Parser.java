@@ -82,7 +82,7 @@ public class Parser {
             }
         }
         consume(RIGHT_BRACE, "Expect '}' after class definition.");
-        return new Statement.Class(name.line, name.lexeme, methods, constructors, staticMethods);
+        return new Statement.Class(name.line, name.lexeme, staticMethods, constructors, methods);
     }
 
     private Statement.Method methodStatement() {

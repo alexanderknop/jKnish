@@ -272,14 +272,14 @@ class ParserTest {
                 List.of(
                         new Statement.Class(0,
                                 "T",
-                                List.of(
-                                        new Statement.Method(1,
-                                                "method",
-                                                null,
-                                                emptyList()
-                                        )
-                                ),
-                                emptyList(), emptyList())
+                                emptyList(), emptyList(), List.of(
+                                new Statement.Method(1,
+                                        "method",
+                                        null,
+                                        emptyList()
+                                )
+                        )
+                        )
                 );
         testCorrect(expected, builder.tokens());
 
@@ -292,14 +292,14 @@ class ParserTest {
                 List.of(
                         new Statement.Class(0,
                                 "T",
-                                List.of(
-                                        new Statement.Method(1,
-                                                "method",
-                                                singletonList("argument"),
-                                                emptyList()
-                                        )
-                                ),
-                                emptyList(), emptyList())
+                                emptyList(), emptyList(), List.of(
+                                new Statement.Method(1,
+                                        "method",
+                                        singletonList("argument"),
+                                        emptyList()
+                                )
+                        )
+                        )
                 );
         testCorrect(expected, builder.tokens());
 
@@ -314,14 +314,58 @@ class ParserTest {
                 List.of(
                         new Statement.Class(0,
                                 "T",
+                                emptyList(), emptyList(), List.of(
+                                new Statement.Method(1,
+                                        "method",
+                                        List.of("argument1", "argument2"),
+                                        emptyList()
+                                )
+                        )
+                        )
+                );
+        testCorrect(expected, builder.tokens());
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .aStatic().identifier("method")
+                .leftParen().identifier("argument").rightParen().leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+        expected =
+                List.of(
+                        new Statement.Class(0,
+                                "T",
                                 List.of(
                                         new Statement.Method(1,
                                                 "method",
-                                                List.of("argument1", "argument2"),
+                                                singletonList("argument"),
+                                                emptyList()
+                                        )
+                                ), emptyList(), emptyList()
+                        )
+                );
+        testCorrect(expected, builder.tokens());
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .construct().identifier("method")
+                .leftParen().identifier("argument").rightParen().leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+        expected =
+                List.of(
+                        new Statement.Class(0,
+                                "T",
+                                emptyList(),
+                                List.of(
+                                        new Statement.Method(1,
+                                                "method",
+                                                singletonList("argument"),
                                                 emptyList()
                                         )
                                 ),
-                                emptyList(), emptyList())
+                                emptyList()
+                        )
                 );
         testCorrect(expected, builder.tokens());
 
@@ -366,7 +410,6 @@ class ParserTest {
 
         testIncorrect(builder.tokens(), "[line 0] Error at '{': Expect class name.");
     }
-
 
     private void testCorrect(List<Statement> expected, List<Token> tokens) {
         StringWriter writer = new StringWriter();
