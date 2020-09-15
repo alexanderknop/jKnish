@@ -4,3 +4,5 @@ System.print(x);
 x = "hello!";
 // expect: hello!
 System.print(x);
+// error: [line 7] Error: The value of 0th argument has incompatible type.
+x + "world";
