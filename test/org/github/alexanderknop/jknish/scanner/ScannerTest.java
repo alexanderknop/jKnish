@@ -46,10 +46,10 @@ class ScannerTest {
 
     @Test
     void testClass() {
-        test("class Test { test {1} }",
+        test("class Test { test {return 1} }",
                 List.of(CLASS, IDENTIFIER, LEFT_BRACE, IDENTIFIER,
-                        LEFT_BRACE, NUMBER, RIGHT_BRACE, RIGHT_BRACE, EOF),
-                "Was not able to scan 'class Test { test {1} }'");
+                        LEFT_BRACE, RETURN, NUMBER, RIGHT_BRACE, RIGHT_BRACE, EOF),
+                "Was not able to scan 'class Test { test {return 1} }'");
     }
 
     private void test(String source, List<TokenType> expected, String message) {
