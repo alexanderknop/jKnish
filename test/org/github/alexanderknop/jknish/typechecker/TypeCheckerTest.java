@@ -189,6 +189,22 @@ class TypeCheckerTest {
                 new Statement.Var(1, "x",
                         new Expression.Literal(1, 1L)
                 ),
+                new Statement.Expression(3,
+                        new Expression.Assign(3,
+                                "x",
+                                new Expression.Call(3,
+                                        new Expression.Variable(3, "x"),
+                                        "+",
+                                        new Expression.Literal(3, 1L)
+                                )
+                        )
+                )
+        ));
+
+        testCorrect(List.of(
+                new Statement.Var(1, "x",
+                        new Expression.Literal(1, 1L)
+                ),
                 new Statement.Expression(2,
                         new Expression.Assign(2,
                                 "x",
@@ -281,6 +297,31 @@ class TypeCheckerTest {
                         )
                 )
         ));
+    }
+
+    @Test
+    void testWhile() {
+        testCorrect(List.of(
+                new Statement.Var(1, "x",
+                        new Expression.Literal(1, Boolean.TRUE)
+                ),
+                new Statement.While(2,
+                        new Expression.Variable(2, "x"),
+                        new Statement.Expression(3, new Expression.Literal(3, 1L))
+                )
+        ));
+        testIncorrect(
+                List.of(
+                        new Statement.Var(1, "x",
+                                new Expression.Literal(1, 1L)
+                        ),
+                        new Statement.While(2,
+                                new Expression.Variable(2, "x"),
+                                new Statement.Expression(3, new Expression.Literal(3, 1L))
+                        )
+                ),
+                "[line 2] Error: While conditions must have type Boolean."
+        );
     }
 
     @Test
