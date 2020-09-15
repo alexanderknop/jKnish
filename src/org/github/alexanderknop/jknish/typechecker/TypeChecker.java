@@ -23,7 +23,6 @@ public class TypeChecker implements Statement.Visitor<Void>, Expression.Visitor<
     private SimpleType numberType;
     private SimpleType booleanType;
     private SimpleType stringType;
-    private SimpleType nullType;
 
     private final List<Statement> statements;
     private final ErrorReporter reporter;

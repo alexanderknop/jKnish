@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
-
 public abstract class AbstractKnishObject implements KnishObject {
 
     abstract protected String getClassName();
