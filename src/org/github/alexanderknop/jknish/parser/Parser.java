@@ -70,11 +70,19 @@ public class Parser {
         Token name = consume(IDENTIFIER, "Expect class name.");
         consume(LEFT_BRACE, "Expect '{' to begin class definition.");
         List<Statement.Method> methods = new ArrayList<>();
+        List<Statement.Method> constructors = new ArrayList<>();
+        List<Statement.Method> staticMethods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            methods.add(methodStatement());
+            if (match(STATIC)) {
+                staticMethods.add(methodStatement());
+            } else if (match(CONSTRUCT)) {
+                constructors.add(methodStatement());
+            } else {
+                methods.add(methodStatement());
+            }
         }
         consume(RIGHT_BRACE, "Expect '}' after class definition.");
-        return new Statement.Class(name.line, name.lexeme, methods);
+        return new Statement.Class(name.line, name.lexeme, methods, constructors, staticMethods);
     }
 
     private Statement.Method methodStatement() {

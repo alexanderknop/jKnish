@@ -6,7 +6,6 @@ import org.github.alexanderknop.jknish.scanner.TokenBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -279,8 +278,8 @@ class ParserTest {
                                                 null,
                                                 emptyList()
                                         )
-                                )
-                        )
+                                ),
+                                emptyList(), emptyList())
                 );
         testCorrect(expected, builder.tokens());
 
@@ -299,8 +298,8 @@ class ParserTest {
                                                 singletonList("argument"),
                                                 emptyList()
                                         )
-                                )
-                        )
+                                ),
+                                emptyList(), emptyList())
                 );
         testCorrect(expected, builder.tokens());
 
@@ -321,8 +320,8 @@ class ParserTest {
                                                 List.of("argument1", "argument2"),
                                                 emptyList()
                                         )
-                                )
-                        )
+                                ),
+                                emptyList(), emptyList())
                 );
         testCorrect(expected, builder.tokens());
 

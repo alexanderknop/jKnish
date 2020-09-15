@@ -215,12 +215,18 @@ public abstract class Statement {
 
     public static class Class extends Statement {
         public final List<Method> methods;
+        public final List<Method> constructors;
+        public final List<Method> staticMethods;
         public final String name;
 
-        public Class(int line, String name, List<Method> methods) {
+        public Class(int line, String name,
+                     List<Method> methods,
+                     List<Method> constructors, List<Method> staticMethods) {
             super(line);
             this.name = name;
             this.methods = methods;
+            this.constructors = constructors;
+            this.staticMethods = staticMethods;
         }
 
         @Override
