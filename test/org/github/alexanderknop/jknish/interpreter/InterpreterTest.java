@@ -94,6 +94,46 @@ class InterpreterTest {
     }
 
     @Test
+    void testClassMethods() {
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Call(4,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test"
+                                )
+                        )
+                ),
+                "Hello world!"
+        );
+    }
+
+    @Test
     void testAddition() {
         testCorrect(
                 List.of(
