@@ -1,0 +1,36 @@
+var shadowed = "global";
+
+{
+    class HelloWorld {
+        static hello {
+            System.print(shadowed);
+        }
+    }
+    var shadowed = "local";
+    // expect: local
+    HelloWorld.hello;
+}
+
+{
+    class HelloWorld {
+        static hello {
+            System.print(shadowed);
+        }
+    }
+    {
+        // expect: global
+        HelloWorld.hello;
+        var shadowed = "local";
+    }
+}
+
+{
+    class HelloWorld {
+        static hello {
+            System.print(shadowed);
+        }
+    }
+    // error: [line 20] Error: Use of unassigned local variable 'shadowed'
+    HelloWorld.hello;
+    var shadowed = "local";
+}

@@ -1,0 +1,14 @@
+class HelloWorld {
+    static hello {
+        System.print("World");
+    }
+
+    world {
+        System.print("Hello");
+    }
+}
+
+var h = HelloWorld.new();
+
+h.world;
+HelloWorld.hello;
