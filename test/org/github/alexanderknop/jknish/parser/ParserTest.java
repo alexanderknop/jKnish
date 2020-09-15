@@ -9,6 +9,8 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ParserTest {
@@ -219,7 +221,7 @@ class ParserTest {
                                 new Expression.Call(1,
                                         new Expression.Variable(1, "x"),
                                         "method",
-                                        Collections.emptyList()
+                                        emptyList()
                                 )
                         )
                 );
@@ -260,6 +262,112 @@ class ParserTest {
         testCorrect(expected, builder.tokens());
     }
 
+    @Test
+    void testClassExpression() {
+        TokenBuilder builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .identifier("method").leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+        List<Statement> expected =
+                List.of(
+                        new Statement.Class(0,
+                                "T",
+                                List.of(
+                                        new Statement.Method(1,
+                                                "method",
+                                                null,
+                                                emptyList()
+                                        )
+                                )
+                        )
+                );
+        testCorrect(expected, builder.tokens());
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .identifier("method").leftParen().identifier("argument").rightParen().leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+        expected =
+                List.of(
+                        new Statement.Class(0,
+                                "T",
+                                List.of(
+                                        new Statement.Method(1,
+                                                "method",
+                                                singletonList("argument"),
+                                                emptyList()
+                                        )
+                                )
+                        )
+                );
+        testCorrect(expected, builder.tokens());
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .identifier("method").leftParen()
+                .identifier("argument1").comma().identifier("argument2")
+                .rightParen().leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+        expected =
+                List.of(
+                        new Statement.Class(0,
+                                "T",
+                                List.of(
+                                        new Statement.Method(1,
+                                                "method",
+                                                List.of("argument1", "argument2"),
+                                                emptyList()
+                                        )
+                                )
+                        )
+                );
+        testCorrect(expected, builder.tokens());
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .identifier("method").leftParen()
+                .identifier("argument1")
+                .leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+
+        testIncorrect(builder.tokens(), "[line 1] Error at '{': Expect ')' after arguments.");
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .identifier("method").leftParen()
+                .identifier("argument1")
+                .rightParen()
+                .nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+
+        testIncorrect(builder.tokens(), "[line 2] Error at '}': Expect '{' to begin method body.");
+
+        builder = new TokenBuilder();
+        builder.aClass().identifier("T").leftBrace().nextLine()
+                .identifier("method").leftParen()
+                .identifier("argument1")
+                .rightParen().leftBrace().nextLine()
+                .nextLine()
+                .rightBrace().nextLine().eof();
+
+        testIncorrect(builder.tokens(), "[line 4] Error at end: Expect '}' after class definition.");
+
+        builder = new TokenBuilder();
+        builder.aClass().leftBrace().nextLine()
+                .identifier("method").leftParen()
+                .identifier("argument1")
+                .rightParen().leftBrace().nextLine()
+                .rightBrace().nextLine()
+                .rightBrace().nextLine().eof();
+
+        testIncorrect(builder.tokens(), "[line 0] Error at '{': Expect class name.");
+    }
+
 
     private void testCorrect(List<Statement> expected, List<Token> tokens) {
         StringWriter writer = new StringWriter();
@@ -278,9 +386,9 @@ class ParserTest {
 
         assertTrue(reporter.hadError(),
                 "The sequence is supposed to be incorrect.");
-        assertEquals(errorMessage, writer.toString(),
-                "The error message is supposed to be '" +
-                        errorMessage.strip() + "' instead of '" +
+        assertEquals(errorMessage.strip(), writer.toString().strip(),
+                "The error message is supposed to be\n'" +
+                        errorMessage.strip() + "' instead of\n'" +
                         writer.toString().strip() + "'.");
     }
 }

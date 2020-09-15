@@ -117,4 +117,9 @@ public class TokenBuilder {
     public void eof() {
         tokensList.add(new Token(EOF, null, null, line));
     }
+
+    public TokenBuilder aClass() {
+        tokensList.add(new Token(CLASS, "class", null, line));
+        return this;
+    }
 }

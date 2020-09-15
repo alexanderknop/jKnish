@@ -61,8 +61,50 @@ public class Parser {
         if (match(IF)) return ifStatement();
         if (match(WHILE)) return whileStatement();
         if (match(VAR)) return varStatement();
+        if (match(CLASS)) return classStatement();
 
         return expressionStatement();
+    }
+
+    private Statement classStatement() {
+        Token name = consume(IDENTIFIER, "Expect class name.");
+        consume(LEFT_BRACE, "Expect '{' to begin class definition.");
+        List<Statement.Method> methods = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(methodStatement());
+        }
+        consume(RIGHT_BRACE, "Expect '}' after class definition.");
+        return new Statement.Class(name.line, name.lexeme, methods);
+    }
+
+    private Statement.Method methodStatement() {
+        Token name = consume(IDENTIFIER, "Expect method name.");
+        List<String> argumentsNames = null;
+        if (match(LEFT_PAREN)) {
+            argumentsNames = methodParameters();
+        }
+
+        consume(LEFT_BRACE, "Expect '{' to begin method body.");
+        List<Statement> statements = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(statement());
+        }
+        consume(RIGHT_BRACE, "Expect '}' after class definition.");
+
+        return new Statement.Method(name.line,
+                name.lexeme, argumentsNames, statements);
+    }
+
+    private List<String> methodParameters() {
+        List<String> argumentsNames = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                Token argument = consume(IDENTIFIER, "Expect variable name.");
+                argumentsNames.add(argument.lexeme);
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        return argumentsNames;
     }
 
     private Statement varStatement() {

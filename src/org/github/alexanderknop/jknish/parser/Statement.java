@@ -20,6 +20,8 @@ public abstract class Statement {
         N visitVarStatement(Var var);
 
         N visitBlockStatement(Block block);
+
+        N visitClassStatement(Class klass);
     }
 
     public static class Expression extends Statement {
@@ -208,6 +210,85 @@ public abstract class Statement {
         @Override
         public <N> N accept(Visitor<N> visitor) {
             return visitor.visitBlockStatement(this);
+        }
+    }
+
+    public static class Class extends Statement {
+        public final List<Method> methods;
+        public final String name;
+
+        public Class(int line, String name, List<Method> methods) {
+            super(line);
+            this.name = name;
+            this.methods = methods;
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitClassStatement(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Class aClass = (Class) o;
+            return Objects.equals(methods, aClass.methods) &&
+                    Objects.equals(name, aClass.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(methods, name);
+        }
+
+        @Override
+        public String toString() {
+            return "Class{" +
+                    "methods=" + methods +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+    }
+
+    public static class Method {
+        private final int line;
+        public final String name;
+        public final List<String> argumentsNames;
+        public final List<Statement> body;
+
+        public Method(int line,
+                      String name, List<String> argumentsNames, List<Statement> body) {
+            this.line = line;
+            this.name = name;
+            this.argumentsNames = argumentsNames;
+            this.body = body;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Method method = (Method) o;
+            return line == method.line &&
+                    Objects.equals(name, method.name) &&
+                    Objects.equals(argumentsNames, method.argumentsNames) &&
+                    Objects.equals(body, method.body);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(line, name, argumentsNames, body);
+        }
+
+        @Override
+        public String toString() {
+            return "Method{" +
+                    "line=" + line +
+                    ", name='" + name + '\'' +
+                    ", argumentsNames=" + argumentsNames +
+                    ", body=" + body +
+                    '}';
         }
     }
 

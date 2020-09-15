@@ -211,5 +211,11 @@ public class Interpreter {
             environment = previous;
             return null;
         }
+
+        @Override
+        public Void visitClassStatement(Statement.Class klass) {
+            // todo
+            return null;
+        }
     }
 }
