@@ -8,12 +8,10 @@ import org.github.alexanderknop.jknish.objects.KnishRuntimeException;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.Statement;
 
-import java.io.Writer;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-
     public static void interpret(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
         Environment globals = createEnvironment(core);
 
@@ -30,6 +28,10 @@ public class Interpreter {
         }
 
         return globals;
+    }
+
+    private Interpreter() {
+
     }
 
     private static class InterpreterVisitor implements Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
