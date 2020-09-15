@@ -91,6 +91,22 @@ class InterpreterTest {
                 ),
                 "Hello world!"
         );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(), emptyList()
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Variable(4, "Test"),
+                                        "test"
+                                )
+                        )
+                ),
+                "[line 4] Error: Test metaclass does not implement 'test'."
+        );
     }
 
     @Test
@@ -130,6 +146,26 @@ class InterpreterTest {
                         )
                 ),
                 "Hello world!"
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(), emptyList()
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Call(4,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test"
+                                )
+                        )
+                ),
+                "[line 4] Error: Test does not implement 'test'."
         );
     }
 
