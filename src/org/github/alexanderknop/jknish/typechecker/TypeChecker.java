@@ -8,7 +8,6 @@ import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TypeChecker implements Statement.Visitor<Void>, Expression.Visitor<SimpleType> {
     public static void check(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
@@ -36,7 +35,7 @@ public class TypeChecker implements Statement.Visitor<Void>, Expression.Visitor<
     }
 
     private void check() {
-        Map<KnishModule.Class, SimpleType> types = toSimpleType(core.getClasses());
+        Map<KnishModule.Class, SimpleType> types = SimpleType.fromKnishModule(core);
 
         numberType = types.get(core.getClass("Number"));
         booleanType = types.get(core.getClass("Boolean"));
@@ -62,77 +61,6 @@ public class TypeChecker implements Statement.Visitor<Void>, Expression.Visitor<
         statement.accept(this);
     }
 
-    private Map<KnishModule.Class, SimpleType> toSimpleType(Map<String, KnishModule.Class> classes) {
-        Map<KnishModule.Class, SimpleType> types = new HashMap<>();
-        Map<KnishModule.Class, SimpleType.Variable> classVariables = new HashMap<>();
-        classes.forEach((className, klass) -> {
-            final SimpleType.Variable variable = new SimpleType.Variable();
-            classVariables.put(klass, variable);
-            types.put(klass, new SimpleType.Labeled(className, variable));
-        });
-
-        classes.values().forEach(
-                klass -> classToSimpleType(klass, classVariables.get(klass), types));
-        return types;
-    }
-
-    private SimpleType classToSimpleType(KnishModule.Class klass,
-                                         Map<KnishModule.Class, SimpleType> inProcess) {
-        if (inProcess.containsKey(klass)) {
-            return inProcess.get(klass);
-        } else {
-            SimpleType.Variable classVariable = new SimpleType.Variable();
-            inProcess.put(klass, classVariable);
-
-            return classToSimpleType(klass, classVariable, inProcess);
-        }
-    }
-
-    private SimpleType.Variable classToSimpleType(KnishModule.Class klass,
-                                                        SimpleType.Variable classVariable,
-                                                        Map<KnishModule.Class, SimpleType> inProcess) {
-        Map<MethodId, SimpleType.Method> methods = new HashMap<>();
-        SimpleType.Class simpleClass = new SimpleType.Class(methods);
-        klass.getMethods().forEach(
-                (methodId, method) -> methods.put(methodId, methodToSimpleType(method, inProcess)));
-
-        classVariable.lowerBound.add(simpleClass);
-        classVariable.upperBound.add(simpleClass);
-        return classVariable;
-    }
-
-    private SimpleType.Method methodToSimpleType(KnishModule.Method method,
-                                                 Map<KnishModule.Class, SimpleType> inProcess) {
-        List<SimpleType> arguments = null;
-        if (method.getArguments() != null) {
-            arguments = method.getArguments().stream().map(
-                    argument -> intersectionToSimpleType(argument, inProcess)
-            ).collect(Collectors.toList());
-        }
-
-        SimpleType value = unionToSimpleType(method.getValue(), inProcess);
-
-        return new SimpleType.Method(arguments, value);
-    }
-
-    private SimpleType intersectionToSimpleType(KnishModule.Intersection intersection,
-                                                Map<KnishModule.Class, SimpleType> inProcess) {
-        SimpleType.Variable variable = new SimpleType.Variable();
-        intersection.getTypes().stream()
-                .map(klass -> classToSimpleType(klass, inProcess))
-                .forEach(variable.upperBound::add);
-        return variable;
-    }
-
-    private SimpleType unionToSimpleType(KnishModule.Union union,
-                                         Map<KnishModule.Class, SimpleType> inProcess) {
-        SimpleType.Variable variable = new SimpleType.Variable();
-        union.getTypes().stream()
-                .map(klass -> classToSimpleType(klass, inProcess))
-                .forEach(variable.lowerBound::add);
-        return variable;
-    }
-
     private void beginScope() {
         scopes.push(new HashMap<>());
     }
@@ -156,7 +84,6 @@ public class TypeChecker implements Statement.Visitor<Void>, Expression.Visitor<
         scopes.peek().put(name, variable);
         return variable;
     }
-
 
     @Override
     public SimpleType visitAssignExpression(Expression.Assign assign) {
