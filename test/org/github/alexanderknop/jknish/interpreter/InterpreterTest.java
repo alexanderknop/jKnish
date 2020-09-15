@@ -12,6 +12,7 @@ import java.util.List;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterpreterTest {
@@ -54,6 +55,41 @@ class InterpreterTest {
                         )
                 ),
                 "[line 1] Error: System metaclass does not implement 'print(_, _)'."
+        );
+    }
+
+    @Test
+    void testClassStaticMethods() {
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                ), emptyList(), emptyList()
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Variable(4, "Test"),
+                                        "test"
+                                )
+                        )
+                ),
+                "Hello world!"
         );
     }
 

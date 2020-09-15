@@ -15,9 +15,9 @@ public class Interpreter {
     public static void interpret(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
         Environment globals = createEnvironment(core);
 
-        InterpreterVisitor interpreterVisitor = new InterpreterVisitor(statements, globals, reporter);
+        InterpreterVisitor interpreterVisitor = new InterpreterVisitor(reporter);
 
-        interpreterVisitor.interpret();
+        interpreterVisitor.interpret(globals, statements);
     }
 
     private static Environment createEnvironment(KnishModule module) {
@@ -34,21 +34,24 @@ public class Interpreter {
 
     }
 
-    private static class InterpreterVisitor implements Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
-        private final List<Statement> statements;
+    static class InterpreterVisitor implements Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
         private final ErrorReporter reporter;
 
         private Environment environment;
 
-        private InterpreterVisitor(List<Statement> statements, Environment globals, ErrorReporter reporter) {
-            this.statements = statements;
+        private InterpreterVisitor(ErrorReporter reporter) {
             this.reporter = reporter;
-            this.environment = globals;
         }
 
-        private void interpret() {
+        void interpret(Environment enclosing, List<Statement> statements) {
             try {
-                executeBlock(statements);
+                Environment previous = environment;
+                this.environment = new Environment(enclosing);
+                try {
+                    executeBlock(statements);
+                } finally {
+                    environment = previous;
+                }
             } catch (KnishRuntimeExceptionWithLine e) {
                 reporter.error(e.getLine(), e.getMessage());
             }
@@ -214,7 +217,8 @@ public class Interpreter {
 
         @Override
         public Void visitClassStatement(Statement.Class klass) {
-            // todo
+            environment.define(klass.name,
+                    new KnishClassInstance(klass, environment, this));
             return null;
         }
     }
