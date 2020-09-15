@@ -31,21 +31,21 @@ public class KnishWrappedObject<V> implements KnishObject {
         KnishObject call(V value, List<KnishObject> arguments);
     }
 
-    public static <V> OpenKnishWrappedObject<V> object(String name) {
-        return new OpenKnishWrappedObject<>(name);
+    public static <V> KnishWrappedObjectConstructor<V> object(String name) {
+        return new KnishWrappedObjectConstructor<>(name);
     }
 
-    public static class OpenKnishWrappedObject<V> {
+    public static class KnishWrappedObjectConstructor<V> {
         private final String name;
         private final Map<MethodId, Method<V>> methods;
         private boolean closed = false;
 
-        private OpenKnishWrappedObject(String name) {
+        private KnishWrappedObjectConstructor(String name) {
             this.name = name;
             this.methods = new HashMap<>();
         }
 
-        public OpenKnishWrappedObject<V> getter(String field, Method<V> method) {
+        public KnishWrappedObjectConstructor<V> getter(String field, Method<V> method) {
             if (closed) {
                 throw new UnsupportedOperationException("The class is already closed.");
             }
@@ -54,7 +54,7 @@ public class KnishWrappedObject<V> implements KnishObject {
             return this;
         }
 
-        public OpenKnishWrappedObject<V> method(String field, int arity, Method<V> method) {
+        public KnishWrappedObjectConstructor<V> method(String field, int arity, Method<V> method) {
             if (closed) {
                 throw new UnsupportedOperationException("The class is already closed.");
             }
