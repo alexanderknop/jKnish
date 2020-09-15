@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TypeCheckerTest {
@@ -35,6 +36,56 @@ class TypeCheckerTest {
                         )
                 ),
                 "[line 1] Error: An object does not implement print.");
+    }
+
+    @Test
+    void testClassStaticMethods() {
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                ), emptyList(), emptyList()
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Variable(4, "Test"),
+                                        "test"
+                                )
+                        )
+                )
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(), emptyList()
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Variable(4, "Test"),
+                                        "test"
+                                )
+                        )
+                ),
+                "[line 4] Error: An object does not implement test."
+        );
     }
 
     @Test

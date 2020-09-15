@@ -8,6 +8,7 @@ import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TypeChecker {
     public static void check(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
@@ -80,7 +81,7 @@ public class TypeChecker {
                 }
             }
 
-            throw new UnsupportedOperationException("The variable " + variable + " is not defined.");
+            return define(variable);
         }
 
         private SimpleType.Variable define(String name) {
@@ -217,8 +218,42 @@ public class TypeChecker {
 
         @Override
         public Void visitClassStatement(Statement.Class klass) {
+            SimpleType classVariable = variableType(klass.name);
+
+            Map<MethodId, SimpleType.Method> staticMethods = new HashMap<>();
+            for (Statement.Method method : klass.staticMethods) {
+                MethodId methodId = new MethodId(method.name,
+                        method.argumentsNames == null ? null : method.argumentsNames.size());
+                staticMethods.put(methodId,
+                        methodType(method.argumentsNames, method.body));
+            }
+
+            SimpleType classImplementation = new SimpleType.Class(staticMethods);
             // todo
+            constrainer.constrain(classImplementation, classVariable,
+                    new TypeErrorMessage(reporter, klass.line,
+                            "Incompatible constraints on " + klass.name + "."));
+
             return null;
+        }
+
+        private SimpleType.Method methodType(List<String> argumentsNames, List<Statement> body) {
+            beginScope();
+            List<SimpleType> argumentTypes = argumentsNames ==
+                    null ? null :
+                    argumentsNames.stream()
+                            .map(this::define)
+                            .collect(Collectors.toList());
+            beginScope();
+
+            for (Statement statement : body) {
+                checkStatement(statement);
+            }
+
+            endScope();
+
+            endScope();
+            return new SimpleType.Method(argumentTypes, new SimpleType.Variable());
         }
     }
 }

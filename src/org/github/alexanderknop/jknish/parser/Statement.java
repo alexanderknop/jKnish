@@ -257,7 +257,7 @@ public abstract class Statement {
     }
 
     public static class Method {
-        private final int line;
+        public final int line;
         public final String name;
         public final List<String> argumentsNames;
         public final List<Statement> body;
