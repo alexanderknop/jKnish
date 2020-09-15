@@ -5,13 +5,11 @@ import org.github.alexanderknop.jknish.parser.Statement;
 
 class KnishClassInstance extends AbstractKnishObject {
     private final Statement.Class klass;
-    private final Interpreter.InterpreterVisitor evaluator;
 
     KnishClassInstance(Statement.Class klass,
                        Environment enclosing,
                        Interpreter.InterpreterVisitor evaluator) {
         this.klass = klass;
-        this.evaluator = evaluator;
 
         for (var method : klass.staticMethods) {
             Integer arity = null;
@@ -23,6 +21,7 @@ class KnishClassInstance extends AbstractKnishObject {
                     MethodUtils.compileMethod(method, enclosing, evaluator));
         }
 
+        // todo: add real constructors
         register("new", 0,
                 arguments -> new KnishInstance(klass, enclosing, evaluator));
     }

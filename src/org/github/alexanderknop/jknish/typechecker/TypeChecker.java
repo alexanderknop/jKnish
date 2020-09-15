@@ -227,9 +227,9 @@ public class TypeChecker {
                 staticMethods.put(methodId,
                         methodType(method.argumentsNames, method.body));
             }
+            // todo: add support of constructors
 
             SimpleType classImplementation = new SimpleType.Class(staticMethods);
-            // todo
             constrainer.constrain(classImplementation, classVariable,
                     new TypeErrorMessage(reporter, klass.line,
                             "Incompatible constraints on " + klass.name + "."));
