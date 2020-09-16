@@ -1,0 +1,9 @@
+class Adder {
+    static add(x, y) {
+        System.print(x + y);
+    }
+}
+Adder.add("hello ", "world");
+// error: [line 9] Error: The value of 0th argument has incompatible type.
+// error: [line 9] Error: The value of 1th argument has incompatible type.
+Adder.add(1, 1);
