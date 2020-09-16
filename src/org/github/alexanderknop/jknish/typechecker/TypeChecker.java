@@ -23,7 +23,7 @@ public class TypeChecker {
     private TypeChecker() {
     }
 
-    private static class TypeCheckerVisitor implements Statement.Visitor<Void>, Expression.Visitor<SimpleType> {
+    private static class TypeCheckerVisitor implements Statement.Visitor<SimpleType>, Expression.Visitor<SimpleType> {
         private final KnishCore core;
         private final Constrainer constrainer = new Constrainer();
 
@@ -65,8 +65,8 @@ public class TypeChecker {
             return expression.accept(this);
         }
 
-        private void checkStatement(Statement statement) {
-            statement.accept(this);
+        private SimpleType checkStatement(Statement statement) {
+            return statement.accept(this);
         }
 
         private void beginScope() {
@@ -127,7 +127,8 @@ public class TypeChecker {
             SimpleType.Class klass = new SimpleType.Class(Map.of(methodId,
                     new SimpleType.Method(arguments, value)));
 
-            constrainer.constrain(expressionType(call.object), klass,
+            SimpleType objectType = expressionType(call.object);
+            constrainer.constrain(objectType, klass,
                     new TypeErrorMessage(reporter, call.line,
                             "An object does not implement " + methodId + "."));
 
@@ -177,53 +178,66 @@ public class TypeChecker {
         }
 
         @Override
-        public Void visitExpressionStatement(Statement.Expression expression) {
+        public SimpleType visitExpressionStatement(Statement.Expression expression) {
             expressionType(expression.expression);
-            return null;
+            return SimpleType.bottom();
         }
 
         @Override
-        public Void visitorIfStatement(Statement.If anIf) {
+        public SimpleType visitorIfStatement(Statement.If anIf) {
             constrainer.constrain(expressionType(anIf.condition), booleanType,
                     new TypeErrorMessage(reporter, anIf.line,
                             "If conditions must have type Boolean."));
-            checkStatement(anIf.thenBranch);
-            checkStatement(anIf.elseBranch);
-            return null;
+            SimpleType thenReturnType = checkStatement(anIf.thenBranch);
+            SimpleType elseReturnType = checkStatement(anIf.elseBranch);
+            SimpleType returnType = new SimpleType.Variable();
+            // the following error statements are impossible
+            constrainer.constrain(thenReturnType, returnType,
+                    new TypeErrorMessage(reporter, anIf.line, ""));
+            constrainer.constrain(elseReturnType, returnType,
+                    new TypeErrorMessage(reporter, anIf.line, ""));
+            return returnType;
         }
 
         @Override
-        public Void visitWhileStatement(Statement.While aWhile) {
+        public SimpleType visitWhileStatement(Statement.While aWhile) {
             constrainer.constrain(expressionType(aWhile.condition), booleanType,
                     new TypeErrorMessage(reporter, aWhile.line,
                             "While conditions must have type Boolean."));
-            checkStatement(aWhile.body);
-            return null;
+            return checkStatement(aWhile.body);
         }
 
         @Override
-        public Void visitVarStatement(Statement.Var var) {
+        public SimpleType visitVarStatement(Statement.Var var) {
             SimpleType variableType = define(var.name);
             if (var.initializer != null) {
                 constrainer.constrain(expressionType(var.initializer), variableType,
                         // this error is impossible since we create a fresh variable
                         new TypeErrorMessage(reporter, var.line, ""));
             }
-            return null;
+            return SimpleType.bottom();
         }
 
         @Override
-        public Void visitBlockStatement(Statement.Block block) {
+        public SimpleType visitBlockStatement(Statement.Block block) {
             beginScope();
-            for (Statement statement : block.statements) {
-                checkStatement(statement);
-            }
+            SimpleType returnType = checkStatementsList(block.statements);
             endScope();
-            return null;
+            return returnType;
+        }
+
+        private SimpleType checkStatementsList(List<Statement> statements) {
+            SimpleType returnType = new SimpleType.Variable();
+            for (Statement statement : statements) {
+                constrainer.constrain(checkStatement(statement), returnType,
+                        new TypeErrorMessage(reporter, statement.line,
+                                "Incompatible return types"));
+            }
+            return returnType;
         }
 
         @Override
-        public Void visitClassStatement(Statement.Class klass) {
+        public SimpleType visitClassStatement(Statement.Class klass) {
 
             SimpleType.Variable instanceType = new SimpleType.Variable();
             constrainer.constrain(new SimpleType.Class(getInstanceType(instanceType, klass.methods)),
@@ -243,11 +257,19 @@ public class TypeChecker {
                     new TypeErrorMessage(reporter, klass.line,
                             "Incompatible constraints on " + klass.name + " metaclass."));
 
-            return null;
+            return SimpleType.bottom();
+        }
+
+        @Override
+        public SimpleType visitReturnStatement(Statement.Return aReturn) {
+            if (aReturn.value != null) {
+                return expressionType(aReturn.value);
+            }
+            return SimpleType.bottom();
         }
 
         private Map<MethodId, SimpleType.Method> getInstanceType(SimpleType instanceType,
-                List<Statement.Method> methodStatements) {
+                                                                 List<Statement.Method> methodStatements) {
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
             for (Statement.Method method : methodStatements) {
                 methods.put(new MethodId(method.name, arityFromArgumentsList(method.argumentsNames)),
@@ -257,7 +279,7 @@ public class TypeChecker {
         }
 
         private SimpleType.Method methodType(SimpleType instanceType,
-                List<String> argumentsNames, List<Statement> body) {
+                                             List<String> argumentsNames, List<Statement> body) {
             beginScope();
             List<SimpleType> argumentTypes = argumentsNames ==
                     null ? null :
@@ -266,12 +288,10 @@ public class TypeChecker {
                             .collect(Collectors.toList());
             define("this", instanceType);
 
-            for (Statement statement : body) {
-                checkStatement(statement);
-            }
+            SimpleType returnType = checkStatementsList(body);
 
             endScope();
-            return new SimpleType.Method(argumentTypes, new SimpleType.Variable());
+            return new SimpleType.Method(argumentTypes, returnType);
         }
     }
 }

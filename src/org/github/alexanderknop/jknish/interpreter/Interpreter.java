@@ -221,5 +221,15 @@ public class Interpreter {
                     new ClassInstance(klass, environment, this));
             return null;
         }
+
+        @Override
+        public Void visitReturnStatement(Statement.Return aReturn) {
+            KnishObject value = KnishCore.nil();
+            if (aReturn.value != null) {
+                value = evaluate(aReturn.value);
+            }
+
+            throw new Return(value);
+        }
     }
 }

@@ -22,6 +22,8 @@ public abstract class Statement {
         N visitBlockStatement(Block block);
 
         N visitClassStatement(Class klass);
+
+        N visitReturnStatement(Return aReturn);
     }
 
     public static class Expression extends Statement {
@@ -48,7 +50,8 @@ public abstract class Statement {
         @Override
         public String toString() {
             return "Expression{" +
-                    "expression=" + expression +
+                    "line=" + line +
+                    ", expression=" + expression +
                     '}';
         }
 
@@ -89,7 +92,8 @@ public abstract class Statement {
         @Override
         public String toString() {
             return "If{" +
-                    "condition=" + condition +
+                    "line=" + line +
+                    ", condition=" + condition +
                     ", thenBranch=" + thenBranch +
                     ", elseBranch=" + elseBranch +
                     '}';
@@ -129,7 +133,8 @@ public abstract class Statement {
         @Override
         public String toString() {
             return "While{" +
-                    "condition=" + condition +
+                    "line=" + line +
+                    ", condition=" + condition +
                     ", body=" + body +
                     '}';
         }
@@ -168,7 +173,8 @@ public abstract class Statement {
         @Override
         public String toString() {
             return "Var{" +
-                    "name='" + name + '\'' +
+                    "line=" + line +
+                    ", name='" + name + '\'' +
                     ", initializer=" + initializer +
                     '}';
         }
@@ -176,6 +182,41 @@ public abstract class Statement {
         @Override
         public <N> N accept(Visitor<N> visitor) {
             return visitor.visitVarStatement(this);
+        }
+    }
+
+    public static class Return extends Statement {
+        public final org.github.alexanderknop.jknish.parser.Expression value;
+
+        public Return(int line, org.github.alexanderknop.jknish.parser.Expression value) {
+            super(line);
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Return aReturn = (Return) o;
+            return Objects.equals(value, aReturn.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
+        }
+
+        @Override
+        public String toString() {
+            return "Return{" +
+                    "line=" + line +
+                    ", value=" + value +
+                    '}';
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitReturnStatement(this);
         }
     }
 
@@ -229,11 +270,6 @@ public abstract class Statement {
         }
 
         @Override
-        public <N> N accept(Visitor<N> visitor) {
-            return visitor.visitClassStatement(this);
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -250,9 +286,17 @@ public abstract class Statement {
         @Override
         public String toString() {
             return "Class{" +
-                    "methods=" + methods +
+                    "line=" + line +
+                    ", methods=" + methods +
+                    ", constructors=" + constructors +
+                    ", staticMethods=" + staticMethods +
                     ", name='" + name + '\'' +
                     '}';
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitClassStatement(this);
         }
     }
 

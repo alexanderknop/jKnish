@@ -52,15 +52,13 @@ class Constrainer {
         }
     }
 
-    void constrain(SimpleType.Method left, SimpleType.Method right, TypeErrorMessage message) {
-        if (left.arguments == null) {
-            return;
-        }
-
-        for (int i = 0; i < left.arguments.size(); i++) {
-            constrain(right.arguments.get(i), left.arguments.get(i), message);
-        }
+    private void constrain(SimpleType.Method left, SimpleType.Method right, TypeErrorMessage message) {
         constrain(left.value, right.value, message);
+        if (left.arguments != null) {
+            for (int i = 0; i < left.arguments.size(); i++) {
+                constrain(right.arguments.get(i), left.arguments.get(i), message);
+            }
+        }
     }
 
     private static class Inequality {

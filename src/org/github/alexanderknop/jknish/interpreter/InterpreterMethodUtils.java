@@ -1,6 +1,7 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
+import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.parser.Statement;
 
@@ -23,8 +24,12 @@ public class InterpreterMethodUtils {
                         );
             }
             withParameters.define("this", instance);
-            evaluator.interpret(withParameters, method.body);
-            return null;
+            try {
+                evaluator.interpret(withParameters, method.body);
+            } catch (Return aReturn) {
+                return aReturn.value;
+            }
+            return KnishCore.nil();
         };
     }
 }

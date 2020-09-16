@@ -7,6 +7,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 class SimpleType {
+    public static Top top() {
+        return Top.TOP;
+    }
+
+    public static SimpleType bottom() {
+        return Bottom.BOTTOM;
+    }
+
     static class Variable extends SimpleType {
         public final Set<SimpleType> upperBound;
         public final Set<SimpleType> lowerBound;
@@ -33,6 +41,16 @@ class SimpleType {
         public Class(Map<MethodId, Method> methods) {
             this.methods = methods;
         }
+    }
+
+    static class Top extends SimpleType {
+        private static final Top TOP = new Top();
+        private Top() {}
+    }
+
+    static class Bottom extends SimpleType {
+        private static final Bottom BOTTOM = new Bottom();
+        private Bottom() {}
     }
 
     static class Method {
