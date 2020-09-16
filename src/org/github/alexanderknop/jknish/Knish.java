@@ -20,7 +20,7 @@ public class Knish {
     public static void run(
             String source,
             Writer output,
-            ErrorReporter reporter) {
+            KnishErrorReporter reporter) {
 
         KnishCore core = new KnishCore(output);
 
@@ -43,7 +43,7 @@ public class Knish {
     }
 
     private static void runFile(String path) throws IOException {
-        ErrorReporter reporter = new ErrorReporter(new OutputStreamWriter(System.err));
+        KnishErrorReporter reporter = new KnishErrorReporter(new OutputStreamWriter(System.err));
 
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()),

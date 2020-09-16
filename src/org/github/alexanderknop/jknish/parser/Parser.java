@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.parser;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.scanner.Token;
 import org.github.alexanderknop.jknish.scanner.TokenType;
 
@@ -10,17 +10,17 @@ import java.util.List;
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
 
 public class Parser {
-    public static List<Statement> parse(List<Token> tokens, ErrorReporter reporter) {
+    public static List<Statement> parse(List<Token> tokens, KnishErrorReporter reporter) {
         Parser parser = new Parser(tokens, reporter);
         return parser.parse();
     }
 
     private final List<Token> tokens;
-    private final ErrorReporter reporter;
+    private final KnishErrorReporter reporter;
 
     private int current = 0;
 
-    private Parser(List<Token> tokens, ErrorReporter reporter) {
+    private Parser(List<Token> tokens, KnishErrorReporter reporter) {
         this.tokens = tokens;
         this.reporter = reporter;
     }

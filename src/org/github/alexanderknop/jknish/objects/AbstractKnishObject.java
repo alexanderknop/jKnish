@@ -24,7 +24,7 @@ public abstract class AbstractKnishObject implements KnishObject {
         MethodId methodId = new MethodId(methodName, arity);
         Method method = methods.get(methodId);
         if (method == null) {
-            throw new KnishMethodNotFoundException(getClassName(), methodId);
+            throw new MethodNotFoundException(getClassName(), methodId);
         }
         return method.call(arguments);
     }

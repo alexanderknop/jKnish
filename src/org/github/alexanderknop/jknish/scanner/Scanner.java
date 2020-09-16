@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.scanner;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,14 +10,14 @@ import java.util.Map;
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
 
 public class Scanner {
-    public static List<Token> tokens(String source, ErrorReporter reporter) {
+    public static List<Token> tokens(String source, KnishErrorReporter reporter) {
         Scanner scanner = new Scanner(reporter, source);
 
         return scanner.tokens();
     }
 
     private final List<Token> tokenList = new ArrayList<>();
-    private final ErrorReporter reporter;
+    private final KnishErrorReporter reporter;
     private final String source;
 
     private int start = 0;
@@ -25,7 +25,7 @@ public class Scanner {
     private int line = 1;
 
 
-    private Scanner(ErrorReporter reporter, String source) {
+    private Scanner(KnishErrorReporter reporter, String source) {
         this.reporter = reporter;
         this.source = source;
     }

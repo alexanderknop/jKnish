@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.interpreter;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.LogicalOperator;
@@ -1031,7 +1031,7 @@ class InterpreterTest {
 
     void testCorrect(List<Statement> statements, String expectedOutput) {
         StringWriter errorWriter = new StringWriter();
-        ErrorReporter reporter = new ErrorReporter(errorWriter);
+        KnishErrorReporter reporter = new KnishErrorReporter(errorWriter);
 
         StringWriter outputWriter = new StringWriter();
         KnishCore core = new KnishCore(outputWriter);
@@ -1050,7 +1050,7 @@ class InterpreterTest {
 
     void testIncorrect(List<Statement> statements, String expectedError) {
         StringWriter error = new StringWriter();
-        ErrorReporter reporter = new ErrorReporter(error);
+        KnishErrorReporter reporter = new KnishErrorReporter(error);
         KnishCore core = new KnishCore(new StringWriter());
 
         Interpreter.interpret(core, statements, reporter);

@@ -1,13 +1,13 @@
 package org.github.alexanderknop.jknish.typechecker;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 
 class TypeErrorMessage {
-    private final ErrorReporter reporter;
+    private final KnishErrorReporter reporter;
     private final int line;
     private final String message;
 
-    TypeErrorMessage(ErrorReporter reporter, int line, String message) {
+    TypeErrorMessage(KnishErrorReporter reporter, int line, String message) {
         this.reporter = reporter;
         this.line = line;
         this.message = message;

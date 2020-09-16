@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.typechecker;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.Statement;
@@ -711,7 +711,7 @@ class TypeCheckerTest {
 
     private void testCorrect(List<Statement> statements) {
         Writer errors = new StringWriter();
-        ErrorReporter reporter = new ErrorReporter(errors);
+        KnishErrorReporter reporter = new KnishErrorReporter(errors);
         TypeChecker.check(new KnishCore(new StringWriter()), statements, reporter);
         assertFalse(reporter.hadError(), "The script is supposed to be correct:\n" +
                 errors);
@@ -719,7 +719,7 @@ class TypeCheckerTest {
 
     private void testIncorrect(List<Statement> statements, String expectedMessage) {
         Writer errors = new StringWriter();
-        ErrorReporter reporter = new ErrorReporter(errors);
+        KnishErrorReporter reporter = new KnishErrorReporter(errors);
         TypeChecker.check(new KnishCore(new StringWriter()), statements, reporter);
         assertTrue(reporter.hadError(), "The script is supposed to be incorrect");
         assertEquals(expectedMessage.strip(), errors.toString().strip(),

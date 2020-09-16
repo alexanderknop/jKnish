@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.typechecker;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.objects.KnishModule;
 import org.github.alexanderknop.jknish.parser.Expression;
@@ -14,7 +14,7 @@ import static java.util.Collections.emptyList;
 import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public class TypeChecker {
-    public static void check(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
+    public static void check(KnishCore core, List<Statement> statements, KnishErrorReporter reporter) {
         TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, statements, reporter);
 
         typeCheckerVisitor.check();
@@ -32,11 +32,11 @@ public class TypeChecker {
         private SimpleType stringType;
 
         private final List<Statement> statements;
-        private final ErrorReporter reporter;
+        private final KnishErrorReporter reporter;
 
         private final Stack<HashMap<String, SimpleType>> scopes = new Stack<>();
 
-        private TypeCheckerVisitor(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
+        private TypeCheckerVisitor(KnishCore core, List<Statement> statements, KnishErrorReporter reporter) {
             this.core = core;
             this.statements = statements;
             this.reporter = reporter;

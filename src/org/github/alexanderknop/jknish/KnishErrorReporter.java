@@ -6,11 +6,11 @@ import org.github.alexanderknop.jknish.scanner.TokenType;
 import java.io.IOException;
 import java.io.Writer;
 
-public final class ErrorReporter {
+public final class KnishErrorReporter {
     private boolean errors;
     private final Writer writer;
 
-    public ErrorReporter(Writer writer) {
+    public KnishErrorReporter(Writer writer) {
         this.writer = writer;
     }
 

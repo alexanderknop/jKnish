@@ -24,7 +24,7 @@ public class KnishWrappedObject<V> implements KnishObject {
         MethodId methodId = new MethodId(methodName, arity);
         Method<V> method = methods.get(methodId);
         if (method == null) {
-            throw new KnishMethodNotFoundException(name, methodId);
+            throw new MethodNotFoundException(name, methodId);
         }
         return method.call(value, arguments);
     }

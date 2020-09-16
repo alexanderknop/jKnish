@@ -27,7 +27,7 @@ class Environment {
             return enclosing.get(line, name);
         }
 
-        throw new KnishRuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
+        throw new RuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
     }
 
     public void define(String name, KnishObject value) {
@@ -44,6 +44,6 @@ class Environment {
             return enclosing.set(line, name, value);
         }
 
-        throw new KnishRuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
+        throw new RuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
     }
 }

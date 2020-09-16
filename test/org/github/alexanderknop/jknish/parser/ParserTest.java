@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.parser;
 
-import org.github.alexanderknop.jknish.ErrorReporter;
+import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.scanner.Token;
 import org.github.alexanderknop.jknish.scanner.TokenBuilder;
 import org.junit.jupiter.api.Test;
@@ -413,7 +413,7 @@ class ParserTest {
 
     private void testCorrect(List<Statement> expected, List<Token> tokens) {
         StringWriter writer = new StringWriter();
-        ErrorReporter reporter = new ErrorReporter(writer);
+        KnishErrorReporter reporter = new KnishErrorReporter(writer);
 
         List<Statement> result = Parser.parse(tokens, reporter);
         assertFalse(reporter.hadError(),
@@ -423,7 +423,7 @@ class ParserTest {
 
     private void testIncorrect(List<Token> tokens, String errorMessage) {
         StringWriter writer = new StringWriter();
-        ErrorReporter reporter = new ErrorReporter(writer);
+        KnishErrorReporter reporter = new KnishErrorReporter(writer);
         Parser.parse(tokens, reporter);
 
         assertTrue(reporter.hadError(),
