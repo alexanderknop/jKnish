@@ -1,5 +1,7 @@
 package org.github.alexanderknop.jknish.objects;
 
+import org.github.alexanderknop.jknish.parser.MethodId;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

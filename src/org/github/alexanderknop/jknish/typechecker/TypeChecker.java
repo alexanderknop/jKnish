@@ -3,12 +3,15 @@ package org.github.alexanderknop.jknish.typechecker;
 import org.github.alexanderknop.jknish.ErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.objects.KnishModule;
-import org.github.alexanderknop.jknish.objects.MethodId;
 import org.github.alexanderknop.jknish.parser.Expression;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
+import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public class TypeChecker {
     public static void check(KnishCore core, List<Statement> statements, ErrorReporter reporter) {
@@ -218,23 +221,36 @@ public class TypeChecker {
 
         @Override
         public Void visitClassStatement(Statement.Class klass) {
-            SimpleType classVariable = variableType(klass.name);
 
-            Map<MethodId, SimpleType.Method> staticMethods = new HashMap<>();
-            for (Statement.Method method : klass.staticMethods) {
-                MethodId methodId = new MethodId(method.name,
-                        method.argumentsNames == null ? null : method.argumentsNames.size());
-                staticMethods.put(methodId,
-                        methodType(method.argumentsNames, method.body));
-            }
-            // todo: add support of constructors
-
-            SimpleType classImplementation = new SimpleType.Class(staticMethods);
-            constrainer.constrain(classImplementation, classVariable,
+            SimpleType.Variable instanceType = new SimpleType.Variable();
+            constrainer.constrain(new SimpleType.Class(getInstanceType(klass.methods)),
+                    instanceType,
                     new TypeErrorMessage(reporter, klass.line,
                             "Incompatible constraints on " + klass.name + "."));
 
+
+            SimpleType classType = variableType(klass.name);
+            Map<MethodId, SimpleType.Method> staticMethods = getInstanceType(klass.staticMethods);
+            // todo: add support of constructors
+            staticMethods.put(new MethodId("new", 0),
+                    new SimpleType.Method(emptyList(), instanceType));
+
+            constrainer.constrain(new SimpleType.Class(staticMethods),
+                    classType,
+                    new TypeErrorMessage(reporter, klass.line,
+                            "Incompatible constraints on " + klass.name + " metaclass."));
+
             return null;
+        }
+
+        private Map<MethodId, SimpleType.Method> getInstanceType(List<Statement.Method> methodStatements) {
+            Map<MethodId, SimpleType.Method> methods = new HashMap<>();
+            for (Statement.Method method : methodStatements) {
+                MethodId methodId = new MethodId(method.name, arityFromArgumentsList(method.argumentsNames));
+                methods.put(methodId,
+                        methodType(method.argumentsNames, method.body));
+            }
+            return methods;
         }
 
         private SimpleType.Method methodType(List<String> argumentsNames, List<Statement> body) {

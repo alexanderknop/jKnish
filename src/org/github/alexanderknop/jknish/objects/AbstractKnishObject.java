@@ -1,8 +1,12 @@
 package org.github.alexanderknop.jknish.objects;
 
+import org.github.alexanderknop.jknish.parser.MethodId;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public abstract class AbstractKnishObject implements KnishObject {
 
@@ -16,7 +20,7 @@ public abstract class AbstractKnishObject implements KnishObject {
 
     @Override
     public KnishObject call(String methodName, List<KnishObject> arguments) {
-        Integer arity = (arguments == null) ? null : arguments.size();
+        Integer arity = arityFromArgumentsList(arguments);
         MethodId methodId = new MethodId(methodName, arity);
         Method method = methods.get(methodId);
         if (method == null) {

@@ -5,7 +5,7 @@ import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.stream.IntStream;
 
-public class MethodUtils {
+public class InterpreterMethodUtils {
     static AbstractKnishObject.Method compileMethod(Statement.Method method,
                                                     Environment enclosing,
                                                     Interpreter.InterpreterVisitor evaluator) {

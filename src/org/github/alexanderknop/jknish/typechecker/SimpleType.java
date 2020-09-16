@@ -1,7 +1,7 @@
 package org.github.alexanderknop.jknish.typechecker;
 
 import org.github.alexanderknop.jknish.objects.KnishModule;
-import org.github.alexanderknop.jknish.objects.MethodId;
+import org.github.alexanderknop.jknish.parser.MethodId;
 
 import java.util.*;
 import java.util.stream.Collectors;

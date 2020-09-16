@@ -1,8 +1,17 @@
-package org.github.alexanderknop.jknish.objects;
+package org.github.alexanderknop.jknish.parser;
 
+import java.util.List;
 import java.util.Objects;
 
 public final class MethodId {
+    public static <V> Integer arityFromArgumentsList(List<V> arguments) {
+        if (arguments == null) {
+            return null;
+        } else {
+            return arguments.size();
+        }
+    }
+
     public final String name;
     public final Integer arity;
 

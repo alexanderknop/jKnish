@@ -18,7 +18,7 @@ class KnishClassInstance extends AbstractKnishObject {
             }
 
             register(method.name, arity,
-                    MethodUtils.compileMethod(method, enclosing, evaluator));
+                    InterpreterMethodUtils.compileMethod(method, enclosing, evaluator));
         }
 
         // todo: add real constructors

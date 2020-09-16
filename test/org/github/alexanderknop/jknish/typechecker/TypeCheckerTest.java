@@ -89,6 +89,140 @@ class TypeCheckerTest {
     }
 
     @Test
+    void testClassMethods() {
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Call(4,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test"
+                                )
+                        )
+                )
+        );
+
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test",
+                                                List.of("x"),
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "x"),
+                                                                        "+",
+                                                                        new Expression.Literal(3,
+                                                                                1L)
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Call(4,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test",
+                                        new Expression.Literal(4, 1L)
+                                )
+                        )
+                )
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test",
+                                                List.of("x"),
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "x"),
+                                                                        "+",
+                                                                        new Expression.Literal(3,
+                                                                                1L)
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Call(4,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test",
+                                        new Expression.Literal(4, "Hello")
+                                )
+                        )
+                ),
+                "[line 4] Error: The value of 0th argument has incompatible type."
+        );
+
+        testIncorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(), emptyList()
+                        ),
+                        new Statement.Expression(4,
+                                new Expression.Call(4,
+                                        new Expression.Call(4,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test"
+                                )
+                        )
+                ),
+                "[line 4] Error: An object does not implement test."
+        );
+    }
+
+    @Test
     void testAddition() {
         testCorrect(List.of(
                 new Statement.Expression(1,
