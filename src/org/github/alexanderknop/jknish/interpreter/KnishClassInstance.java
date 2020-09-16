@@ -3,6 +3,8 @@ package org.github.alexanderknop.jknish.interpreter;
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
 import org.github.alexanderknop.jknish.parser.Statement;
 
+import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
+
 class KnishClassInstance extends AbstractKnishObject {
     private final Statement.Class klass;
 
@@ -12,13 +14,8 @@ class KnishClassInstance extends AbstractKnishObject {
         this.klass = klass;
 
         for (var method : klass.staticMethods) {
-            Integer arity = null;
-            if (method.argumentsNames != null) {
-                arity = method.argumentsNames.size();
-            }
-
-            register(method.name, arity,
-                    InterpreterMethodUtils.compileMethod(method, enclosing, evaluator));
+            register(method.name, arityFromArgumentsList(method.argumentsNames),
+                    InterpreterMethodUtils.compileMethod(this, method, enclosing, evaluator));
         }
 
         // todo: add real constructors

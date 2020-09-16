@@ -87,10 +87,13 @@ public class TypeChecker {
             return define(variable);
         }
 
-        private SimpleType.Variable define(String name) {
-            SimpleType.Variable variable = new SimpleType.Variable();
-            scopes.peek().put(name, variable);
-            return variable;
+        private SimpleType define(String name) {
+            return define(name, new SimpleType.Variable());
+        }
+
+        private SimpleType define(String name, SimpleType type) {
+            scopes.peek().put(name, type);
+            return type;
         }
 
         @Override
@@ -200,9 +203,9 @@ public class TypeChecker {
 
         @Override
         public Void visitVarStatement(Statement.Var var) {
-            SimpleType.Variable variable = define(var.name);
+            SimpleType variableType = define(var.name);
             if (var.initializer != null) {
-                constrainer.constrain(expressionType(var.initializer), variable,
+                constrainer.constrain(expressionType(var.initializer), variableType,
                         // this error is impossible since we create a fresh variable
                         new TypeErrorMessage(reporter, var.line, ""));
             }
@@ -223,14 +226,14 @@ public class TypeChecker {
         public Void visitClassStatement(Statement.Class klass) {
 
             SimpleType.Variable instanceType = new SimpleType.Variable();
-            constrainer.constrain(new SimpleType.Class(getInstanceType(klass.methods)),
+            constrainer.constrain(new SimpleType.Class(getInstanceType(instanceType, klass.methods)),
                     instanceType,
                     new TypeErrorMessage(reporter, klass.line,
                             "Incompatible constraints on " + klass.name + "."));
 
 
             SimpleType classType = variableType(klass.name);
-            Map<MethodId, SimpleType.Method> staticMethods = getInstanceType(klass.staticMethods);
+            Map<MethodId, SimpleType.Method> staticMethods = getInstanceType(classType, klass.staticMethods);
             // todo: add support of constructors
             staticMethods.put(new MethodId("new", 0),
                     new SimpleType.Method(emptyList(), instanceType));
@@ -243,30 +246,29 @@ public class TypeChecker {
             return null;
         }
 
-        private Map<MethodId, SimpleType.Method> getInstanceType(List<Statement.Method> methodStatements) {
+        private Map<MethodId, SimpleType.Method> getInstanceType(SimpleType instanceType,
+                List<Statement.Method> methodStatements) {
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
             for (Statement.Method method : methodStatements) {
-                MethodId methodId = new MethodId(method.name, arityFromArgumentsList(method.argumentsNames));
-                methods.put(methodId,
-                        methodType(method.argumentsNames, method.body));
+                methods.put(new MethodId(method.name, arityFromArgumentsList(method.argumentsNames)),
+                        methodType(instanceType, method.argumentsNames, method.body));
             }
             return methods;
         }
 
-        private SimpleType.Method methodType(List<String> argumentsNames, List<Statement> body) {
+        private SimpleType.Method methodType(SimpleType instanceType,
+                List<String> argumentsNames, List<Statement> body) {
             beginScope();
             List<SimpleType> argumentTypes = argumentsNames ==
                     null ? null :
                     argumentsNames.stream()
                             .map(this::define)
                             .collect(Collectors.toList());
-            beginScope();
+            define("this", instanceType);
 
             for (Statement statement : body) {
                 checkStatement(statement);
             }
-
-            endScope();
 
             endScope();
             return new SimpleType.Method(argumentTypes, new SimpleType.Variable());

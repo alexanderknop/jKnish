@@ -170,6 +170,159 @@ class InterpreterTest {
     }
 
     @Test
+    void testThis() {
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test1",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        ),
+                                        new Statement.Method(4,
+                                                "test2",
+                                                emptyList(),
+                                                List.of(
+                                                        new Statement.Expression(5,
+                                                                new Expression.Call(5,
+                                                                        new Expression.Variable(5,
+                                                                                "this"),
+                                                                        "test1"
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(6,
+                                new Expression.Call(6,
+                                        new Expression.Call(6,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test2",
+                                        emptyList()
+                                )
+                        )
+                ),
+                "Hello world!"
+        );
+
+        testCorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test1",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        ),
+                                        new Statement.Method(4,
+                                                "test2",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(5,
+                                                                new Expression.Call(5,
+                                                                        new Expression.Variable(5,
+                                                                                "this"),
+                                                                        "test1"
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(6,
+                                new Expression.Call(6,
+                                        new Expression.Call(6,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test2"
+                                )
+                        )
+                ),
+                "Hello world!"
+        );
+        testIncorrect(
+                List.of(
+                        new Statement.Class(1,
+                                "Test",
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(2,
+                                                "test1",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(3,
+                                                                new Expression.Call(3,
+                                                                        new Expression.Variable(3,
+                                                                                "System"),
+                                                                        "print",
+                                                                        new Expression.Literal(3,
+                                                                                "Hello world!")
+                                                                )
+                                                        )
+                                                )
+                                        ),
+                                        new Statement.Method(4,
+                                                "test2",
+                                                null,
+                                                List.of(
+                                                        new Statement.Expression(5,
+                                                                new Expression.Call(5,
+                                                                        new Expression.Variable(5,
+                                                                                "this"),
+                                                                        "test"
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        new Statement.Expression(6,
+                                new Expression.Call(6,
+                                        new Expression.Call(6,
+                                                new Expression.Variable(4, "Test"),
+                                                "new",
+                                                emptyList()
+                                        ),
+                                        "test2"
+                                )
+                        )
+                ),
+                "[line 5] Error: Test does not implement 'test'."
+        );
+    }
+
+    @Test
     void testAddition() {
         testCorrect(
                 List.of(

@@ -1,12 +1,14 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
+import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.stream.IntStream;
 
 public class InterpreterMethodUtils {
-    static AbstractKnishObject.Method compileMethod(Statement.Method method,
+    static AbstractKnishObject.Method compileMethod(KnishObject instance,
+                                                    Statement.Method method,
                                                     Environment enclosing,
                                                     Interpreter.InterpreterVisitor evaluator) {
         return arguments -> {
@@ -20,6 +22,7 @@ public class InterpreterMethodUtils {
                                         arguments.get(i))
                         );
             }
+            withParameters.define("this", instance);
             evaluator.interpret(withParameters, method.body);
             return null;
         };
