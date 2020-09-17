@@ -14,9 +14,11 @@ import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ResolverTest {
+
+    public static final int SYSTEM_VARIABLE = 0;
+
     @Test
     void testVar() {
-        int systemVariable = 0;
         int xVariable = 1;
         int x2Variable = 2;
         testCorrect(
@@ -39,7 +41,7 @@ class ResolverTest {
                                 emptyMap()
                         ),
                         // todo: fix the problem with multiple elements defined globally
-                        Map.of(systemVariable, "System")
+                        Map.of(SYSTEM_VARIABLE, "System")
                 )
         );
 
@@ -63,7 +65,7 @@ class ResolverTest {
                                 Map.of(xVariable, "x"),
                                 emptyMap()
                         ),
-                        Map.of(systemVariable, "System")
+                        Map.of(SYSTEM_VARIABLE, "System")
                 )
         );
 
@@ -126,7 +128,74 @@ class ResolverTest {
                                 Map.of(xVariable, "x"),
                                 emptyMap()
                         ),
-                        Map.of(systemVariable, "System")
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
+        );
+    }
+
+    @Test
+    void testIf() {
+        testCorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.If(1,
+                                        new Expression.Literal(1, 1L),
+                                        new Statement.Expression(2,
+                                                new Expression.Literal(2, 1L)
+                                        ),
+                                        null
+                                )
+                        )
+                ),
+                new ResolvedScript(
+                        new ResolvedStatement.Block(0,
+                                List.of(
+                                        new ResolvedStatement.If(1,
+                                                new ResolvedExpression.Literal(1, 1L),
+                                                new ResolvedStatement.Expression(2,
+                                                        new ResolvedExpression.Literal(1, 1L)
+                                                ),
+                                                null
+                                        )
+                                ),
+                                emptyMap(),
+                                emptyMap()
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
+        );
+    }
+
+    @Test
+    void testCall() {
+        testCorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Expression(1,
+                                        new Expression.Call(1,
+                                                new Expression.Variable(1, "System"),
+                                                "print",
+                                                new Expression.Literal(1, 1L)
+                                        )
+                                )
+                        )
+                ),
+                new ResolvedScript(
+                        new ResolvedStatement.Block(0,
+                                List.of(
+                                        new ResolvedStatement.Expression(1,
+                                                new ResolvedExpression.Call(1,
+                                                        new ResolvedExpression.Variable(1,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new ResolvedExpression.Literal(1, 1L)
+                                                )
+                                        )
+                                ),
+                                emptyMap(),
+                                emptyMap()
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 )
         );
     }

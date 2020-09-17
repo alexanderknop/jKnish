@@ -146,10 +146,13 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitorIfStatement(Statement.If anIf) {
+            ResolvedStatement thenBranch = resolveStatement(anIf.thenBranch);
+            ResolvedStatement elseBranch =
+                    anIf.elseBranch == null ? null : resolveStatement(anIf.elseBranch);
             return new ResolvedStatement.If(anIf.line,
                     resolveExpression(anIf.condition),
-                    resolveStatement(anIf.thenBranch),
-                    resolveStatement(anIf.elseBranch)
+                    thenBranch,
+                    elseBranch
             );
         }
 
