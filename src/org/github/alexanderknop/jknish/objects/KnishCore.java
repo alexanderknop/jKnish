@@ -209,7 +209,7 @@ public class KnishCore extends KnishModule {
 
         @Override
         public KnishObject call(String method, List<KnishObject> arguments) {
-            throw new KnishRuntimeException("Null does not implement '" + method + "'.");
+            throw new KnishRuntimeException("Nil does not implement '" + method + "'.");
         }
     }
 
