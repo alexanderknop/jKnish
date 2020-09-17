@@ -14,10 +14,10 @@ import static java.util.Collections.emptyList;
 import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public class TypeChecker {
-    public static void check(KnishCore core, List<Statement> statements, KnishErrorReporter reporter) {
-        TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, statements, reporter);
+    public static void check(KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
+        TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, reporter);
 
-        typeCheckerVisitor.check();
+        typeCheckerVisitor.check(script);
     }
 
     private TypeChecker() {
@@ -31,18 +31,16 @@ public class TypeChecker {
         private SimpleType booleanType;
         private SimpleType stringType;
 
-        private final List<Statement> statements;
         private final KnishErrorReporter reporter;
 
         private final Stack<HashMap<String, SimpleType>> scopes = new Stack<>();
 
-        private TypeCheckerVisitor(KnishCore core, List<Statement> statements, KnishErrorReporter reporter) {
+        private TypeCheckerVisitor(KnishCore core, KnishErrorReporter reporter) {
             this.core = core;
-            this.statements = statements;
             this.reporter = reporter;
         }
 
-        private void check() {
+        private void check(Statement.Block script) {
             Map<KnishModule.Class, SimpleType> types = SimpleType.fromKnishModule(core);
 
             numberType = types.get(core.getClass("Number"));
@@ -55,7 +53,7 @@ public class TypeChecker {
                 scopes.peek().put(objectName, types.get(core.getObjectType(objectName)));
             }
 
-            for (Statement statement : statements) {
+            for (Statement statement : script.statements) {
                 checkStatement(statement);
             }
             endScope();
@@ -273,7 +271,7 @@ public class TypeChecker {
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
             for (Statement.Method method : methodStatements) {
                 methods.put(new MethodId(method.name, arityFromArgumentsList(method.argumentsNames)),
-                        methodType(instanceType, method.argumentsNames, method.body));
+                        methodType(instanceType, method.argumentsNames, method.body.statements));
             }
             return methods;
         }

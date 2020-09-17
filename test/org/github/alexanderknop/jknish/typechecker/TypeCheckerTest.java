@@ -884,7 +884,8 @@ class TypeCheckerTest {
     private void testCorrect(List<Statement> statements) {
         Writer errors = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(errors);
-        TypeChecker.check(new KnishCore(new StringWriter()), statements, reporter);
+        TypeChecker.check(new KnishCore(new StringWriter()),
+                new Statement.Block(0, statements), reporter);
         assertFalse(reporter.hadError(), "The script is supposed to be correct:\n" +
                 errors);
     }
@@ -892,7 +893,8 @@ class TypeCheckerTest {
     private void testIncorrect(List<Statement> statements, String expectedMessage) {
         Writer errors = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(errors);
-        TypeChecker.check(new KnishCore(new StringWriter()), statements, reporter);
+        TypeChecker.check(new KnishCore(new StringWriter()),
+                new Statement.Block(0, statements), reporter);
         assertTrue(reporter.hadError(), "The script is supposed to be incorrect");
         assertEquals(expectedMessage.strip(), errors.toString().strip(),
                 "The error message is expected to be:\n" +

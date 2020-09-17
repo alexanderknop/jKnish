@@ -415,10 +415,10 @@ class ParserTest {
         StringWriter writer = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(writer);
 
-        List<Statement> result = Parser.parse(tokens, reporter);
+        Statement.Block result = Parser.parse(tokens, reporter);
         assertFalse(reporter.hadError(),
                 "The sequence is supposed to be correct:\n" + writer.toString());
-        assertEquals(expected, result);
+        assertEquals(expected, result.statements);
     }
 
     private void testIncorrect(List<Token> tokens, String errorMessage) {

@@ -1,12 +1,13 @@
-package org.github.alexanderknop.jknish.parser;
+package org.github.alexanderknop.jknish.resolver;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-public abstract class Statement {
+public abstract class ResolvedStatement {
     public final int line;
 
-    Statement(int line) {
+    ResolvedStatement(int line) {
         this.line = line;
     }
 
@@ -17,21 +18,17 @@ public abstract class Statement {
 
         N visitWhileStatement(While aWhile);
 
-        N visitVarStatement(Var var);
-
         N visitBlockStatement(Block block);
-
-        N visitClassStatement(Class klass);
 
         N visitReturnStatement(Return aReturn);
     }
 
-    public static class Expression extends Statement {
-        public final org.github.alexanderknop.jknish.parser.Expression expression;
+    public static class Expression extends ResolvedStatement {
+        public final ResolvedExpression resolvedExpression;
 
-        public Expression(int line, org.github.alexanderknop.jknish.parser.Expression expression) {
+        public Expression(int line, ResolvedExpression resolvedExpression) {
             super(line);
-            this.expression = expression;
+            this.resolvedExpression = resolvedExpression;
         }
 
         @Override
@@ -39,19 +36,19 @@ public abstract class Statement {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Expression that = (Expression) o;
-            return Objects.equals(expression, that.expression);
+            return Objects.equals(resolvedExpression, that.resolvedExpression);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(expression);
+            return Objects.hash(resolvedExpression);
         }
 
         @Override
         public String toString() {
             return "Expression{" +
                     "line=" + line +
-                    ", expression=" + expression +
+                    ", expression=" + resolvedExpression +
                     '}';
         }
 
@@ -61,13 +58,13 @@ public abstract class Statement {
         }
     }
 
-    public static class If extends Statement {
-        public final org.github.alexanderknop.jknish.parser.Expression condition;
-        public final Statement thenBranch;
-        public final Statement elseBranch;
+    public static class If extends ResolvedStatement {
+        public final ResolvedExpression condition;
+        public final ResolvedStatement thenBranch;
+        public final ResolvedStatement elseBranch;
 
-        public If(int line, org.github.alexanderknop.jknish.parser.Expression condition,
-                  Statement thenBranch, Statement elseBranch) {
+        public If(int line, ResolvedExpression condition,
+                  ResolvedStatement thenBranch, ResolvedStatement elseBranch) {
             super(line);
             this.condition = condition;
             this.thenBranch = thenBranch;
@@ -105,12 +102,12 @@ public abstract class Statement {
         }
     }
 
-    public static class While extends Statement {
-        public final org.github.alexanderknop.jknish.parser.Expression condition;
-        public final Statement body;
+    public static class While extends ResolvedStatement {
+        public final ResolvedExpression condition;
+        public final ResolvedStatement body;
 
-        public While(int line, org.github.alexanderknop.jknish.parser.Expression condition,
-                     Statement body) {
+        public While(int line, ResolvedExpression condition,
+                     ResolvedStatement body) {
             super(line);
             this.condition = condition;
             this.body = body;
@@ -145,50 +142,10 @@ public abstract class Statement {
         }
     }
 
-    public static class Var extends Statement {
-        public final String name;
-        public final org.github.alexanderknop.jknish.parser.Expression initializer;
+    public static class Return extends ResolvedStatement {
+        public final ResolvedExpression value;
 
-        public Var(int line, String name,
-                   org.github.alexanderknop.jknish.parser.Expression initializer) {
-            super(line);
-            this.name = name;
-            this.initializer = initializer;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Var var = (Var) o;
-            return Objects.equals(name, var.name) &&
-                    Objects.equals(initializer, var.initializer);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, initializer);
-        }
-
-        @Override
-        public String toString() {
-            return "Var{" +
-                    "line=" + line +
-                    ", name='" + name + '\'' +
-                    ", initializer=" + initializer +
-                    '}';
-        }
-
-        @Override
-        public <N> N accept(Visitor<N> visitor) {
-            return visitor.visitVarStatement(this);
-        }
-    }
-
-    public static class Return extends Statement {
-        public final org.github.alexanderknop.jknish.parser.Expression value;
-
-        public Return(int line, org.github.alexanderknop.jknish.parser.Expression value) {
+        public Return(int line, ResolvedExpression value) {
             super(line);
             this.value = value;
         }
@@ -220,12 +177,17 @@ public abstract class Statement {
         }
     }
 
-    public static class Block extends Statement {
-        public final List<Statement> statements;
+    public static class Block extends ResolvedStatement {
+        public final List<ResolvedStatement> resolvedStatements;
+        public final Map<Integer, String> names;
+        public final Map<Integer, Class> classes;
 
-        public Block(int line, List<Statement> statements) {
+        public Block(int line, List<ResolvedStatement> resolvedStatements,
+                     Map<Integer, String> names, Map<Integer, Class> classes) {
             super(line);
-            this.statements = statements;
+            this.resolvedStatements = resolvedStatements;
+            this.names = names;
+            this.classes = classes;
         }
 
         @Override
@@ -233,18 +195,21 @@ public abstract class Statement {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Block block = (Block) o;
-            return Objects.equals(statements, block.statements);
+            return Objects.equals(resolvedStatements, block.resolvedStatements);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(statements);
+            return Objects.hash(resolvedStatements);
         }
 
         @Override
         public String toString() {
             return "Block{" +
-                    "statements=" + statements +
+                    "line=" + line +
+                    ", resolvedStatements=" + resolvedStatements +
+                    ", names=" + names +
+                    ", classes=" + classes +
                     '}';
         }
 
@@ -254,16 +219,17 @@ public abstract class Statement {
         }
     }
 
-    public static class Class extends Statement {
+    public static class Class {
+        public final int line;
         public final List<Method> methods;
         public final List<Method> constructors;
         public final List<Method> staticMethods;
-        public final String name;
+        public final int classId;
 
-        public Class(int line, String name,
+        public Class(int line, int classId,
                      List<Method> staticMethods, List<Method> constructors, List<Method> methods) {
-            super(line);
-            this.name = name;
+            this.line = line;
+            this.classId = classId;
             this.methods = methods;
             this.constructors = constructors;
             this.staticMethods = staticMethods;
@@ -275,43 +241,32 @@ public abstract class Statement {
             if (o == null || getClass() != o.getClass()) return false;
             Class aClass = (Class) o;
             return Objects.equals(methods, aClass.methods) &&
-                    Objects.equals(name, aClass.name);
+                    Objects.equals(classId, aClass.classId);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(methods, name);
+            return Objects.hash(methods, classId);
         }
 
-        @Override
-        public String toString() {
-            return "Class{" +
-                    "line=" + line +
-                    ", methods=" + methods +
-                    ", constructors=" + constructors +
-                    ", staticMethods=" + staticMethods +
-                    ", name='" + name + '\'' +
-                    '}';
-        }
 
-        @Override
-        public <N> N accept(Visitor<N> visitor) {
-            return visitor.visitClassStatement(this);
-        }
     }
 
     public static class Method {
         public final int line;
         public final String name;
-        public final List<String> argumentsNames;
-        public final Statement.Block body;
+        public final List<String> argumentsIds;
+        public final Map<Integer, String> argumentNames;
+        public final Block body;
 
         public Method(int line,
-                      String name, List<String> argumentsNames, List<Statement> body) {
+                      String name, List<String> argumentsIds, Block body,
+                      Map<Integer, String> argumentNames) {
             this.line = line;
             this.name = name;
-            this.argumentsNames = argumentsNames;
-            this.body = new Block(line, body);
+            this.argumentsIds = argumentsIds;
+            this.argumentNames = argumentNames;
+            this.body = body;
         }
 
         @Override
@@ -321,13 +276,13 @@ public abstract class Statement {
             Method method = (Method) o;
             return line == method.line &&
                     Objects.equals(name, method.name) &&
-                    Objects.equals(argumentsNames, method.argumentsNames) &&
+                    Objects.equals(argumentsIds, method.argumentsIds) &&
                     Objects.equals(body, method.body);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(line, name, argumentsNames, body);
+            return Objects.hash(line, name, argumentsIds, body);
         }
 
         @Override
@@ -335,7 +290,7 @@ public abstract class Statement {
             return "Method{" +
                     "line=" + line +
                     ", name='" + name + '\'' +
-                    ", argumentsNames=" + argumentsNames +
+                    ", argumentsNames=" + argumentsIds +
                     ", body=" + body +
                     '}';
         }

@@ -4,6 +4,7 @@ import org.github.alexanderknop.jknish.interpreter.Interpreter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Parser;
 import org.github.alexanderknop.jknish.parser.Statement;
+import org.github.alexanderknop.jknish.resolver.Resolver;
 import org.github.alexanderknop.jknish.scanner.Scanner;
 import org.github.alexanderknop.jknish.scanner.Token;
 import org.github.alexanderknop.jknish.typechecker.TypeChecker;
@@ -29,17 +30,20 @@ public class Knish {
             return;
         }
 
-        List<Statement> statements = Parser.parse(tokens, reporter);
+
+        Statement.Block script = Parser.parse(tokens, reporter);
         if (reporter.hadError()) {
             return;
         }
 
-        TypeChecker.check(core, statements, reporter);
+        Resolver.resolve(core, script, reporter);
+
+        TypeChecker.check(core, script, reporter);
         if (reporter.hadError()) {
             return;
         }
 
-        Interpreter.interpret(core, statements, reporter);
+        Interpreter.interpret(core, script, reporter);
     }
 
     private static void runFile(String path) throws IOException {

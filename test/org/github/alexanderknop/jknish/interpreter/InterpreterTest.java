@@ -1126,7 +1126,7 @@ class InterpreterTest {
         KnishCore core = new KnishCore(outputWriter);
 
 
-        Interpreter.interpret(core, statements, reporter);
+        Interpreter.interpret(core, new Statement.Block(0, statements), reporter);
 
         assertFalse(reporter.hadError(), "The script is correct;" +
                 " the error message is:\n" + errorWriter.toString());
@@ -1142,7 +1142,7 @@ class InterpreterTest {
         KnishErrorReporter reporter = new KnishErrorReporter(error);
         KnishCore core = new KnishCore(new StringWriter());
 
-        Interpreter.interpret(core, statements, reporter);
+        Interpreter.interpret(core, new Statement.Block(0, statements), reporter);
 
         assertTrue(reporter.hadError(), "The script is incorrect.");
         String actual = error.toString().strip();

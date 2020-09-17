@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Interpreter {
-    public static void interpret(KnishCore core, List<Statement> statements, KnishErrorReporter reporter) {
+    public static void interpret(KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
         Environment globals = createEnvironment(core);
 
         InterpreterVisitor interpreterVisitor = new InterpreterVisitor(reporter);
 
-        interpreterVisitor.interpret(globals, statements);
+        interpreterVisitor.interpret(globals, script);
     }
 
     private static Environment createEnvironment(KnishModule module) {
@@ -43,23 +43,17 @@ public class Interpreter {
             this.reporter = reporter;
         }
 
-        void interpret(Environment enclosing, List<Statement> statements) {
+        void interpret(Environment enclosing, Statement.Block script) {
             try {
                 Environment previous = environment;
                 this.environment = new Environment(enclosing);
                 try {
-                    executeBlock(statements);
+                    visitBlockStatement(script);
                 } finally {
                     environment = previous;
                 }
             } catch (RuntimeExceptionWithLine e) {
                 reporter.error(e.getLine(), e.getMessage());
-            }
-        }
-
-        private void executeBlock(List<Statement> statements) {
-            for (Statement statement : statements) {
-                execute(statement);
             }
         }
 
@@ -209,7 +203,9 @@ public class Interpreter {
             Environment previous = environment;
             environment = new Environment(environment);
 
-            executeBlock(block.statements);
+            for (Statement statement : block.statements) {
+                execute(statement);
+            }
 
             environment = previous;
             return null;

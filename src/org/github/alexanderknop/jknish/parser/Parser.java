@@ -10,7 +10,7 @@ import java.util.List;
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
 
 public class Parser {
-    public static List<Statement> parse(List<Token> tokens, KnishErrorReporter reporter) {
+    public static Statement.Block parse(List<Token> tokens, KnishErrorReporter reporter) {
         Parser parser = new Parser(tokens, reporter);
         return parser.parse();
     }
@@ -25,7 +25,7 @@ public class Parser {
         this.reporter = reporter;
     }
 
-    private List<Statement> parse() {
+    private Statement.Block parse() {
         List<Statement> statements = new ArrayList<>();
         while (!isAtEnd()) {
             try {
@@ -34,7 +34,7 @@ public class Parser {
                 synchronize();
             }
         }
-        return statements;
+        return new Statement.Block(0, statements);
     }
 
     private void synchronize() {
