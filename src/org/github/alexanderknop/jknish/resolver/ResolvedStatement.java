@@ -195,12 +195,14 @@ public abstract class ResolvedStatement {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Block block = (Block) o;
-            return Objects.equals(resolvedStatements, block.resolvedStatements);
+            return Objects.equals(resolvedStatements, block.resolvedStatements) &&
+                    Objects.equals(names, block.names) &&
+                    Objects.equals(classes, block.classes);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(resolvedStatements);
+            return Objects.hash(resolvedStatements, names, classes);
         }
 
         @Override
@@ -224,12 +226,10 @@ public abstract class ResolvedStatement {
         public final List<Method> methods;
         public final List<Method> constructors;
         public final List<Method> staticMethods;
-        public final int classId;
 
-        public Class(int line, int classId,
+        public Class(int line,
                      List<Method> staticMethods, List<Method> constructors, List<Method> methods) {
             this.line = line;
-            this.classId = classId;
             this.methods = methods;
             this.constructors = constructors;
             this.staticMethods = staticMethods;
@@ -240,27 +240,37 @@ public abstract class ResolvedStatement {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Class aClass = (Class) o;
-            return Objects.equals(methods, aClass.methods) &&
-                    Objects.equals(classId, aClass.classId);
+            return line == aClass.line &&
+                    Objects.equals(methods, aClass.methods) &&
+                    Objects.equals(constructors, aClass.constructors) &&
+                    Objects.equals(staticMethods, aClass.staticMethods);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(methods, classId);
+            return Objects.hash(line, methods, constructors, staticMethods);
         }
 
-
+        @Override
+        public String toString() {
+            return "Class{" +
+                    "line=" + line +
+                    ", methods=" + methods +
+                    ", constructors=" + constructors +
+                    ", staticMethods=" + staticMethods +
+                    '}';
+        }
     }
 
     public static class Method {
         public final int line;
         public final String name;
-        public final List<String> argumentsIds;
+        public final List<Integer> argumentsIds;
         public final Map<Integer, String> argumentNames;
         public final Block body;
 
         public Method(int line,
-                      String name, List<String> argumentsIds, Block body,
+                      String name, List<Integer> argumentsIds, Block body,
                       Map<Integer, String> argumentNames) {
             this.line = line;
             this.name = name;

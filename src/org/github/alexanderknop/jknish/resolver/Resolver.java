@@ -29,7 +29,7 @@ public class Resolver {
         private ResolvedScript resolve(KnishCore core, Statement.Block script) {
             beginScope();
 
-            for(String objectName : core.getObjects().keySet()) {
+            for (String objectName : core.getObjects().keySet()) {
                 defineVariable(objectName);
             }
 
@@ -203,9 +203,43 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitClassStatement(Statement.Class klass) {
-            defineVariable(klass.name);
-            // todo
+            int classVariable = defineVariable(klass.name);
+
+            List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
+            List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
+            List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
+
+            classes.peek().put(
+                    classVariable,
+                    new ResolvedStatement.Class(klass.line,
+                            staticMethods,
+                            constructors,
+                            methods
+                    )
+            );
             return null;
+        }
+
+        private List<ResolvedStatement.Method> resolveMethods(List<Statement.Method> methods1) {
+            List<ResolvedStatement.Method> methods = new ArrayList<>();
+            for (Statement.Method method : methods1) {
+                beginScope();
+                List<Integer> argumentsIds =
+                        method.argumentsNames == null ? null : method.argumentsNames.stream()
+                                .map(this::defineVariable)
+                                .collect(Collectors.toList());
+                methods.add(
+                        new ResolvedStatement.Method(
+                                method.line,
+                                method.name,
+                                argumentsIds,
+                                visitBlockStatement(method.body),
+                                definedVariables()
+                        )
+                );
+                endScope();
+            }
+            return methods;
         }
 
         @Override

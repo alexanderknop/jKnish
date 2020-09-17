@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -194,6 +195,142 @@ class ResolverTest {
                                 ),
                                 emptyMap(),
                                 emptyMap()
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
+        );
+    }
+
+    @Test
+    void testClass() {
+        int testClass = 1;
+        testCorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Class(1,
+                                        "Test",
+                                        emptyList(),
+                                        emptyList(),
+                                        List.of(
+                                                new Statement.Method(2,
+                                                        "test",
+                                                        null,
+                                                        emptyList()
+                                                )
+                                        )
+                                )
+                        )
+                ),
+                new ResolvedScript(
+                        new ResolvedStatement.Block(0,
+                                emptyList(),
+                                Map.of(testClass, "Test"),
+                                Map.of(testClass,
+                                        new ResolvedStatement.Class(1,
+                                                emptyList(),
+                                                emptyList(),
+                                                List.of(
+                                                        new ResolvedStatement.Method(2,
+                                                                "test",
+                                                                null,
+                                                                new ResolvedStatement.Block(2,
+                                                                        emptyList(),
+                                                                        emptyMap(),
+                                                                        emptyMap()
+                                                                ),
+                                                                emptyMap()
+                                                        )
+                                                )
+                                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
+        );
+
+        testCorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Class(1,
+                                        "Test",
+                                        List.of(
+                                                new Statement.Method(2,
+                                                        "test",
+                                                        null,
+                                                        emptyList()
+                                                )
+                                        ),
+                                        emptyList(),
+                                        emptyList()
+                                )
+                        )
+                ),
+                new ResolvedScript(
+                        new ResolvedStatement.Block(0,
+                                emptyList(),
+                                Map.of(testClass, "Test"),
+                                Map.of(testClass,
+                                        new ResolvedStatement.Class(1,
+                                                List.of(
+                                                        new ResolvedStatement.Method(2,
+                                                                "test",
+                                                                null,
+                                                                new ResolvedStatement.Block(2,
+                                                                        emptyList(),
+                                                                        emptyMap(),
+                                                                        emptyMap()
+                                                                ),
+                                                                emptyMap()
+                                                        )
+                                                ),
+                                                emptyList(),
+                                                emptyList()
+                                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
+        );
+
+        testCorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Class(1,
+                                        "Test",
+                                        emptyList(),
+                                        List.of(
+                                                new Statement.Method(2,
+                                                        "test",
+                                                        null,
+                                                        emptyList()
+                                                )
+                                        ),
+                                        emptyList()
+                                )
+                        )
+                ),
+                new ResolvedScript(
+                        new ResolvedStatement.Block(0,
+                                emptyList(),
+                                Map.of(testClass, "Test"),
+                                Map.of(testClass,
+                                        new ResolvedStatement.Class(1,
+                                                emptyList(),
+                                                List.of(
+                                                        new ResolvedStatement.Method(2,
+                                                                "test",
+                                                                null,
+                                                                new ResolvedStatement.Block(2,
+                                                                        emptyList(),
+                                                                        emptyMap(),
+                                                                        emptyMap()
+                                                                ),
+                                                                emptyMap()
+                                                        )
+                                                ),
+                                                emptyList()
+                                        )
+                                )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
