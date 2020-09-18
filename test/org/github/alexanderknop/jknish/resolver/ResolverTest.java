@@ -22,6 +22,16 @@ class ResolverTest {
     void testVar() {
         int xVariable = 1;
         int x2Variable = 2;
+
+        testIncorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Var(1, "x", null)
+                        )
+                ),
+                "[line 1] Error: The variable x is defined, but never used."
+        );
+
         testCorrect(
                 new Statement.Block(0,
                         List.of(
@@ -50,7 +60,10 @@ class ResolverTest {
                 new Statement.Block(0,
                         List.of(
                                 new Statement.Var(1, "x",
-                                        new Expression.Literal(1, 1L))
+                                        new Expression.Literal(1, 1L)),
+                                new Statement.Expression(2,
+                                        new Expression.Variable(2, "x")
+                                )
                         )
                 ),
                 new ResolvedScript(
@@ -61,6 +74,9 @@ class ResolverTest {
                                                         xVariable,
                                                         new ResolvedExpression.Literal(1, 1L)
                                                 )
+                                        ),
+                                        new ResolvedStatement.Expression(2,
+                                                new ResolvedExpression.Variable(2, xVariable)
                                         )
                                 ),
                                 Map.of(xVariable, "x"),
@@ -87,15 +103,18 @@ class ResolverTest {
                                 new Statement.Block(0,
                                         List.of(
                                                 new Statement.Var(1, "x",
-                                                        new Expression.Literal(1, 1L))
+                                                        new Expression.Literal(1, 1L)),
+                                                new Statement.Expression(2,
+                                                        new Expression.Variable(2, "x")
+                                                )
                                         )
                                 ),
-                                new Statement.Expression(2,
-                                        new Expression.Variable(2, "x")
+                                new Statement.Expression(3,
+                                        new Expression.Variable(3, "x")
                                 )
                         )
                 ),
-                "[line 2] Error: Undeclared variable x."
+                "[line 3] Error: Undeclared variable x."
         );
 
         testCorrect(
@@ -109,6 +128,9 @@ class ResolverTest {
                                                         new Expression.Variable(4, "x")
                                                 )
                                         )
+                                ),
+                                new Statement.Expression(5,
+                                        new Expression.Variable(5, "x")
                                 )
                         )
                 ),
@@ -124,6 +146,10 @@ class ResolverTest {
                                                 ),
                                                 Map.of(x2Variable, "x"),
                                                 emptyMap()
+                                        ),
+                                        new ResolvedStatement.Expression(5,
+                                                new ResolvedExpression.Variable(5,
+                                                        xVariable)
                                         )
                                 ),
                                 Map.of(xVariable, "x"),
@@ -218,12 +244,18 @@ class ResolverTest {
                                                         emptyList()
                                                 )
                                         )
+                                ),
+                                new Statement.Expression(3,
+                                        new Expression.Variable(3, "Test")
                                 )
                         )
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                emptyList(),
+                                List.of(
+                                        new ResolvedStatement.Expression(3,
+                                                new ResolvedExpression.Variable(3, testClass))
+                                ),
                                 Map.of(testClass, "Test"),
                                 Map.of(testClass,
                                         new ResolvedStatement.Class(1,
@@ -262,12 +294,18 @@ class ResolverTest {
                                         ),
                                         emptyList(),
                                         emptyList()
+                                ),
+                                new Statement.Expression(3,
+                                        new Expression.Variable(3, "Test")
                                 )
                         )
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                emptyList(),
+                                List.of(
+                                        new ResolvedStatement.Expression(3,
+                                                new ResolvedExpression.Variable(3, testClass))
+                                ),
                                 Map.of(testClass, "Test"),
                                 Map.of(testClass,
                                         new ResolvedStatement.Class(1,
@@ -306,12 +344,18 @@ class ResolverTest {
                                                 )
                                         ),
                                         emptyList()
+                                ),
+                                new Statement.Expression(3,
+                                        new Expression.Variable(3, "Test")
                                 )
                         )
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                emptyList(),
+                                List.of(
+                                        new ResolvedStatement.Expression(3,
+                                                new ResolvedExpression.Variable(3, testClass))
+                                ),
                                 Map.of(testClass, "Test"),
                                 Map.of(testClass,
                                         new ResolvedStatement.Class(1,
@@ -337,14 +381,41 @@ class ResolverTest {
         );
     }
 
+    @Test
+    void testAssign() {
+        int testClass = 1;
+        testIncorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Class(1,
+                                        "Test",
+                                        emptyList(),
+                                        emptyList(),
+                                        emptyList()
+                                ),
+                                new Statement.Expression(2,
+                                        new Expression.Assign(2,
+                                                "Test",
+                                                new Expression.Literal(2, null)
+                                        )
+                                )
+                        )
+                ),
+                "[line 2] Error: Cannot assign a new value to the class variable Test.\n" +
+                        "[line 1] Error: The class Test is defined, but never used."
+        );
+    }
+
     private void testCorrect(Statement.Block statements, ResolvedScript expectedResolvedStatements) {
-        KnishErrorReporter reporter = new KnishErrorReporter(new StringWriter());
+        StringWriter error = new StringWriter();
+        KnishErrorReporter reporter = new KnishErrorReporter(error);
         assertEquals(
                 expectedResolvedStatements,
                 Resolver.resolve(new KnishCore(new StringWriter()), statements, reporter)
         );
 
-        assertFalse(reporter.hadError());
+        assertFalse(reporter.hadError(), "The script is correct; however, the resolver reported:\n" +
+                error.toString().strip());
     }
 
     private void testIncorrect(Statement.Block statements, String message) {
@@ -354,6 +425,6 @@ class ResolverTest {
 
 
         assertTrue(reporter.hadError());
-        assertEquals(errors.toString().strip(), message.strip());
+        assertEquals(message.strip(), errors.toString().strip());
     }
 }

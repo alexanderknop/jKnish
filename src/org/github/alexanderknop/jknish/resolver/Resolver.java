@@ -18,8 +18,8 @@ public class Resolver {
             Expression.Visitor<ResolvedExpression>, Statement.Visitor<ResolvedStatement> {
         private final KnishErrorReporter reporter;
 
-        private final Stack<HashMap<String, Integer>> scopes = new Stack<>();
-        private final Stack<HashMap<Integer, ResolvedStatement.Class>> classes = new Stack<>();
+        private final Stack<Map<String, VariableInformation>> scopes = new Stack<>();
+        private final Stack<Map<Integer, ResolvedStatement.Class>> classes = new Stack<>();
         private int currentVariable = 0;
 
         public ResolverVisitor(KnishErrorReporter reporter) {
@@ -30,7 +30,7 @@ public class Resolver {
             beginScope();
 
             for (String objectName : core.getObjects().keySet()) {
-                defineVariable(objectName);
+                defineVariable(0, objectName);
             }
 
             return new ResolvedScript(visitBlockStatement(script), definedVariables());
@@ -44,9 +44,10 @@ public class Resolver {
             return statement.accept(this);
         }
 
+
         private void beginScope() {
-            scopes.push(new HashMap<>());
-            classes.push(new HashMap<>());
+            this.scopes.push(new HashMap<>());
+            this.classes.push(new HashMap<>());
         }
 
         private void endScope() {
@@ -54,34 +55,58 @@ public class Resolver {
             classes.pop();
         }
 
-        private int defineVariable(String name) {
-            scopes.peek().put(name, currentVariable++);
+        private void reportUnused() {
+            scopes.peek().forEach((name, information) -> {
+                if (!information.used) {
+                    if (information.isClass) {
+                        reporter.error(information.line, "The class " +
+                                name + " is defined, but never used.");
+                    } else {
+                        reporter.error(information.line, "The variable " +
+                                name + " is defined, but never used.");
+                    }
+                }
+            });
+        }
+
+        private int defineVariable(int line, String name) {
+            return defineVariable(line, name, false);
+        }
+
+        private int defineVariable(int line, String name, boolean isClass) {
+            scopes.peek().put(name, new VariableInformation(line, currentVariable++, isClass));
             return currentVariable - 1;
         }
 
-        private int variableLevel(int line, String variable) {
+        private VariableInformation variableInformation(int line, String variable) {
             for (int i = scopes.size() - 1; i >= 0; i--) {
                 if (scopes.get(i).containsKey(variable)) {
-                    return i;
+                    return scopes.get(i).get(variable);
                 }
             }
 
             reporter.error(line, "Undeclared variable " + variable + ".");
-            defineVariable(variable);
-            return scopes.size() - 1;
+            defineVariable(line, variable);
+            VariableInformation variableInformation = scopes.peek().get(variable);
+            variableInformation.used = true;
+            return variableInformation;
         }
 
         private int variableId(int line, String variable) {
-            return scopes.get(variableLevel(line, variable)).get(variable);
+            return variableInformation(line, variable).id;
+        }
+
+        private void useVariable(int line, String variable) {
+            variableInformation(line, variable).used = true;
         }
 
         private boolean isClass(int line, String variable) {
-            return classes.get(variableLevel(line, variable)).containsKey(variableId(line, variable));
+            return variableInformation(line, variable).isClass;
         }
 
         private Map<Integer, String> definedVariables() {
             HashMap<Integer, String> names = new HashMap<>();
-            scopes.peek().forEach((name, id) -> names.put(id, name));
+            scopes.peek().forEach((name, information) -> names.put(information.id, name));
             return Collections.unmodifiableMap(names);
         }
 
@@ -124,6 +149,7 @@ public class Resolver {
 
         @Override
         public ResolvedExpression visitVariableExpression(Expression.Variable variable) {
+            useVariable(variable.line, variable.name);
             return new ResolvedExpression.Variable(variable.line,
                     variableId(variable.line, variable.name));
         }
@@ -166,7 +192,7 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitVarStatement(Statement.Var var) {
-            int variableId = defineVariable(var.name);
+            int variableId = defineVariable(var.line, var.name);
             if (var.initializer != null) {
                 return new ResolvedStatement.Expression(var.line,
                         new ResolvedExpression.Assign(var.line,
@@ -193,6 +219,8 @@ public class Resolver {
             Map<Integer, String> names = definedVariables();
             Map<Integer, ResolvedStatement.Class> classes = definedClasses();
 
+            reportUnused();
+
             endScope();
 
             return new ResolvedStatement.Block(block.line,
@@ -203,15 +231,13 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitClassStatement(Statement.Class klass) {
-            int classVariable = defineVariable(klass.name);
+            int classVariable = defineVariable(klass.line, klass.name, true);
 
             List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
             List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
             List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
 
-            classes.peek().put(
-                    classVariable,
-                    new ResolvedStatement.Class(klass.line,
+            defineClass(classVariable, new ResolvedStatement.Class(klass.line,
                             staticMethods,
                             constructors,
                             methods
@@ -220,15 +246,22 @@ public class Resolver {
             return null;
         }
 
-        private List<ResolvedStatement.Method> resolveMethods(List<Statement.Method> methods1) {
-            List<ResolvedStatement.Method> methods = new ArrayList<>();
-            for (Statement.Method method : methods1) {
+        private void defineClass(int classVariable, ResolvedStatement.Class resolvedClass) {
+            classes.peek().put(
+                    classVariable,
+                    resolvedClass
+            );
+        }
+
+        private List<ResolvedStatement.Method> resolveMethods(List<Statement.Method> methods) {
+            List<ResolvedStatement.Method> resolvedMethods = new ArrayList<>();
+            for (Statement.Method method : methods) {
                 beginScope();
                 List<Integer> argumentsIds =
                         method.argumentsNames == null ? null : method.argumentsNames.stream()
-                                .map(this::defineVariable)
+                                .map(name -> defineVariable(method.line, name))
                                 .collect(Collectors.toList());
-                methods.add(
+                resolvedMethods.add(
                         new ResolvedStatement.Method(
                                 method.line,
                                 method.name,
@@ -239,7 +272,7 @@ public class Resolver {
                 );
                 endScope();
             }
-            return methods;
+            return resolvedMethods;
         }
 
         @Override
@@ -247,6 +280,20 @@ public class Resolver {
             return new ResolvedStatement.Return(aReturn.line,
                     resolveExpression(aReturn.value)
             );
+        }
+
+        private static class VariableInformation {
+            public int id;
+            public int line;
+            public boolean isClass;
+            public boolean used;
+            public boolean defined;
+
+            public VariableInformation(int line, int id, boolean isClass) {
+                this.line = line;
+                this.id = id;
+                this.isClass = isClass;
+            }
         }
     }
 }
