@@ -241,6 +241,7 @@ class ResolverTest {
     @Test
     void testClass() {
         int testClass = 1;
+        Integer aThis = 2;
         testCorrect(
                 new Statement.Block(0,
                         List.of(
@@ -283,8 +284,8 @@ class ResolverTest {
                                                                 ),
                                                                 emptyMap()
                                                         )
-                                                )
-                                        )
+                                                ),
+                                                Map.of(aThis, "this"))
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -333,7 +334,8 @@ class ResolverTest {
                                                         )
                                                 ),
                                                 emptyList(),
-                                                emptyList()
+                                                emptyList(),
+                                                Map.of(aThis, "this")
                                         )
                                 )
                         ),
@@ -383,7 +385,8 @@ class ResolverTest {
                                                                 emptyMap()
                                                         )
                                                 ),
-                                                emptyList()
+                                                emptyList(),
+                                                Map.of(aThis, "this")
                                         )
                                 )
                         ),
@@ -394,7 +397,6 @@ class ResolverTest {
 
     @Test
     void testAssign() {
-        int testClass = 1;
         testIncorrect(
                 new Statement.Block(0,
                         List.of(

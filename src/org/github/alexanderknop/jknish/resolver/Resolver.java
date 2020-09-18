@@ -260,14 +260,20 @@ public class Resolver {
         public ResolvedStatement visitClassStatement(Statement.Class klass) {
             int classVariable = defineVariable(klass.line, klass.name, true);
 
+            beginScope();
+            Map<Integer, String> fields = new HashMap<>();
+            fields.put(defineVariable(klass.line, "this"), "this");
+
             List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
             List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
             List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
+            endScope();
 
             defineClass(classVariable, new ResolvedStatement.Class(klass.line,
                             staticMethods,
                             constructors,
-                            methods
+                            methods,
+                            fields
                     )
             );
             return null;

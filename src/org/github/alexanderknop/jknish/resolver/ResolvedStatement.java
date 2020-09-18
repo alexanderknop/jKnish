@@ -226,13 +226,16 @@ public abstract class ResolvedStatement {
         public final List<Method> methods;
         public final List<Method> constructors;
         public final List<Method> staticMethods;
+        public final Map<Integer, String> fields;
 
         public Class(int line,
-                     List<Method> staticMethods, List<Method> constructors, List<Method> methods) {
+                     List<Method> staticMethods, List<Method> constructors, List<Method> methods,
+                     Map<Integer, String> fields) {
             this.line = line;
             this.methods = methods;
             this.constructors = constructors;
             this.staticMethods = staticMethods;
+            this.fields = fields;
         }
 
         @Override
@@ -243,12 +246,13 @@ public abstract class ResolvedStatement {
             return line == aClass.line &&
                     Objects.equals(methods, aClass.methods) &&
                     Objects.equals(constructors, aClass.constructors) &&
-                    Objects.equals(staticMethods, aClass.staticMethods);
+                    Objects.equals(staticMethods, aClass.staticMethods) &&
+                    Objects.equals(fields, aClass.fields);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(line, methods, constructors, staticMethods);
+            return Objects.hash(line, methods, constructors, staticMethods, fields);
         }
 
         @Override
@@ -258,6 +262,7 @@ public abstract class ResolvedStatement {
                     ", methods=" + methods +
                     ", constructors=" + constructors +
                     ", staticMethods=" + staticMethods +
+                    ", fields=" + fields +
                     '}';
         }
     }
