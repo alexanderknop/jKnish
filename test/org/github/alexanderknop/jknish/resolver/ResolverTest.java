@@ -32,6 +32,17 @@ class ResolverTest {
                 "[line 1] Error: The variable x is defined, but never used."
         );
 
+        testIncorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Var(1, "x",
+                                        new Expression.Variable(1, "x"))
+                        )
+                ),
+                "[line 1] Error: The variable x cannot be used in its own initializer."
+        );
+
+
         testCorrect(
                 new Statement.Block(0,
                         List.of(

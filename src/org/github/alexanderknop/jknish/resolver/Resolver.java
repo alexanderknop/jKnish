@@ -69,12 +69,30 @@ public class Resolver {
             });
         }
 
+        private int declareVariable(int line, String name) {
+            scopes.peek().put(name,
+                    new VariableInformation(line, currentVariable++, false, false));
+            return currentVariable - 1;
+        }
+
+        private void finishDefinition(int line, String name) {
+            variableInformation(line, name).defined = true;
+        }
+
+        private void defineClass(int classVariable, ResolvedStatement.Class resolvedClass) {
+            classes.peek().put(
+                    classVariable,
+                    resolvedClass
+            );
+        }
+
         private int defineVariable(int line, String name) {
             return defineVariable(line, name, false);
         }
 
         private int defineVariable(int line, String name, boolean isClass) {
-            scopes.peek().put(name, new VariableInformation(line, currentVariable++, isClass));
+            scopes.peek().put(name,
+                    new VariableInformation(line, currentVariable++, true, isClass));
             return currentVariable - 1;
         }
 
@@ -150,8 +168,15 @@ public class Resolver {
         @Override
         public ResolvedExpression visitVariableExpression(Expression.Variable variable) {
             useVariable(variable.line, variable.name);
+            VariableInformation information = variableInformation(variable.line, variable.name);
+
+            if (!information.defined) {
+                reporter.error(variable.line, "The variable " + variable.name +
+                        " cannot be used in its own initializer.");
+            }
+
             return new ResolvedExpression.Variable(variable.line,
-                    variableId(variable.line, variable.name));
+                    information.id);
         }
 
         @Override
@@ -192,17 +217,19 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitVarStatement(Statement.Var var) {
-            int variableId = defineVariable(var.line, var.name);
+            int variableId = declareVariable(var.line, var.name);
+            ResolvedStatement.Expression resolvedStatement = null;
             if (var.initializer != null) {
-                return new ResolvedStatement.Expression(var.line,
-                        new ResolvedExpression.Assign(var.line,
-                                variableId,
-                                resolveExpression(var.initializer)
-                        )
-                );
-            } else {
-                return null;
+                resolvedStatement =
+                        new ResolvedStatement.Expression(var.line,
+                                new ResolvedExpression.Assign(var.line,
+                                        variableId,
+                                        resolveExpression(var.initializer)
+                                )
+                        );
             }
+            finishDefinition(var.line, var.name);
+            return resolvedStatement;
         }
 
         @Override
@@ -246,13 +273,6 @@ public class Resolver {
             return null;
         }
 
-        private void defineClass(int classVariable, ResolvedStatement.Class resolvedClass) {
-            classes.peek().put(
-                    classVariable,
-                    resolvedClass
-            );
-        }
-
         private List<ResolvedStatement.Method> resolveMethods(List<Statement.Method> methods) {
             List<ResolvedStatement.Method> resolvedMethods = new ArrayList<>();
             for (Statement.Method method : methods) {
@@ -289,9 +309,11 @@ public class Resolver {
             public boolean used;
             public boolean defined;
 
-            public VariableInformation(int line, int id, boolean isClass) {
+            public VariableInformation(int line, int id,
+                                       boolean defined, boolean isClass) {
                 this.line = line;
                 this.id = id;
+                this.defined = defined;
                 this.isClass = isClass;
             }
         }
