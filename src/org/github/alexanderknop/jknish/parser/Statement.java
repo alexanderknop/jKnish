@@ -300,7 +300,7 @@ public abstract class Statement {
         }
     }
 
-    public static class Method {
+    public final static class Method {
         public final int line;
         public final String name;
         public final List<String> argumentsNames;

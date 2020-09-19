@@ -11,7 +11,7 @@ import org.github.alexanderknop.jknish.parser.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Interpreter {
+public final class Interpreter {
     public static void interpret(KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
         Environment globals = createEnvironment(core);
 
@@ -34,7 +34,8 @@ public class Interpreter {
 
     }
 
-    static class InterpreterVisitor implements Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
+    static final class InterpreterVisitor implements
+            Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
         private final KnishErrorReporter reporter;
 
         private Environment environment;

@@ -43,12 +43,12 @@ class SimpleType {
         }
     }
 
-    static class Top extends SimpleType {
+    static final class Top extends SimpleType {
         private static final Top TOP = new Top();
         private Top() {}
     }
 
-    static class Bottom extends SimpleType {
+    static final class Bottom extends SimpleType {
         private static final Bottom BOTTOM = new Bottom();
         private Bottom() {}
     }

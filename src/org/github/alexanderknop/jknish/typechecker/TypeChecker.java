@@ -12,10 +12,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
-public class TypeChecker {
+public final class TypeChecker {
     public static void check(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
         TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, reporter);
 
@@ -25,7 +24,7 @@ public class TypeChecker {
     private TypeChecker() {
     }
 
-    private static class TypeCheckerVisitor implements
+    private static final class TypeCheckerVisitor implements
             ResolvedStatement.Visitor<SimpleType>, ResolvedExpression.Visitor<SimpleType> {
         private final KnishCore core;
         private final Constrainer constrainer = new Constrainer();

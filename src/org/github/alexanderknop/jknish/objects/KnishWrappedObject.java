@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KnishWrappedObject<V> implements KnishObject {
+public final class KnishWrappedObject<V> implements KnishObject {
     private final V value;
-    private final Map<MethodId, Method<V>> methods;
+    private final Map<MethodId, ? extends Method<V>> methods;
     private final String name;
 
     private KnishWrappedObject(String name, V value,
-                               Map<MethodId, Method<V>> methods) {
+                               Map<MethodId, ? extends Method<V>> methods) {
         this.value = value;
         this.methods = methods;
         this.name = name;
@@ -37,7 +37,7 @@ public class KnishWrappedObject<V> implements KnishObject {
         return new KnishWrappedObjectConstructor<>(name);
     }
 
-    public static class KnishWrappedObjectConstructor<V> {
+    public static final class KnishWrappedObjectConstructor<V> {
         private final String name;
         private final Map<MethodId, Method<V>> methods;
         private boolean closed = false;

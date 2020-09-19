@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
 
-public class Parser {
+public final class Parser {
     public static Statement.Block parse(List<Token> tokens, KnishErrorReporter reporter) {
         Parser parser = new Parser(tokens, reporter);
         return parser.parse();

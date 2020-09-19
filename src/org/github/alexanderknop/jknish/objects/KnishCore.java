@@ -76,7 +76,7 @@ public class KnishCore extends KnishModule {
         return KnishNull.NULL;
     }
 
-    public static class KnishNumber extends AbstractKnishObject {
+    public static final class KnishNumber extends AbstractKnishObject {
         private final Long value;
 
         private KnishNumber(Long value) {
@@ -173,7 +173,7 @@ public class KnishCore extends KnishModule {
         }
     }
 
-    public static class KnishString extends AbstractKnishObject {
+    public static final class KnishString extends AbstractKnishObject {
         private final String value;
 
         private KnishString(String value) {
@@ -201,7 +201,7 @@ public class KnishCore extends KnishModule {
         }
     }
 
-    public static class KnishNull implements KnishObject {
+    public static final class KnishNull implements KnishObject {
         private final static KnishNull NULL = new KnishNull();
 
         private KnishNull() {
@@ -213,7 +213,7 @@ public class KnishCore extends KnishModule {
         }
     }
 
-    public static class KnishBoolean extends AbstractKnishObject {
+    public static final class KnishBoolean extends AbstractKnishObject {
         public static final KnishBoolean TRUE = new KnishBoolean(true);
         public static final KnishBoolean FALSE = new KnishBoolean(false);
 

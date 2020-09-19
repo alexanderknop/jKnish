@@ -63,11 +63,6 @@ public abstract class KnishModule {
         return unmodifiableMap(classes);
     }
 
-    public static abstract class KnishType {
-        private KnishType() {
-        }
-    }
-
     public final static class Union {
         private final Set<Class> types;
 

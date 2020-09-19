@@ -317,8 +317,8 @@ public class Resolver {
         }
 
         private static class VariableInformation {
-            public int id;
-            public int line;
+            public final int id;
+            public final int line;
             public boolean isClass;
             public boolean used;
             public boolean defined;

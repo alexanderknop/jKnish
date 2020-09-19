@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
 
-public class Scanner {
+public final class Scanner {
     public static List<Token> tokens(String source, KnishErrorReporter reporter) {
         Scanner scanner = new Scanner(reporter, source);
 

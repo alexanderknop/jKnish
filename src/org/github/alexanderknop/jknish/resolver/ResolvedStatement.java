@@ -280,7 +280,7 @@ public abstract class ResolvedStatement {
         }
     }
 
-    public static class Method {
+    public final static class Method {
         public final int line;
         public final String name;
         public final List<Integer> argumentsIds;

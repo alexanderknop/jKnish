@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish.scanner;
 
-public class Token {
+public final class Token {
     public final TokenType type;
     public final String lexeme;
     public final Object literal;
