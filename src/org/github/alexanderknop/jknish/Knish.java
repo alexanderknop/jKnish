@@ -4,6 +4,7 @@ import org.github.alexanderknop.jknish.interpreter.Interpreter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Parser;
 import org.github.alexanderknop.jknish.parser.Statement;
+import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.Resolver;
 import org.github.alexanderknop.jknish.scanner.Scanner;
 import org.github.alexanderknop.jknish.scanner.Token;
@@ -36,9 +37,9 @@ public class Knish {
             return;
         }
 
-        Resolver.resolve(core, script, reporter);
+        ResolvedScript resolvedScript = Resolver.resolve(core, script, reporter);
 
-        TypeChecker.check(core, script, reporter);
+        TypeChecker.check(core, resolvedScript, reporter);
         if (reporter.hadError()) {
             return;
         }

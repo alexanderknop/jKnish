@@ -3,18 +3,20 @@ package org.github.alexanderknop.jknish.typechecker;
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.objects.KnishModule;
-import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.MethodId;
-import org.github.alexanderknop.jknish.parser.Statement;
+import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
+import org.github.alexanderknop.jknish.resolver.ResolvedScript;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public class TypeChecker {
-    public static void check(KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
+    public static void check(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
         TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, reporter);
 
         typeCheckerVisitor.check(script);
@@ -23,7 +25,8 @@ public class TypeChecker {
     private TypeChecker() {
     }
 
-    private static class TypeCheckerVisitor implements Statement.Visitor<SimpleType>, Expression.Visitor<SimpleType> {
+    private static class TypeCheckerVisitor implements
+            ResolvedStatement.Visitor<SimpleType>, ResolvedExpression.Visitor<SimpleType> {
         private final KnishCore core;
         private final Constrainer constrainer = new Constrainer();
 
@@ -33,80 +36,87 @@ public class TypeChecker {
 
         private final KnishErrorReporter reporter;
 
-        private final Stack<HashMap<String, SimpleType>> scopes = new Stack<>();
+        private final Stack<HashMap<Integer, TypedVariableInformation>> scopes = new Stack<>();
 
         private TypeCheckerVisitor(KnishCore core, KnishErrorReporter reporter) {
             this.core = core;
             this.reporter = reporter;
         }
 
-        private void check(Statement.Block script) {
+        private void check(ResolvedScript script) {
             Map<KnishModule.Class, SimpleType> types = SimpleType.fromKnishModule(core);
 
             numberType = types.get(core.getClass("Number"));
             booleanType = types.get(core.getClass("Boolean"));
             stringType = types.get(core.getClass("String"));
 
-            beginScope();
+            // define globals, we expect that all the globals are defined in core
+            HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
+            script.globals.forEach((id, name) -> newScope.put(id,
+                    new TypedVariableInformation(name,
+                            types.get(core.getObjectType(name))
+                    )
+            ));
+            scopes.push(newScope);
 
-            for (var objectName : core.getObjects().keySet()) {
-                scopes.peek().put(objectName, types.get(core.getObjectType(objectName)));
-            }
-
-            for (Statement statement : script.statements) {
-                checkStatement(statement);
-            }
-            endScope();
+            visitBlockStatement(script.code);
         }
 
-        private SimpleType expressionType(Expression expression) {
+        private SimpleType expressionType(ResolvedExpression expression) {
             return expression.accept(this);
         }
 
-        private SimpleType checkStatement(Statement statement) {
+        private SimpleType checkStatement(ResolvedStatement statement) {
             return statement.accept(this);
         }
 
-        private void beginScope() {
-            scopes.push(new HashMap<>());
+        private void beginScope(Map<Integer, String> names) {
+            HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
+            for (var variable : names.entrySet()) {
+                newScope.put(variable.getKey(),
+                        new TypedVariableInformation(variable.getValue(),
+                                new SimpleType.Variable()
+                        )
+                );
+            }
+            scopes.push(newScope);
         }
 
         private void endScope() {
             scopes.pop();
         }
 
-        private SimpleType variableType(String variable) {
+        private TypedVariableInformation variableInformation(int id) {
             for (int i = scopes.size() - 1; i >= 0; i--) {
-                if (scopes.get(i).containsKey(variable)) {
-                    return scopes.get(i).get(variable);
+                if (scopes.get(i).containsKey(id)) {
+                    return scopes.get(i).get(id);
                 }
             }
 
-            return define(variable);
+            throw new UnsupportedOperationException("Undefined variable with id equal to " + id);
         }
 
-        private SimpleType define(String name) {
-            return define(name, new SimpleType.Variable());
+        private String variableName(int id) {
+            return variableInformation(id).name;
         }
 
-        private SimpleType define(String name, SimpleType type) {
-            scopes.peek().put(name, type);
-            return type;
+        private SimpleType variableType(int id) {
+            return variableInformation(id).type;
         }
 
         @Override
-        public SimpleType visitAssignExpression(Expression.Assign assign) {
+        public SimpleType visitAssignExpression(ResolvedExpression.Assign assign) {
             SimpleType valueType = expressionType(assign.value);
-            SimpleType variableType = variableType(assign.variable);
+            SimpleType variableType = variableType(assign.variableId);
             constrainer.constrain(valueType, variableType,
                     new TypeErrorMessage(reporter, assign.line,
                             "Wrong type of the value assigned to " +
-                                    assign.variable + "."));
+                                    variableName(assign.variableId) + "."));
             return valueType;
         }
 
         @Override
-        public SimpleType visitCallExpression(Expression.Call call) {
+        public SimpleType visitCallExpression(ResolvedExpression.Call call) {
             List<SimpleType> arguments;
             MethodId methodId;
             if (call.arguments != null) {
@@ -144,7 +154,7 @@ public class TypeChecker {
         }
 
         @Override
-        public SimpleType visitLiteralExpression(Expression.Literal literal) {
+        public SimpleType visitLiteralExpression(ResolvedExpression.Literal literal) {
             if (literal.value == null) {
                 return new SimpleType.Variable();
             } else if (literal.value instanceof Long) {
@@ -159,12 +169,12 @@ public class TypeChecker {
         }
 
         @Override
-        public SimpleType visitVariableExpression(Expression.Variable variable) {
-            return variableType(variable.name);
+        public SimpleType visitVariableExpression(ResolvedExpression.Variable variable) {
+            return variableType(variable.variableId);
         }
 
         @Override
-        public SimpleType visitLogicalExpression(Expression.Logical logical) {
+        public SimpleType visitLogicalExpression(ResolvedExpression.Logical logical) {
             constrainer.constrain(expressionType(logical.left), booleanType,
                     new TypeErrorMessage(reporter, logical.line,
                             "Left operand of " + logical.operator + " must have type Boolean."));
@@ -176,13 +186,13 @@ public class TypeChecker {
         }
 
         @Override
-        public SimpleType visitExpressionStatement(Statement.Expression expression) {
-            expressionType(expression.expression);
+        public SimpleType visitExpressionStatement(ResolvedStatement.Expression expression) {
+            expressionType(expression.resolvedExpression);
             return SimpleType.bottom();
         }
 
         @Override
-        public SimpleType visitorIfStatement(Statement.If anIf) {
+        public SimpleType visitorIfStatement(ResolvedStatement.If anIf) {
             constrainer.constrain(expressionType(anIf.condition), booleanType,
                     new TypeErrorMessage(reporter, anIf.line,
                             "If conditions must have type Boolean."));
@@ -198,7 +208,7 @@ public class TypeChecker {
         }
 
         @Override
-        public SimpleType visitWhileStatement(Statement.While aWhile) {
+        public SimpleType visitWhileStatement(ResolvedStatement.While aWhile) {
             constrainer.constrain(expressionType(aWhile.condition), booleanType,
                     new TypeErrorMessage(reporter, aWhile.line,
                             "While conditions must have type Boolean."));
@@ -206,46 +216,51 @@ public class TypeChecker {
         }
 
         @Override
-        public SimpleType visitVarStatement(Statement.Var var) {
-            SimpleType variableType = define(var.name);
-            if (var.initializer != null) {
-                constrainer.constrain(expressionType(var.initializer), variableType,
-                        // this error is impossible since we create a fresh variable
-                        new TypeErrorMessage(reporter, var.line, ""));
-            }
-            return SimpleType.bottom();
-        }
+        public SimpleType visitBlockStatement(ResolvedStatement.Block block) {
+            beginScope(block.names);
 
-        @Override
-        public SimpleType visitBlockStatement(Statement.Block block) {
-            beginScope();
-            SimpleType returnType = checkStatementsList(block.statements);
-            endScope();
-            return returnType;
-        }
+            block.classes.forEach(this::defineClass);
 
-        private SimpleType checkStatementsList(List<Statement> statements) {
             SimpleType returnType = new SimpleType.Variable();
-            for (Statement statement : statements) {
+            for (ResolvedStatement statement : block.resolvedStatements) {
                 constrainer.constrain(checkStatement(statement), returnType,
                         new TypeErrorMessage(reporter, statement.line,
                                 "Incompatible return types"));
             }
+
+            endScope();
+
             return returnType;
         }
 
         @Override
-        public SimpleType visitClassStatement(Statement.Class klass) {
+        public SimpleType visitReturnStatement(ResolvedStatement.Return aReturn) {
+            if (aReturn.value != null) {
+                return expressionType(aReturn.value);
+            }
+            return SimpleType.bottom();
+        }
+
+        public void defineClass(int classId, ResolvedStatement.Class klass) {
 
             SimpleType.Variable instanceType = new SimpleType.Variable();
-            constrainer.constrain(new SimpleType.Class(getInstanceType(instanceType, klass.methods)),
+            constrainer.constrain(
+                    new SimpleType.Class(
+                            getInstanceType(klass.fields,
+                                    klass.thisId, instanceType,
+                                    klass.methods)
+                    ),
                     instanceType,
                     new TypeErrorMessage(reporter, klass.line,
-                            "Incompatible constraints on " + klass.name + "."));
+                            "Incompatible constraints on " +
+                                    variableType(classId) + "."));
 
 
-            SimpleType classType = variableType(klass.name);
-            Map<MethodId, SimpleType.Method> staticMethods = getInstanceType(classType, klass.staticMethods);
+            SimpleType classType = variableType(classId);
+            Map<MethodId, SimpleType.Method> staticMethods =
+                    getInstanceType(klass.staticFields,
+                            klass.staticThisId, classType,
+                            klass.staticMethods);
             // todo: add support of constructors
             staticMethods.put(new MethodId("new", 0),
                     new SimpleType.Method(emptyList(), instanceType));
@@ -253,43 +268,58 @@ public class TypeChecker {
             constrainer.constrain(new SimpleType.Class(staticMethods),
                     classType,
                     new TypeErrorMessage(reporter, klass.line,
-                            "Incompatible constraints on " + klass.name + " metaclass."));
-
-            return SimpleType.bottom();
+                            "Incompatible constraints on " +
+                                    variableType(classId) +
+                                    " metaclass."));
         }
 
-        @Override
-        public SimpleType visitReturnStatement(Statement.Return aReturn) {
-            if (aReturn.value != null) {
-                return expressionType(aReturn.value);
-            }
-            return SimpleType.bottom();
-        }
+        private Map<MethodId, SimpleType.Method> getInstanceType(
+                Map<Integer, String> fields,
+                int thisId, SimpleType instanceType,
+                List<ResolvedStatement.Method> methodStatements) {
+            beginScope(fields);
 
-        private Map<MethodId, SimpleType.Method> getInstanceType(SimpleType instanceType,
-                                                                 List<Statement.Method> methodStatements) {
+            constrainer.constrain(instanceType, variableType(thisId),
+                    // this error is impossible since variableType(thisId) is fresh
+                    new TypeErrorMessage(reporter, 0, ""));
+
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
-            for (Statement.Method method : methodStatements) {
-                methods.put(new MethodId(method.name, arityFromArgumentsList(method.argumentsNames)),
-                        methodType(instanceType, method.argumentsNames, method.body.statements));
+            for (ResolvedStatement.Method method : methodStatements) {
+                methods.put(new MethodId(method.name, arityFromArgumentsList(method.argumentsIds)),
+                        methodType(method.argumentsIds,
+                                method.argumentNames,
+                                method.body)
+                );
             }
+
+            endScope();
             return methods;
         }
 
-        private SimpleType.Method methodType(SimpleType instanceType,
-                                             List<String> argumentsNames, List<Statement> body) {
-            beginScope();
-            List<SimpleType> argumentTypes = argumentsNames ==
-                    null ? null :
-                    argumentsNames.stream()
-                            .map(this::define)
-                            .collect(Collectors.toList());
-            define("this", instanceType);
+        private SimpleType.Method methodType(List<Integer> argumentsIds,
+                                             Map<Integer, String> argumentsNames,
+                                             ResolvedStatement.Block body) {
+            beginScope(argumentsNames);
 
-            SimpleType returnType = checkStatementsList(body);
+            SimpleType returnType = visitBlockStatement(body);
+
+            List<SimpleType> argumentTypes =
+                    argumentsIds == null ? null : argumentsIds.stream()
+                            .map(this::variableType)
+                            .collect(Collectors.toList());
 
             endScope();
             return new SimpleType.Method(argumentTypes, returnType);
+        }
+    }
+
+    private static class TypedVariableInformation {
+        public final String name;
+        public final SimpleType type;
+
+        public TypedVariableInformation(String name, SimpleType type) {
+            this.name = name;
+            this.type = type;
         }
     }
 }

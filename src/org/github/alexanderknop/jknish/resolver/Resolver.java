@@ -262,19 +262,27 @@ public class Resolver {
 
             beginScope();
             Map<Integer, String> fields = new HashMap<>();
-            fields.put(defineVariable(klass.line, "this"), "this");
+            int thisId = defineVariable(klass.line, "this");
+            fields.put(thisId, "this");
 
             List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
-            List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
             List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
             endScope();
 
+            beginScope();
+            Map<Integer, String> staticFields = new HashMap<>();
+            int staticThisId = defineVariable(klass.line, "this");
+            staticFields.put(staticThisId, "this");
+
+            List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
+            endScope();
+
             defineClass(classVariable, new ResolvedStatement.Class(klass.line,
-                            staticMethods,
-                            constructors,
-                            methods,
-                            fields
-                    )
+                    staticMethods,
+                    constructors,
+                    methods,
+                    fields,
+                    staticFields, thisId, staticThisId)
             );
             return null;
         }

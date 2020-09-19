@@ -241,7 +241,8 @@ class ResolverTest {
     @Test
     void testClass() {
         int testClass = 1;
-        Integer aThis = 2;
+        int thisId = 2;
+        int staticThisId = 3;
         testCorrect(
                 new Statement.Block(0,
                         List.of(
@@ -285,7 +286,9 @@ class ResolverTest {
                                                                 emptyMap()
                                                         )
                                                 ),
-                                                Map.of(aThis, "this"))
+                                                Map.of(thisId, "this"),
+                                                Map.of(staticThisId, "this"),
+                                                thisId, staticThisId)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -335,8 +338,9 @@ class ResolverTest {
                                                 ),
                                                 emptyList(),
                                                 emptyList(),
-                                                Map.of(aThis, "this")
-                                        )
+                                                Map.of(thisId, "this"),
+                                                Map.of(staticThisId, "this"),
+                                                thisId, staticThisId)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -386,8 +390,9 @@ class ResolverTest {
                                                         )
                                                 ),
                                                 emptyList(),
-                                                Map.of(aThis, "this")
-                                        )
+                                                Map.of(thisId, "this"),
+                                                Map.of(staticThisId, "this"),
+                                                thisId, staticThisId)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")

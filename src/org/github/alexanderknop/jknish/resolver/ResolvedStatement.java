@@ -227,15 +227,22 @@ public abstract class ResolvedStatement {
         public final List<Method> constructors;
         public final List<Method> staticMethods;
         public final Map<Integer, String> fields;
+        public final Map<Integer, String> staticFields;
+        public final int thisId;
+        public final int staticThisId;
 
         public Class(int line,
                      List<Method> staticMethods, List<Method> constructors, List<Method> methods,
-                     Map<Integer, String> fields) {
+                     Map<Integer, String> fields, Map<Integer, String> staticFields,
+                     int thisId, int staticThisId) {
             this.line = line;
             this.methods = methods;
             this.constructors = constructors;
             this.staticMethods = staticMethods;
             this.fields = fields;
+            this.staticFields = staticFields;
+            this.thisId = thisId;
+            this.staticThisId = staticThisId;
         }
 
         @Override
@@ -244,15 +251,18 @@ public abstract class ResolvedStatement {
             if (o == null || getClass() != o.getClass()) return false;
             Class aClass = (Class) o;
             return line == aClass.line &&
+                    thisId == aClass.thisId &&
+                    staticThisId == aClass.staticThisId &&
                     Objects.equals(methods, aClass.methods) &&
                     Objects.equals(constructors, aClass.constructors) &&
                     Objects.equals(staticMethods, aClass.staticMethods) &&
-                    Objects.equals(fields, aClass.fields);
+                    Objects.equals(fields, aClass.fields) &&
+                    Objects.equals(staticFields, aClass.staticFields);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(line, methods, constructors, staticMethods, fields);
+            return Objects.hash(line, methods, constructors, staticMethods, fields, staticFields, thisId, staticThisId);
         }
 
         @Override
@@ -263,6 +273,9 @@ public abstract class ResolvedStatement {
                     ", constructors=" + constructors +
                     ", staticMethods=" + staticMethods +
                     ", fields=" + fields +
+                    ", staticFields=" + staticFields +
+                    ", thisId=" + thisId +
+                    ", staticThisId=" + staticThisId +
                     '}';
         }
     }
