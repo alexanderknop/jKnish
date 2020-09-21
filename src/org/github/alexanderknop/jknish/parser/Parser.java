@@ -62,8 +62,15 @@ public final class Parser {
         if (match(WHILE)) return whileStatement();
         if (match(VAR)) return varStatement();
         if (match(CLASS)) return classStatement();
+        if (match(RETURN)) return returnStatement();
 
         return expressionStatement();
+    }
+
+    private Statement.Return returnStatement() {
+        Statement.Return aReturn = new Statement.Return(previous().line, expression());
+        consume(SEMICOLON, "Expect ';' after return statement.");
+        return aReturn;
     }
 
     private Statement classStatement() {
