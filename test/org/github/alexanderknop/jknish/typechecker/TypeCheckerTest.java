@@ -155,18 +155,26 @@ class TypeCheckerTest {
 
     @Test
     void testClassConstructors() {
+        ResolvedStatement.Class testClass = new ResolvedStatement.Class(1,
+                emptyList(),
+                List.of(
+                        new Method(2,
+                                "new",
+                                emptyList(),
+                                new Block(2),
+                                emptyMap()
+                        )
+                ),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
                                 Map.of(TEST_VARIABLE, "Test"),
                                 Map.of(TEST_VARIABLE,
-                                        new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                emptyList(),
-                                                emptyList(),
-                                                Map.of(THIS_VARIABLE, "this"),
-                                                Map.of(STATIC_THIS_VARIABLE, "this"),
-                                                THIS_VARIABLE, STATIC_THIS_VARIABLE)
+                                        testClass
                                 ),
                                 new Expression(4,
                                         new Call(4,
@@ -185,7 +193,14 @@ class TypeCheckerTest {
     void testClassMethods() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
+                List.of(
+                        new Method(2,
+                                "new",
+                                emptyList(),
+                                new Block(2),
+                                emptyMap()
+                        )
+                ),
                 List.of(
                         new Method(2,
                                 "test",
@@ -224,7 +239,14 @@ class TypeCheckerTest {
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
+                List.of(
+                        new Method(2,
+                                "new",
+                                emptyList(),
+                                new Block(2),
+                                emptyMap()
+                        )
+                ),
                 List.of(
                         new Method(2,
                                 "test",
@@ -301,7 +323,14 @@ class TypeCheckerTest {
 
         ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
+                List.of(
+                        new Method(2,
+                                "new",
+                                emptyList(),
+                                new Block(2),
+                                emptyMap()
+                        )
+                ),
                 emptyList(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
@@ -331,21 +360,30 @@ class TypeCheckerTest {
     void testThis() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
                 List.of(
                         new Method(2,
-                                "test1",
-                                null,
+                                "new",
+                                emptyList(),
                                 new Block(2),
                                 emptyMap()
-                        ),
+                        )
+                ),
+                List.of(
                         new Method(3,
+                                "test1",
+                                null,
+                                new Block(3),
+                                emptyMap()
+                        ),
+                        new Method(4,
                                 "test2",
                                 null,
-                                new Block(3,
-                                        new Expression(4,
-                                                new Call(4,
-                                                        new Variable(4, THIS_VARIABLE),
+                                new Block(4,
+                                        new Expression(5,
+                                                new Call(5,
+                                                        new Variable(5,
+                                                                THIS_VARIABLE
+                                                        ),
                                                         "test1"
                                                 )
                                         )
@@ -364,9 +402,9 @@ class TypeCheckerTest {
                                         TEST_VARIABLE,
                                         testClass1
                                 ),
-                                new Expression(4,
-                                        new Call(4,
-                                                new Call(4,
+                                new Expression(6,
+                                        new Call(6,
+                                                new Call(6,
                                                         new Variable(4, TEST_VARIABLE),
                                                         "new",
                                                         emptyList()
@@ -381,21 +419,30 @@ class TypeCheckerTest {
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
                 List.of(
                         new Method(2,
-                                "test1",
-                                null,
+                                "new",
+                                emptyList(),
                                 new Block(2),
                                 emptyMap()
-                        ),
+                        )
+                ),
+                List.of(
                         new Method(3,
+                                "test1",
+                                null,
+                                new Block(3),
+                                emptyMap()
+                        ),
+                        new Method(4,
                                 "test2",
                                 null,
-                                new Block(3,
-                                        new Expression(4,
-                                                new Call(4,
-                                                        new Variable(4, THIS_VARIABLE),
+                                new Block(4,
+                                        new Expression(5,
+                                                new Call(5,
+                                                        new Variable(5,
+                                                                THIS_VARIABLE
+                                                        ),
                                                         "test"
                                                 )
                                         )
@@ -414,10 +461,12 @@ class TypeCheckerTest {
                                         TEST_VARIABLE,
                                         testClass2
                                 ),
-                                new Expression(4,
-                                        new Call(4,
-                                                new Call(4,
-                                                        new Variable(4, TEST_VARIABLE),
+                                new Expression(6,
+                                        new Call(6,
+                                                new Call(6,
+                                                        new Variable(6,
+                                                                TEST_VARIABLE
+                                                        ),
                                                         "new",
                                                         emptyList()
                                                 ),
@@ -427,7 +476,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Incompatible constraints on Test."
+                "[line 2] Error: Incompatible constraints on Test created in new."
         );
     }
 

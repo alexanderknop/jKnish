@@ -10,8 +10,8 @@ import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static java.util.Collections.emptyList;
 import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public final class TypeChecker {
@@ -241,63 +241,125 @@ public final class TypeChecker {
         }
 
         public void defineClass(int classId, ResolvedStatement.Class klass) {
+            String className = variableName(classId);
+            SimpleType metaClassType = variableType(classId);
+            beginScope(klass.staticFields);
 
-            SimpleType.Variable instanceType = new SimpleType.Variable();
-            constrainer.constrain(
-                    new SimpleType.Class(
-                            getInstanceType(klass.fields,
-                                    klass.thisId, instanceType,
-                                    klass.methods)
-                    ),
-                    instanceType,
-                    new TypeErrorMessage(reporter, klass.line,
-                            "Incompatible constraints on " +
-                                    variableName(classId) + "."));
-
-
-            SimpleType classType = variableType(classId);
-            Map<MethodId, SimpleType.Method> staticMethods =
-                    getInstanceType(klass.staticFields,
-                            klass.staticThisId, classType,
-                            klass.staticMethods);
-            // todo: add support of constructors
-            staticMethods.put(new MethodId("new", 0),
-                    new SimpleType.Method(emptyList(), instanceType));
-
-            constrainer.constrain(new SimpleType.Class(staticMethods),
-                    classType,
-                    new TypeErrorMessage(reporter, klass.line,
-                            "Incompatible constraints on " +
-                                    variableType(classId) +
-                                    " metaclass."));
-        }
-
-        private Map<MethodId, SimpleType.Method> getInstanceType(
-                Map<Integer, String> fields,
-                int thisId, SimpleType instanceType,
-                List<ResolvedStatement.Method> methodStatements) {
-            beginScope(fields);
-
-            constrainer.constrain(instanceType, variableType(thisId),
+            // make this of the metaclass to be of the same type as the metaclass
+            constrainer.constrain(metaClassType, variableType(klass.staticThisId),
                     // this error is impossible since variableType(thisId) is fresh
                     new TypeErrorMessage(reporter, 0, ""));
 
+            // add all the methods
+            Map<MethodId, SimpleType.Method> staticMethods = methodsTypes(klass.staticMethods);
+            // add all the constructors
+            for (ResolvedStatement.Method constructor : klass.constructors) {
+                SimpleType.Variable classType = new SimpleType.Variable();
+                beginScope(klass.fields);
+                // make this of the class to be of the same type as the class
+                constrainer.constrain(classType, variableType(klass.thisId),
+                        // this error is impossible since variableType(thisId) is fresh
+                        new TypeErrorMessage(reporter, 0, ""));
+
+                Map<MethodId, SimpleType.Method> methods = methodsTypes(klass.methods);
+
+                // merge constraints created by the constructor and by class methods
+                SimpleType.Method initializationType = methodType(
+                        constructor.argumentsIds,
+                        constructor.argumentNames,
+                        constructor.body
+                );
+
+                SimpleType.Method constructorType;
+                if (constructor.argumentsIds == null) {
+                    constructorType = new SimpleType.Method(
+                            null,
+                            new SimpleType.Variable()
+                    );
+                } else {
+                    constructorType = new SimpleType.Method(
+                            IntStream.range(0, constructor.argumentsIds.size())
+                                    .mapToObj(i -> new SimpleType.Variable())
+                                    .collect(Collectors.toList()),
+                            new SimpleType.Variable()
+                    );
+                }
+
+                constrainer.constrain(
+                        constructorType,
+                        initializationType,
+                        new TypeErrorMessage(
+                                reporter,
+                                constructor.line,
+                                "Incompatible constraints on " +
+                                        constructor.name + "."
+                        )
+                );
+
+                String errorMessage =
+                        "Incompatible constraints on " + className +
+                                " created in " + constructor.name + ".";
+                constrainer.constrain(
+                        new SimpleType.Class(methods),
+                        classType,
+                        new TypeErrorMessage(reporter, constructor.line, errorMessage)
+                );
+
+                constrainer.constrain(
+                        classType,
+                        constructorType.value,
+                        new TypeErrorMessage(
+                                reporter,
+                                constructor.line,
+                                "Incompatible constraints on the " +
+                                        "instance of " + className + " returned by " +
+                                        constructor.name + "."
+                        )
+                );
+
+                MethodId constructorId =
+                        new MethodId(
+                                constructor.name,
+                                arityFromArgumentsList(constructor.argumentsIds)
+                        );
+                staticMethods.put(constructorId, constructorType);
+
+
+                endScope();
+            }
+
+            String errorMessage =
+                    "Incompatible constraints on " + className + " metaclass.";
+            constrainer.constrain(
+                    new SimpleType.Class(staticMethods),
+                    metaClassType,
+                    new TypeErrorMessage(reporter, klass.line, errorMessage)
+            );
+
+            endScope();
+        }
+
+        private Map<MethodId, SimpleType.Method> methodsTypes(
+                List<ResolvedStatement.Method> methodStatements) {
+
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
             for (ResolvedStatement.Method method : methodStatements) {
-                methods.put(new MethodId(method.name, arityFromArgumentsList(method.argumentsIds)),
+                MethodId methodId =
+                        new MethodId(method.name, arityFromArgumentsList(method.argumentsIds));
+                methods.put(methodId,
                         methodType(method.argumentsIds,
                                 method.argumentNames,
                                 method.body)
                 );
             }
 
-            endScope();
             return methods;
         }
 
-        private SimpleType.Method methodType(List<Integer> argumentsIds,
-                                             Map<Integer, String> argumentsNames,
-                                             ResolvedStatement.Block body) {
+        private SimpleType.Method methodType(
+                List<Integer> argumentsIds,
+                Map<Integer, String> argumentsNames,
+                ResolvedStatement.Block body) {
             beginScope(argumentsNames);
 
             SimpleType returnType = visitBlockStatement(body);

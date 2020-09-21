@@ -52,7 +52,7 @@ class Constrainer {
         }
     }
 
-    private void constrain(SimpleType.Method left, SimpleType.Method right, TypeErrorMessage message) {
+    void constrain(SimpleType.Method left, SimpleType.Method right, TypeErrorMessage message) {
         constrain(left.value, right.value, message);
         if (left.arguments != null) {
             for (int i = 0; i < left.arguments.size(); i++) {
