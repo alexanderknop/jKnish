@@ -16,7 +16,7 @@ public final class Interpreter {
     public static void interpret(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
         Environment globals = createEnvironment(core, script.globals);
 
-        InterpreterVisitor interpreterVisitor = new InterpreterVisitor(reporter);
+        InterpreterVisitor interpreterVisitor = new InterpreterVisitor();
 
         try {
             interpreterVisitor.interpret(globals, script.code);
@@ -41,12 +41,10 @@ public final class Interpreter {
 
     static final class InterpreterVisitor implements
             ResolvedExpression.Visitor<KnishObject>, ResolvedStatement.Visitor<Void> {
-        private final KnishErrorReporter reporter;
 
         private Environment environment;
 
-        private InterpreterVisitor(KnishErrorReporter reporter) {
-            this.reporter = reporter;
+        private InterpreterVisitor() {
         }
 
         void interpret(Environment enclosing, ResolvedStatement.Block block) {
