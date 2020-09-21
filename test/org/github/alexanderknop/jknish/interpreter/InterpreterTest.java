@@ -159,7 +159,14 @@ class InterpreterTest {
 
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
+                List.of(
+                        new Method(3,
+                                "new",
+                                emptyList(),
+                                new Block(3),
+                                emptyMap()
+                        )
+                ),
                 List.of(
                         new Method(2,
                                 "test",
@@ -184,10 +191,11 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass1
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Call(4,
@@ -199,7 +207,7 @@ class InterpreterTest {
                                                 "test"
                                         )
                                 )
-                        )
+
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -207,7 +215,14 @@ class InterpreterTest {
         );
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
                 emptyList(),
-                emptyList(),
+                List.of(
+                        new Method(3,
+                                "new",
+                                emptyList(),
+                                new Block(3),
+                                emptyMap()
+                        )
+                ),
                 emptyList(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
@@ -447,6 +462,148 @@ class InterpreterTest {
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 3] Error: Test metaclass does not implement 'test'."
+        );
+    }
+
+    @Test
+    void testConstructor() {
+        ResolvedStatement.Class testClass1 =
+                new ResolvedStatement.Class(1,
+                        emptyList(),
+                        List.of(
+                                new Method(2,
+                                        "new",
+                                        emptyList(),
+                                        new Block(2,
+                                                new Expression(3,
+                                                        new Call(3,
+                                                                new Variable(3,
+                                                                        THIS_VARIABLE),
+                                                                "test"
+                                                        )
+                                                )
+                                        ),
+                                        emptyMap()
+                                )
+                        ),
+                        List.of(
+                                new Method(2,
+                                        "test",
+                                        null,
+                                        new Block(2,
+                                                new Expression(3,
+                                                        new Call(3,
+                                                                new Variable(3,
+                                                                        SYSTEM_VARIABLE),
+                                                                "print",
+                                                                new Literal(3,
+                                                                        "Hello World!")
+                                                        )
+                                                )
+                                        ),
+                                        emptyMap()
+                                )
+                        ),
+                        Map.of(THIS_VARIABLE, "this"),
+                        Map.of(STATIC_THIS_VARIABLE, "this"),
+                        THIS_VARIABLE, STATIC_THIS_VARIABLE
+                );
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "new",
+                                                emptyList()
+                                        )
+                                )
+
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                ),
+                "Hello World!"
+        );
+
+        ResolvedStatement.Class testClass2 =
+                new ResolvedStatement.Class(1,
+                        emptyList(),
+                        List.of(
+                                new Method(4,
+                                        "new1",
+                                        emptyList(),
+                                        new Block(4,
+                                                new Expression(5,
+                                                        new Call(5,
+                                                                new Variable(5,
+                                                                        SYSTEM_VARIABLE),
+                                                                "print",
+                                                                new Literal(5,
+                                                                        "Hello World 1!"
+                                                                )
+                                                        )
+                                                )
+                                        ),
+                                        emptyMap()
+                                ),
+                                new Method(4,
+                                        "new2",
+                                        emptyList(),
+                                        new Block(4,
+                                                new Expression(5,
+                                                        new Call(5,
+                                                                new Variable(5,
+                                                                        SYSTEM_VARIABLE),
+                                                                "print",
+                                                                new Literal(5,
+                                                                        "Hello World 2!"
+                                                                )
+                                                        )
+                                                )
+                                        ),
+                                        emptyMap()
+                                )
+                        ),
+                        emptyList(),
+                        Map.of(THIS_VARIABLE, "this"),
+                        Map.of(STATIC_THIS_VARIABLE, "this"),
+                        THIS_VARIABLE, STATIC_THIS_VARIABLE
+                );
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "new1",
+                                                emptyList()
+                                        )
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "new2",
+                                                emptyList()
+                                        )
+                                )
+
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                ),
+                "Hello World 1!\nHello World 2!"
         );
     }
 
