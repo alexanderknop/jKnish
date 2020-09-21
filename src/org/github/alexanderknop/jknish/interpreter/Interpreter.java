@@ -18,7 +18,11 @@ public final class Interpreter {
 
         InterpreterVisitor interpreterVisitor = new InterpreterVisitor(reporter);
 
-        interpreterVisitor.interpret(globals, script.code);
+        try {
+            interpreterVisitor.interpret(globals, script.code);
+        } catch (RuntimeExceptionWithLine e) {
+            reporter.error(e.getLine(), e.getMessage());
+        }
     }
 
     private static Environment createEnvironment(KnishCore core,
@@ -46,16 +50,12 @@ public final class Interpreter {
         }
 
         void interpret(Environment enclosing, ResolvedStatement.Block block) {
+            Environment previous = environment;
+            this.environment = enclosing;
             try {
-                Environment previous = environment;
-                this.environment = enclosing;
-                try {
-                    visitBlockStatement(block);
-                } finally {
-                    environment = previous;
-                }
-            } catch (RuntimeExceptionWithLine e) {
-                reporter.error(e.getLine(), e.getMessage());
+                visitBlockStatement(block);
+            } finally {
+                environment = previous;
             }
         }
 
