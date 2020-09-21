@@ -252,7 +252,7 @@ public final class TypeChecker {
                     instanceType,
                     new TypeErrorMessage(reporter, klass.line,
                             "Incompatible constraints on " +
-                                    variableType(classId) + "."));
+                                    variableName(classId) + "."));
 
 
             SimpleType classType = variableType(classId);
