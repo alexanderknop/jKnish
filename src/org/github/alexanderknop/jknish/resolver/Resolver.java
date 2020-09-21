@@ -251,8 +251,7 @@ public class Resolver {
             endScope();
 
             return new ResolvedStatement.Block(block.line,
-                    resolvedStatements,
-                    names, classes
+                    names, classes, resolvedStatements
             );
         }
 

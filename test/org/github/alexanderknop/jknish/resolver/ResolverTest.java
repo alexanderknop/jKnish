@@ -54,13 +54,11 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
+                                Map.of(xVariable, "x"), emptyMap(), List.of(
                                         new ResolvedStatement.Expression(2,
                                                 new ResolvedExpression.Variable(2, xVariable)
                                         )
-                                ),
-                                Map.of(xVariable, "x"),
-                                emptyMap()
+                                )
                         ),
                         // todo: fix the problem with multiple elements defined globally
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -79,7 +77,7 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
+                                Map.of(xVariable, "x"), emptyMap(), List.of(
                                         new ResolvedStatement.Expression(1,
                                                 new ResolvedExpression.Assign(1,
                                                         xVariable,
@@ -89,9 +87,7 @@ class ResolverTest {
                                         new ResolvedStatement.Expression(2,
                                                 new ResolvedExpression.Variable(2, xVariable)
                                         )
-                                ),
-                                Map.of(xVariable, "x"),
-                                emptyMap()
+                                )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -147,24 +143,20 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
+                                Map.of(xVariable, "x"), emptyMap(), List.of(
                                         new ResolvedStatement.Block(2,
-                                                List.of(
+                                                Map.of(x2Variable, "x"), emptyMap(), List.of(
                                                         new ResolvedStatement.Expression(2,
                                                                 new ResolvedExpression.Variable(2,
                                                                         x2Variable)
                                                         )
-                                                ),
-                                                Map.of(x2Variable, "x"),
-                                                emptyMap()
+                                                )
                                         ),
                                         new ResolvedStatement.Expression(5,
                                                 new ResolvedExpression.Variable(5,
                                                         xVariable)
                                         )
-                                ),
-                                Map.of(xVariable, "x"),
-                                emptyMap()
+                                )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -187,7 +179,7 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
+                                emptyMap(), emptyMap(), List.of(
                                         new ResolvedStatement.If(1,
                                                 new ResolvedExpression.Literal(1, 1L),
                                                 new ResolvedStatement.Expression(2,
@@ -195,9 +187,7 @@ class ResolverTest {
                                                 ),
                                                 null
                                         )
-                                ),
-                                emptyMap(),
-                                emptyMap()
+                                )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -220,7 +210,7 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
+                                emptyMap(), emptyMap(), List.of(
                                         new ResolvedStatement.Expression(1,
                                                 new ResolvedExpression.Call(1,
                                                         new ResolvedExpression.Variable(1,
@@ -229,9 +219,7 @@ class ResolverTest {
                                                         new ResolvedExpression.Literal(1, 1L)
                                                 )
                                         )
-                                ),
-                                emptyMap(),
-                                emptyMap()
+                                )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -265,12 +253,7 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
-                                        new ResolvedStatement.Expression(3,
-                                                new ResolvedExpression.Variable(3, testClass))
-                                ),
-                                Map.of(testClass, "Test"),
-                                Map.of(testClass,
+                                Map.of(testClass, "Test"), Map.of(testClass,
                                         new ResolvedStatement.Class(1,
                                                 emptyList(),
                                                 emptyList(),
@@ -278,17 +261,16 @@ class ResolverTest {
                                                         new ResolvedStatement.Method(2,
                                                                 "test",
                                                                 null,
-                                                                new ResolvedStatement.Block(2,
-                                                                        emptyList(),
-                                                                        emptyMap(),
-                                                                        emptyMap()
-                                                                ),
+                                                                new ResolvedStatement.Block(2),
                                                                 emptyMap()
                                                         )
                                                 ),
                                                 Map.of(thisId, "this"),
                                                 Map.of(staticThisId, "this"),
                                                 thisId, staticThisId)
+                                ), List.of(
+                                        new ResolvedStatement.Expression(3,
+                                                new ResolvedExpression.Variable(3, testClass))
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -317,21 +299,14 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
-                                        new ResolvedStatement.Expression(3,
-                                                new ResolvedExpression.Variable(3, testClass))
-                                ),
-                                Map.of(testClass, "Test"),
-                                Map.of(testClass,
+                                Map.of(testClass, "Test"), Map.of(testClass,
                                         new ResolvedStatement.Class(1,
                                                 List.of(
                                                         new ResolvedStatement.Method(2,
                                                                 "test",
                                                                 null,
                                                                 new ResolvedStatement.Block(2,
-                                                                        emptyList(),
-                                                                        emptyMap(),
-                                                                        emptyMap()
+                                                                        emptyMap(), emptyMap(), emptyList()
                                                                 ),
                                                                 emptyMap()
                                                         )
@@ -341,6 +316,9 @@ class ResolverTest {
                                                 Map.of(thisId, "this"),
                                                 Map.of(staticThisId, "this"),
                                                 thisId, staticThisId)
+                                ), List.of(
+                                        new ResolvedStatement.Expression(3,
+                                                new ResolvedExpression.Variable(3, testClass))
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -369,12 +347,7 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new ResolvedStatement.Block(0,
-                                List.of(
-                                        new ResolvedStatement.Expression(3,
-                                                new ResolvedExpression.Variable(3, testClass))
-                                ),
-                                Map.of(testClass, "Test"),
-                                Map.of(testClass,
+                                Map.of(testClass, "Test"), Map.of(testClass,
                                         new ResolvedStatement.Class(1,
                                                 emptyList(),
                                                 List.of(
@@ -382,9 +355,7 @@ class ResolverTest {
                                                                 "test",
                                                                 null,
                                                                 new ResolvedStatement.Block(2,
-                                                                        emptyList(),
-                                                                        emptyMap(),
-                                                                        emptyMap()
+                                                                        emptyMap(), emptyMap(), emptyList()
                                                                 ),
                                                                 emptyMap()
                                                         )
@@ -393,6 +364,9 @@ class ResolverTest {
                                                 Map.of(thisId, "this"),
                                                 Map.of(staticThisId, "this"),
                                                 thisId, staticThisId)
+                                ), List.of(
+                                        new ResolvedStatement.Expression(3,
+                                                new ResolvedExpression.Variable(3, testClass))
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")

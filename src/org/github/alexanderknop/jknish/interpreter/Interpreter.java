@@ -2,30 +2,31 @@ package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
-import org.github.alexanderknop.jknish.objects.KnishModule;
 import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.objects.KnishRuntimeException;
-import org.github.alexanderknop.jknish.parser.Expression;
-import org.github.alexanderknop.jknish.parser.Statement;
+import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
+import org.github.alexanderknop.jknish.resolver.ResolvedScript;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class Interpreter {
-    public static void interpret(KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
-        Environment globals = createEnvironment(core);
+    public static void interpret(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
+        Environment globals = createEnvironment(core, script.globals);
 
         InterpreterVisitor interpreterVisitor = new InterpreterVisitor(reporter);
 
-        interpreterVisitor.interpret(globals, script);
+        interpreterVisitor.interpret(globals, script.code);
     }
 
-    private static Environment createEnvironment(KnishModule module) {
-        Environment globals = new Environment();
+    private static Environment createEnvironment(KnishCore core,
+                                                 Map<Integer, String> globalsIds) {
+        Map<String, KnishObject> moduleObjects = core.getObjects();
+        Environment globals = new Environment(globalsIds.keySet());
 
-        for (var object : module.getObjects().entrySet()) {
-            globals.define(object.getKey(), object.getValue());
-        }
+        globalsIds.forEach((id, name) -> globals.set(id, moduleObjects.get(name)));
 
         return globals;
     }
@@ -35,7 +36,7 @@ public final class Interpreter {
     }
 
     static final class InterpreterVisitor implements
-            Expression.Visitor<KnishObject>, Statement.Visitor<Void> {
+            ResolvedExpression.Visitor<KnishObject>, ResolvedStatement.Visitor<Void> {
         private final KnishErrorReporter reporter;
 
         private Environment environment;
@@ -44,12 +45,12 @@ public final class Interpreter {
             this.reporter = reporter;
         }
 
-        void interpret(Environment enclosing, Statement.Block script) {
+        void interpret(Environment enclosing, ResolvedStatement.Block block) {
             try {
                 Environment previous = environment;
-                this.environment = new Environment(enclosing);
+                this.environment = enclosing;
                 try {
-                    visitBlockStatement(script);
+                    visitBlockStatement(block);
                 } finally {
                     environment = previous;
                 }
@@ -58,26 +59,23 @@ public final class Interpreter {
             }
         }
 
-        private void execute(Statement statement) {
+        private void execute(ResolvedStatement statement) {
             if (statement != null) {
                 statement.accept(this);
             }
         }
 
-        private KnishObject evaluate(Expression expression) {
-            if (expression == null) {
-                return KnishCore.nil();
-            }
+        private KnishObject evaluate(ResolvedExpression expression) {
             return expression.accept(this);
         }
 
         @Override
-        public KnishObject visitAssignExpression(Expression.Assign assign) {
-            return environment.set(assign.line, assign.variable, evaluate(assign.value));
+        public KnishObject visitAssignExpression(ResolvedExpression.Assign assign) {
+            return environment.set(assign.variableId, evaluate(assign.value));
         }
 
         @Override
-        public KnishObject visitCallExpression(Expression.Call call) {
+        public KnishObject visitCallExpression(ResolvedExpression.Call call) {
             List<KnishObject> arguments = null;
             if (call.arguments != null) {
                 arguments = call.arguments.stream().map(this::evaluate).collect(Collectors.toList());
@@ -91,7 +89,7 @@ public final class Interpreter {
         }
 
         @Override
-        public KnishObject visitLiteralExpression(Expression.Literal literal) {
+        public KnishObject visitLiteralExpression(ResolvedExpression.Literal literal) {
             if (literal.value == null) {
                 return KnishCore.nil();
             }
@@ -112,12 +110,12 @@ public final class Interpreter {
         }
 
         @Override
-        public KnishObject visitVariableExpression(Expression.Variable variable) {
-            return environment.get(variable.line, variable.name);
+        public KnishObject visitVariableExpression(ResolvedExpression.Variable variable) {
+            return environment.get(variable.variableId);
         }
 
         @Override
-        public KnishObject visitLogicalExpression(Expression.Logical logical) {
+        public KnishObject visitLogicalExpression(ResolvedExpression.Logical logical) {
             KnishObject left = evaluate(logical.left);
             if (!(left instanceof KnishCore.KnishBoolean)) {
                 throw new RuntimeExceptionWithLine(logical.line, "Left operand must be boolean.");
@@ -148,17 +146,18 @@ public final class Interpreter {
         }
 
         @Override
-        public Void visitExpressionStatement(Statement.Expression expression) {
-            evaluate(expression.expression);
+        public Void visitExpressionStatement(ResolvedStatement.Expression expression) {
+            evaluate(expression.resolvedExpression);
             return null;
         }
 
         @Override
-        public Void visitorIfStatement(Statement.If anIf) {
+        public Void visitorIfStatement(ResolvedStatement.If anIf) {
             KnishObject conditionValue = evaluate(anIf.condition);
 
             if (conditionValue == KnishCore.nil()) {
-                throw new RuntimeExceptionWithLine(anIf.line, "If condition cannot be nil.");
+                throw new RuntimeExceptionWithLine(anIf.line,
+                        "If condition cannot be nil.");
             }
 
             if (conditionValue instanceof KnishCore.KnishBoolean) {
@@ -170,11 +169,12 @@ public final class Interpreter {
                 return null;
             }
 
-            throw new RuntimeExceptionWithLine(anIf.line, "Condition must have type Boolean.");
+            throw new RuntimeExceptionWithLine(anIf.line,
+                    "Condition must have type Boolean.");
         }
 
         @Override
-        public Void visitWhileStatement(Statement.While aWhile) {
+        public Void visitWhileStatement(ResolvedStatement.While aWhile) {
             while (true) {
                 KnishObject conditionValue = evaluate(aWhile.condition);
                 if (conditionValue == KnishCore.nil()) {
@@ -194,33 +194,32 @@ public final class Interpreter {
         }
 
         @Override
-        public Void visitVarStatement(Statement.Var var) {
-            environment.define(var.name, evaluate(var.initializer));
-            return null;
-        }
-
-        @Override
-        public Void visitBlockStatement(Statement.Block block) {
+        public Void visitBlockStatement(ResolvedStatement.Block block) {
             Environment previous = environment;
-            environment = new Environment(environment);
+            environment = new Environment(environment, block.names.keySet());
+            block.classes.forEach((classId, klass) ->
+                    environment.set(
+                            classId,
+                            new ClassInstance(
+                                    block.names.get(classId),
+                                    klass, environment, this
+                            )
+                    )
+            );
 
-            for (Statement statement : block.statements) {
-                execute(statement);
+            try {
+                for (ResolvedStatement statement : block.resolvedStatements) {
+                    execute(statement);
+                }
+            } finally {
+                environment = previous;
             }
 
-            environment = previous;
             return null;
         }
 
         @Override
-        public Void visitClassStatement(Statement.Class klass) {
-            environment.define(klass.name,
-                    new ClassInstance(klass, environment, this));
-            return null;
-        }
-
-        @Override
-        public Void visitReturnStatement(Statement.Return aReturn) {
+        public Void visitReturnStatement(ResolvedStatement.Return aReturn) {
             KnishObject value = KnishCore.nil();
             if (aReturn.value != null) {
                 value = evaluate(aReturn.value);

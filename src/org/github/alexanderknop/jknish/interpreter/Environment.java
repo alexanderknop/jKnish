@@ -1,49 +1,54 @@
 package org.github.alexanderknop.jknish.interpreter;
 
+import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.objects.KnishObject;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 class Environment {
     private final Environment enclosing;
-    private final Map<String, KnishObject> objects;
+    private final Map<Integer, KnishObject> objects = new HashMap<>();
 
-    public Environment() {
-        this(null);
+    public Environment(Collection<Integer> variables) {
+        this(null, variables);
     }
 
-    public Environment(Environment enclosing) {
+    public Environment(Environment enclosing,
+                       Collection<Integer> variables) {
         this.enclosing = enclosing;
-        this.objects = new HashMap<>();
+        variables.forEach(variable -> define(variable, KnishCore.nil()));
     }
 
-    public KnishObject get(int line, String name) {
-        if (objects.containsKey(name)) {
-            return objects.get(name);
+    private void define(int id, KnishObject value) {
+        objects.put(id, value);
+    }
+
+    public KnishObject get(int id) {
+        if (objects.containsKey(id)) {
+            return objects.get(id);
         }
 
         if (enclosing != null) {
-            return enclosing.get(line, name);
+            return enclosing.get(id);
         }
 
-        throw new RuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
+        throw new UnsupportedOperationException(
+                "Undefined variable with id equal to " + id + ".");
     }
 
-    public void define(String name, KnishObject value) {
-        objects.put(name, value);
-    }
-
-    public KnishObject set(int line, String name, KnishObject value) {
-        if (objects.containsKey(name)) {
-            objects.put(name, value);
+    public KnishObject set(int id, KnishObject value) {
+        if (objects.containsKey(id)) {
+            objects.put(id, value);
             return value;
         }
 
         if (enclosing != null) {
-            return enclosing.set(line, name, value);
+            return enclosing.set(id, value);
         }
 
-        throw new RuntimeExceptionWithLine(line, "Undefined variable " + name + ".");
+        throw new UnsupportedOperationException(
+                "Undefined variable with id equal to " + id + ".");
     }
 }

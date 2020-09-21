@@ -2,57 +2,77 @@ package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
-import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.LogicalOperator;
-import org.github.alexanderknop.jknish.parser.Statement;
+import org.github.alexanderknop.jknish.resolver.ResolvedExpression.*;
+import org.github.alexanderknop.jknish.resolver.ResolvedScript;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Block;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Expression;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Method;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.github.alexanderknop.jknish.resolver.ResolvedStatement.If;
+import static org.github.alexanderknop.jknish.resolver.ResolvedStatement.While;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterpreterTest {
+    private static final int SYSTEM_VARIABLE = 0;
+    private static final int X_VARIABLE = 1;
+    private static final int TEST_VARIABLE = 1;
+    private static final int THIS_VARIABLE = 2;
+    private static final int STATIC_THIS_VARIABLE = 3;
+    private static final int X2_VARIABLE = 2;
+
     @Test
     void testPrint() {
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Literal(1, 1L)
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Literal(1, 1L)
+                                        )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "1"
         );
-
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print"
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print"
+                                        )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: System metaclass does not implement 'print'."
         );
-
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Literal(1, 1L),
-                                        new Expression.Literal(1, 1L)
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Literal(1, 1L),
+                                                new Literal(1, 1L)
+                                        )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: System metaclass does not implement 'print(_, _)'."
         );
@@ -60,50 +80,75 @@ class InterpreterTest {
 
     @Test
     void testClassStaticMethods() {
-        testCorrect(
+        ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
                 List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(3,
-                                                                new Expression.Call(3,
-                                                                        new Expression.Variable(3,
-                                                                                "System"),
-                                                                        "print",
-                                                                        new Expression.Literal(3,
-                                                                                "Hello world!")
-                                                                )
-                                                        )
+                        new Method(2,
+                                "test",
+                                null,
+                                new Block(2,
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2,
+                                                                "Hello World!")
                                                 )
                                         )
-                                ), emptyList(), emptyList()
-                        ),
-                        new Statement.Expression(4,
-                                new Expression.Call(4,
-                                        new Expression.Variable(4, "Test"),
-                                        "test"
-                                )
+                                ),
+                                emptyMap()
                         )
                 ),
-                "Hello world!"
+                emptyList(),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "test"
+                                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                ),
+                "Hello World!"
         );
 
+        ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
         testIncorrect(
-                List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(), emptyList()
-                        ),
-                        new Statement.Expression(4,
-                                new Expression.Call(4,
-                                        new Expression.Variable(4, "Test"),
-                                        "test"
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "test"
+                                        )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 4] Error: Test metaclass does not implement 'test'."
         );
@@ -111,91 +156,43 @@ class InterpreterTest {
 
     @Test
     void testClassMethods() {
-        testCorrect(
+
+        ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
+                emptyList(),
+                emptyList(),
                 List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(),
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(3,
-                                                                new Expression.Call(3,
-                                                                        new Expression.Variable(3,
-                                                                                "System"),
-                                                                        "print",
-                                                                        new Expression.Literal(3,
-                                                                                "Hello world!")
-                                                                )
-                                                        )
+                        new Method(2,
+                                "test",
+                                null,
+                                new Block(2,
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2,
+                                                                "Hello World!")
                                                 )
                                         )
-                                )
-                        ),
-                        new Statement.Expression(4,
-                                new Expression.Call(4,
-                                        new Expression.Call(4,
-                                                new Expression.Variable(4, "Test"),
-                                                "new",
-                                                emptyList()
-                                        ),
-                                        "test"
-                                )
+                                ),
+                                emptyMap()
                         )
                 ),
-                "Hello world!"
-        );
-
-        testIncorrect(
-                List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(), emptyList()
-                        ),
-                        new Statement.Expression(4,
-                                new Expression.Call(4,
-                                        new Expression.Call(4,
-                                                new Expression.Variable(4, "Test"),
-                                                "new",
-                                                emptyList()
-                                        ),
-                                        "test"
-                                )
-                        )
-                ),
-                "[line 4] Error: Test does not implement 'test'."
-        );
-    }
-
-    @Test
-    void testReturn() {
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
         testCorrect(
-                List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(),
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test",
-                                                null,
-                                                List.of(
-                                                        new Statement.Return(3,
-                                                                new Expression.Literal(3,
-                                                                        "Hello world!")
-                                                        )
-                                                )
-                                        )
-                                )
-                        ),
-                        new Statement.Expression(4,
-                                new Expression.Call(4,
-                                        new Expression.Variable(4, "System"),
-                                        "print",
-                                        new Expression.Call(4,
-                                                new Expression.Call(4,
-                                                        new Expression.Variable(4, "Test"),
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"), Map.of(
+                                TEST_VARIABLE,
+                                testClass1
+                        ), List.of(
+                                new Expression(4,
+                                        new Call(4,
+                                                new Call(4,
+                                                        new Variable(4,
+                                                                TEST_VARIABLE),
                                                         "new",
                                                         emptyList()
                                                 ),
@@ -203,402 +200,482 @@ class InterpreterTest {
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "Hello world!"
+                "Hello World!"
         );
+        ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
+        testIncorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"), Map.of(
+                                TEST_VARIABLE,
+                                testClass2
+                        ), List.of(
+                                new Expression(4,
+                                        new Call(4,
+                                                new Call(4,
+                                                        new Variable(4,
+                                                                TEST_VARIABLE),
+                                                        "new",
+                                                        emptyList()
+                                                ),
+                                                "test"
+                                        )
+                                )
+                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                ),
+                "[line 4] Error: Test does not implement 'test'."
+        );
+    }
 
-        testCorrect(
+    @Test
+    void testReturn() {
+        ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
                 List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(),
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test",
-                                                null,
-                                                List.of(
-                                                        new Statement.Return(3,
-                                                                new Expression.Literal(3,
-                                                                        "Hello world!")
-                                                        )
+                        new Method(2,
+                                "test",
+                                null,
+                                new Block(2,
+                                        new ResolvedStatement.Return(2,
+                                                new Literal(2,
+                                                        "Hello World!")
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyList(),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(4,
+                                                        new Variable(4,
+                                                                TEST_VARIABLE),
+                                                        "test"
                                                 )
                                         )
                                 )
                         ),
-                        new Statement.Block(4,
-                                List.of(
-                                        new Statement.Var(5, "x",
-                                                new Expression.Literal(5,
-                                                        "Hello world!")),
-                                        new Statement.Expression(6,
-                                                new Expression.Call(6,
-                                                        new Expression.Variable(6, "System"),
-                                                        "print",
-                                                        new Expression.Call(6,
-                                                                new Expression.Call(6,
-                                                                        new Expression.Variable(6, "Test"),
-                                                                        "new",
-                                                                        emptyList()
-                                                                ),
-                                                                "test"
-                                                        )
-                                                )
-                                        ),
-                                        new Statement.Expression(7,
-                                                new Expression.Call(7,
-                                                        new Expression.Variable(7, "System"),
-                                                        "print",
-                                                        new Expression.Variable(7, "x")
+                        Map.of(SYSTEM_VARIABLE, "System")
+                ),
+                "Hello World!"
+        );
+
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test",
+                                        X2_VARIABLE, "x"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
+                                new Expression(3,
+                                        new Assign(3, X2_VARIABLE,
+                                                new Literal(3, "Hello World!")
+                                        )
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(4,
+                                                        new Variable(4,
+                                                                TEST_VARIABLE),
+                                                        "test"
                                                 )
                                         )
+                                ),
+                                new Expression(5,
+                                        new Call(5,
+                                                new Variable(5, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Variable(5, X2_VARIABLE)
+                                        )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "Hello world!\nHello world!"
+                "Hello World!\nHello World!"
         );
     }
 
     @Test
     void testThis() {
-        testCorrect(
-                List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(),
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test1",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(3,
-                                                                new Expression.Call(3,
-                                                                        new Expression.Variable(3,
-                                                                                "System"),
-                                                                        "print",
-                                                                        new Expression.Literal(3,
-                                                                                "Hello world!")
-                                                                )
+        ResolvedStatement.Class testClass1 =
+                new ResolvedStatement.Class(1,
+                        List.of(
+                                new Method(2,
+                                        "test1",
+                                        null,
+                                        new Block(2,
+                                                new Expression(3,
+                                                        new Call(3,
+                                                                new Variable(3,
+                                                                        SYSTEM_VARIABLE),
+                                                                "print",
+                                                                new Literal(3,
+                                                                        "Hello World!")
                                                         )
                                                 )
                                         ),
-                                        new Statement.Method(4,
-                                                "test2",
-                                                emptyList(),
-                                                List.of(
-                                                        new Statement.Expression(5,
-                                                                new Expression.Call(5,
-                                                                        new Expression.Variable(5,
-                                                                                "this"),
-                                                                        "test1"
-                                                                )
+                                        emptyMap()
+                                ),
+                                new Method(3,
+                                        "test2",
+                                        null,
+                                        new Block(3,
+                                                new Expression(3,
+                                                        new Call(3,
+                                                                new Variable(3,
+                                                                        STATIC_THIS_VARIABLE),
+                                                                "test1"
                                                         )
                                                 )
-                                        )
+                                        ),
+                                        emptyMap()
                                 )
                         ),
-                        new Statement.Expression(6,
-                                new Expression.Call(6,
-                                        new Expression.Call(6,
-                                                new Expression.Variable(4, "Test"),
-                                                "new",
-                                                emptyList()
-                                        ),
-                                        "test2",
-                                        emptyList()
-                                )
-                        )
-                ),
-                "Hello world!"
-        );
+                        emptyList(),
+                        emptyList(),
+                        Map.of(THIS_VARIABLE, "this"),
+                        Map.of(STATIC_THIS_VARIABLE, "this"),
+                        THIS_VARIABLE, STATIC_THIS_VARIABLE
+                );
 
         testCorrect(
-                List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(),
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test1",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(3,
-                                                                new Expression.Call(3,
-                                                                        new Expression.Variable(3,
-                                                                                "System"),
-                                                                        "print",
-                                                                        new Expression.Literal(3,
-                                                                                "Hello world!")
-                                                                )
-                                                        )
-                                                )
-                                        ),
-                                        new Statement.Method(4,
-                                                "test2",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(5,
-                                                                new Expression.Call(5,
-                                                                        new Expression.Variable(5,
-                                                                                "this"),
-                                                                        "test1"
-                                                                )
-                                                        )
-                                                )
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"), Map.of(
+                                TEST_VARIABLE,
+                                testClass1
+                        ), List.of(
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "test2"
                                         )
                                 )
-                        ),
-                        new Statement.Expression(6,
-                                new Expression.Call(6,
-                                        new Expression.Call(6,
-                                                new Expression.Variable(4, "Test"),
-                                                "new",
-                                                emptyList()
-                                        ),
-                                        "test2"
-                                )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "Hello world!"
+                "Hello World!"
         );
-        testIncorrect(
-                List.of(
-                        new Statement.Class(1,
-                                "Test",
-                                emptyList(), emptyList(),
-                                List.of(
-                                        new Statement.Method(2,
-                                                "test1",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(3,
-                                                                new Expression.Call(3,
-                                                                        new Expression.Variable(3,
-                                                                                "System"),
-                                                                        "print",
-                                                                        new Expression.Literal(3,
-                                                                                "Hello world!")
-                                                                )
+
+        ResolvedStatement.Class testClass2 =
+                new ResolvedStatement.Class(1,
+                        List.of(
+                                new Method(2,
+                                        "test1",
+                                        null,
+                                        new Block(2,
+                                                new Expression(3,
+                                                        new Call(3,
+                                                                new Variable(3,
+                                                                        SYSTEM_VARIABLE),
+                                                                "print",
+                                                                new Literal(3,
+                                                                        "Hello World!")
                                                         )
                                                 )
                                         ),
-                                        new Statement.Method(4,
-                                                "test2",
-                                                null,
-                                                List.of(
-                                                        new Statement.Expression(5,
-                                                                new Expression.Call(5,
-                                                                        new Expression.Variable(5,
-                                                                                "this"),
-                                                                        "test"
-                                                                )
+                                        emptyMap()
+                                ),
+                                new Method(3,
+                                        "test2",
+                                        null,
+                                        new Block(3,
+                                                new Expression(3,
+                                                        new Call(3,
+                                                                new Variable(3,
+                                                                        STATIC_THIS_VARIABLE),
+                                                                "test"
                                                         )
                                                 )
-                                        )
+                                        ),
+                                        emptyMap()
                                 )
                         ),
-                        new Statement.Expression(6,
-                                new Expression.Call(6,
-                                        new Expression.Call(6,
-                                                new Expression.Variable(4, "Test"),
-                                                "new",
-                                                emptyList()
-                                        ),
-                                        "test2"
+                        emptyList(),
+                        emptyList(),
+                        Map.of(THIS_VARIABLE, "this"),
+                        Map.of(STATIC_THIS_VARIABLE, "this"),
+                        THIS_VARIABLE, STATIC_THIS_VARIABLE
+                );
+
+        testIncorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"), Map.of(
+                                TEST_VARIABLE,
+                                testClass2
+                        ), List.of(
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4,
+                                                        TEST_VARIABLE),
+                                                "test2"
+                                        )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 5] Error: Test does not implement 'test'."
+                "[line 3] Error: Test metaclass does not implement 'test'."
         );
     }
 
     @Test
     void testAddition() {
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 1L),
-                                                "+",
-                                                new Expression.Literal(1, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, 1L),
+                                                        "+",
+                                                        new Literal(1, 2L)
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "3"
         );
 
-
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, Boolean.TRUE),
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Literal(1, Boolean.TRUE),
                                                 "+",
-                                                new Expression.Literal(1, 2L)
+                                                new Literal(1, 1L)
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: Boolean does not implement '+(_)'."
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 1L),
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Literal(1, 1L),
                                                 "+",
-                                                new Expression.Literal(1, Boolean.TRUE)
+                                                new Literal(1, Boolean.TRUE)
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: Right operand must be a number."
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 1L),
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Literal(1, 1L),
                                                 "+"
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: Number does not implement '+'."
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 1L),
-                                                "-",
-                                                new Expression.Literal(1, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, 1L),
+                                                        "-",
+                                                        new Literal(1, 2L)
+                                                )
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "-1"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 1L),
-                                                "-"
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, 1L),
+                                                        "-"
+                                                )
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "-1"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, "hello "),
-                                                "+",
-                                                new Expression.Literal(1, "world!")
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, "Hello "),
+                                                        "+",
+                                                        new Literal(1, "World!")
+                                                )
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "hello world!"
+                "Hello World!"
         );
     }
 
     @Test
     void testMultiplication() {
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 3L),
-                                                "*",
-                                                new Expression.Literal(1, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, 3L),
+                                                        "*",
+                                                        new Literal(1, 2L)
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "6"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 6L),
-                                                "/",
-                                                new Expression.Literal(1, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, 6L),
+                                                        "/",
+                                                        new Literal(1, 2L)
+                                                )
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "3"
         );
 
 
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, Boolean.TRUE),
-                                                "*",
-                                                new Expression.Literal(1, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, Boolean.TRUE),
+                                                        "*",
+                                                        new Literal(1, 2L)
+                                                )
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: Boolean does not implement '*(_)'."
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Call(1,
-                                                new Expression.Literal(1, 1L),
-                                                "*",
-                                                new Expression.Literal(1, Boolean.TRUE)
+                new ResolvedScript(
+                        new Block(0,
+                                emptyMap(), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(1,
+                                                        new Literal(1, 2L),
+                                                        "*",
+                                                        new Literal(1, Boolean.TRUE)
+                                                )
                                         )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: Right operand must be a number."
         );
@@ -607,37 +684,57 @@ class InterpreterTest {
     @Test
     void testVar() {
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Expression(2,
-                                new Expression.Call(2,
-                                        new Expression.Variable(2, "System"),
-                                        "print",
-                                        new Expression.Variable(2, "x")
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Assign(1, X_VARIABLE,
+                                                new Literal(1, 1L))
+                                ),
+                                new Expression(2,
+                                        new Call(2,
+                                                new Variable(2, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Variable(2, X_VARIABLE)
+                                        )
                                 )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "1"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Block(1,
-                                List.of(
-                                        new Statement.Var(1, "x",
-                                                new Expression.Literal(1, 2L)),
-                                        new Statement.Expression(2,
-                                                new Expression.Call(2,
-                                                        new Expression.Variable(2, "System"),
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Assign(1, X_VARIABLE,
+                                                new Literal(1, 1L))
+                                ),
+                                new Block(2,
+                                        Map.of(X2_VARIABLE, "x"), emptyMap(), List.of(
+                                        new Expression(3,
+                                                new Assign(3,
+                                                        X2_VARIABLE,
+                                                        new Literal(3, 2L)
+                                                )
+                                        ),
+                                        new Expression(4,
+                                                new Call(4,
+                                                        new Variable(4,
+                                                                SYSTEM_VARIABLE),
                                                         "print",
-                                                        new Expression.Variable(2, "x")
+                                                        new Variable(4,
+                                                                X2_VARIABLE)
                                                 )
                                         )
                                 )
+                                )
                         )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "2"
         );
@@ -646,268 +743,245 @@ class InterpreterTest {
     @Test
     void testAssign() {
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Expression(2,
-                                new Expression.Assign(2,
-                                        "x",
-                                        new Expression.Literal(2, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 1L)
+                                        )
+                                ),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 2L)
+                                        )
+                                ),
+                                new Expression(3,
+                                        new Call(3,
+                                                new Variable(3, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Variable(3, X_VARIABLE)
+                                        )
                                 )
                         ),
-                        new Statement.Expression(3,
-                                new Expression.Call(3,
-                                        new Expression.Variable(3, "System"),
-                                        "print",
-                                        new Expression.Variable(3, "x")
-                                )
-                        )
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "2"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x", null),
-                        new Statement.Expression(2,
-                                new Expression.Assign(2,
-                                        "x",
-                                        new Expression.Literal(2, 2L)
-                                )
-                        ),
-                        new Statement.Expression(3,
-                                new Expression.Call(3,
-                                        new Expression.Variable(3, "System"),
-                                        "print",
-                                        new Expression.Variable(3, "x")
-                                )
-                        )
-                ),
-                "2"
-        );
-
-        testCorrect(
-                List.of(
-                        new Statement.Var(1, "x", null),
-                        new Statement.Expression(2,
-                                new Expression.Assign(2,
-                                        "x",
-                                        new Expression.Literal(2, 2L)
-                                )
-                        ),
-                        new Statement.Expression(2,
-                                new Expression.Assign(2,
-                                        "x",
-                                        new Expression.Literal(2, 3L)
-                                )
-                        ),
-                        new Statement.Expression(3,
-                                new Expression.Call(3,
-                                        new Expression.Variable(3, "System"),
-                                        "print",
-                                        new Expression.Variable(3, "x")
-                                )
-                        )
-                ),
-                "3"
-        );
-
-        testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Block(1,
-                                List.of(
-                                        new Statement.Var(1, "x", null),
-                                        new Statement.Expression(2,
-                                                new Expression.Assign(2,
-                                                        "x",
-                                                        new Expression.Literal(2, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 1L)
+                                        )
+                                ),
+                                new Block(2,
+                                        Map.of(X2_VARIABLE, "x"),
+                                        new Expression(2,
+                                                new Assign(2,
+                                                        X2_VARIABLE,
+                                                        new Literal(2, 2L)
                                                 )
                                         ),
-                                        new Statement.Expression(2,
-                                                new Expression.Call(2,
-                                                        new Expression.Variable(2, "System"),
+                                        new Expression(3,
+                                                new Call(3,
+                                                        new Variable(3,
+                                                                SYSTEM_VARIABLE),
                                                         "print",
-                                                        new Expression.Variable(2, "x")
+                                                        new Variable(3,
+                                                                X2_VARIABLE)
                                                 )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "2"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Block(1,
-                                List.of(
-                                        new Statement.Var(1, "x", null),
-                                        new Statement.Expression(2,
-                                                new Expression.Assign(2,
-                                                        "x",
-                                                        new Expression.Literal(2, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 1L)
+                                        )
+                                ),
+                                new Block(2,
+                                        Map.of(X2_VARIABLE, "x"),
+                                        new Expression(2,
+                                                new Assign(2,
+                                                        X2_VARIABLE,
+                                                        new Literal(2, 2L)
                                                 )
+                                        )
+                                ),
+                                new Expression(3,
+                                        new Call(3,
+                                                new Variable(3,
+                                                        SYSTEM_VARIABLE),
+                                                "print",
+                                                new Variable(3,
+                                                        X_VARIABLE)
                                         )
                                 )
                         ),
-                        new Statement.Expression(2,
-                                new Expression.Call(2,
-                                        new Expression.Variable(2, "System"),
-                                        "print",
-                                        new Expression.Variable(2, "x")
-                                )
-                        )
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "1"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Block(1,
-                                List.of(
-                                        new Statement.Expression(2,
-                                                new Expression.Assign(2,
-                                                        "x",
-                                                        new Expression.Literal(2, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 1L)
+                                        )
+                                ),
+                                new Expression(2,
+                                        new Assign(2,
+                                                X_VARIABLE,
+                                                new Call(2,
+                                                        new Variable(2, X_VARIABLE),
+                                                        "+",
+                                                        new Literal(2, 2L)
                                                 )
+                                        )
+                                ),
+                                new Expression(3,
+                                        new Call(3,
+                                                new Variable(3,
+                                                        SYSTEM_VARIABLE),
+                                                "print",
+                                                new Variable(3,
+                                                        X_VARIABLE)
                                         )
                                 )
                         ),
-                        new Statement.Expression(2,
-                                new Expression.Call(2,
-                                        new Expression.Variable(2, "System"),
-                                        "print",
-                                        new Expression.Variable(2, "x")
-                                )
-                        )
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "2"
+                "3"
         );
 
-        testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 1L)),
-                        new Statement.Block(1,
-                                List.of(
-                                        new Statement.Expression(2,
-                                                new Expression.Assign(2,
-                                                        "x",
-                                                        new Expression.Call(2,
-                                                                new Expression.Variable(2, "x"),
-                                                                "+",
-                                                                new Expression.Literal(2, 1L)
-                                                        )
-                                                )
-                                        )
-                                )
-                        ),
-                        new Statement.Expression(3,
-                                new Expression.Call(3,
-                                        new Expression.Variable(3, "System"),
-                                        "print",
-                                        new Expression.Variable(3, "x")
-                                )
-                        )
-                ),
-                "2"
-        );
     }
 
     @Test
     void testIf() {
         testCorrect(
-                List.of(
-                        new Statement.If(1,
-                                new Expression.Literal(1, FALSE),
-                                new Statement.Expression(2,
-                                        new Expression.Call(2,
-                                                new Expression.Variable(2, "System"),
-                                                "print",
-                                                new Expression.Literal(2, 1L)
-                                        )
-                                ),
-                                new Statement.Expression(3,
-                                        new Expression.Call(3,
-                                                new Expression.Variable(3, "System"),
-                                                "print",
-                                                new Expression.Literal(3, 2L)
+                new ResolvedScript(
+                        new Block(0,
+                                new If(1,
+                                        new Literal(1, Boolean.FALSE),
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2, 1L)
+                                                )
+                                        ),
+                                        new Expression(3,
+                                                new Call(3,
+                                                        new Variable(3,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(3, 2L)
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "2"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.If(1,
-                                new Expression.Literal(1, TRUE),
-                                new Statement.Expression(2,
-                                        new Expression.Call(2,
-                                                new Expression.Variable(2, "System"),
-                                                "print",
-                                                new Expression.Literal(2, 1L)
+                new ResolvedScript(
+                        new Block(0,
+                                new If(1,
+                                        new Literal(1, Boolean.TRUE),
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2, 1L)
+                                                )
                                         )
-                                ),
-                                null
-                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "1"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.If(1,
-                                new Expression.Literal(1, FALSE),
-                                new Statement.Expression(2,
-                                        new Expression.Call(2,
-                                                new Expression.Variable(2, "System"),
-                                                "print",
-                                                new Expression.Literal(2, 1L)
+                new ResolvedScript(
+                        new Block(0,
+                                new If(1,
+                                        new Literal(1, Boolean.FALSE),
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2, 1L)
+                                                )
                                         )
-                                ),
-                                null
-                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 ""
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.If(1,
-                                new Expression.Literal(1, 1L),
-                                new Statement.Expression(2,
-                                        new Expression.Call(2,
-                                                new Expression.Variable(2, "System"),
-                                                "print",
-                                                new Expression.Literal(2, 1L)
+                new ResolvedScript(
+                        new Block(0,
+                                new If(1,
+                                        new Literal(1, 1L),
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2, 1L)
+                                                )
                                         )
-                                ),
-                                null
-                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: Condition must have type Boolean."
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.If(1,
-                                new Expression.Literal(1, null),
-                                new Statement.Expression(2,
-                                        new Expression.Call(2,
-                                                new Expression.Variable(2, "System"),
-                                                "print",
-                                                new Expression.Literal(2, 1L)
+                new ResolvedScript(
+                        new Block(0,
+                                new If(1,
+                                        new Literal(1, null),
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2,
+                                                                SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(2, 1L)
+                                                )
                                         )
-                                ),
-                                null
-                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 1] Error: If condition cannot be nil."
         );
@@ -916,64 +990,84 @@ class InterpreterTest {
     @Test
     void testWhile() {
         testCorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 0L)),
-                        new Statement.While(2,
-                                new Expression.Call(2,
-                                        new Expression.Variable(2, "x"),
-                                        "<",
-                                        new Expression.Literal(2, 3L)),
-                                new Statement.Block(3,
-                                        List.of(
-                                                new Statement.Expression(4,
-                                                        new Expression.Call(4,
-                                                                new Expression.Variable(4, "System"),
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 0L)
+                                        )
+                                ),
+                                new While(2,
+                                        new Call(2,
+                                                new Variable(2, X_VARIABLE),
+                                                "<",
+                                                new Literal(2, 3L)),
+                                        new Block(3,
+                                                new Expression(4,
+                                                        new Call(4,
+                                                                new Variable(4,
+                                                                        SYSTEM_VARIABLE
+                                                                ),
                                                                 "print",
-                                                                new Expression.Variable(4, "x")
+                                                                new Variable(4,
+                                                                        X_VARIABLE
+                                                                )
                                                         )
                                                 ),
-                                                new Statement.Expression(5,
-                                                        new Expression.Assign(5,
-                                                                "x",
-                                                                new Expression.Call(5,
-                                                                        new Expression.Variable(5, "x"),
+                                                new Expression(5,
+                                                        new Assign(5,
+                                                                X_VARIABLE,
+                                                                new Call(5,
+                                                                        new Variable(5,
+                                                                                X_VARIABLE),
                                                                         "+",
-                                                                        new Expression.Literal(5, 1L)
+                                                                        new Literal(5,
+                                                                                1L)
                                                                 )
                                                         )
                                                 )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "0\n1\n2\n"
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, 0L)),
-                        new Statement.While(2,
-                                new Expression.Variable(2, "x"),
-                                new Statement.Block(3,
-                                        List.of()
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, 0L)
+                                        )
+                                ),
+                                new While(2,
+                                        new Variable(2, X_VARIABLE),
+                                        new Block(3,
+                                                emptyMap(), emptyMap(), List.of()
+                                        )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 2] Error: Condition must have type Boolean."
         );
 
         testIncorrect(
-                List.of(
-                        new Statement.Var(1, "x",
-                                new Expression.Literal(1, null)),
-                        new Statement.While(2,
-                                new Expression.Variable(2, "x"),
-                                new Statement.Block(3,
-                                        List.of()
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"),
+                                new While(2,
+                                        new Variable(2, X_VARIABLE),
+                                        new Block(3)
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 2] Error: While condition cannot be nil."
         );
@@ -982,143 +1076,175 @@ class InterpreterTest {
     @Test
     void testLogical() {
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, TRUE),
-                                                LogicalOperator.AND,
-                                                new Expression.Literal(1, FALSE)
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Logical(1,
+                                                        new Literal(1, Boolean.TRUE),
+                                                        LogicalOperator.AND,
+                                                        new Literal(1, Boolean.FALSE)
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "false"
         );
 
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, TRUE),
-                                                LogicalOperator.OR,
-                                                new Expression.Literal(1, FALSE)
+                new ResolvedScript(
+                        new Block(0,
+                                new Expression(1,
+                                        new Call(1,
+                                                new Variable(1, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Logical(1,
+                                                        new Literal(1, Boolean.TRUE),
+                                                        LogicalOperator.OR,
+                                                        new Literal(1, Boolean.FALSE)
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "true"
         );
 
+        ResolvedStatement.Class testClass = new ResolvedStatement.Class(1,
+                List.of(
+                        new Method(2,
+                                "test",
+                                null,
+                                new Block(2,
+                                        new Expression(1,
+                                                new Call(1,
+                                                        new Variable(1, SYSTEM_VARIABLE),
+                                                        "print",
+                                                        new Literal(1,
+                                                                "Right operand is computed!")
+                                                )
+                                        ),
+                                        new ResolvedStatement.Return(2,
+                                                new Literal(2,
+                                                        Boolean.TRUE)
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyList(),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, TRUE),
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass
+                                ),
+                                new Expression(3,
+                                        new Logical(3,
+                                                new Literal(3, Boolean.TRUE),
                                                 LogicalOperator.OR,
-                                                new Expression.Literal(1, 1L)
+                                                new Call(3,
+                                                        new Variable(3,
+                                                                TEST_VARIABLE
+                                                        ),
+                                                        "test"
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "true"
+                ""
         );
-
         testCorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, FALSE),
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass
+                                ),
+                                new Expression(3,
+                                        new Logical(3,
+                                                new Literal(3, Boolean.FALSE),
                                                 LogicalOperator.AND,
-                                                new Expression.Literal(1, 1L)
+                                                new Call(3,
+                                                        new Variable(3,
+                                                                TEST_VARIABLE
+                                                        ),
+                                                        "test"
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "false"
+                ""
         );
-
-        testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, FALSE),
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass
+                                ),
+                                new Expression(3,
+                                        new Logical(3,
+                                                new Literal(3, Boolean.FALSE),
                                                 LogicalOperator.OR,
-                                                new Expression.Literal(1, 1L)
+                                                new Call(3,
+                                                        new Variable(3,
+                                                                TEST_VARIABLE
+                                                        ),
+                                                        "test"
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Right operand must be boolean."
+                "Right operand is computed!"
         );
-
-        testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, TRUE),
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass
+                                ),
+                                new Expression(3,
+                                        new Logical(3,
+                                                new Literal(3, Boolean.TRUE),
                                                 LogicalOperator.AND,
-                                                new Expression.Literal(1, 1L)
+                                                new Call(3,
+                                                        new Variable(3,
+                                                                TEST_VARIABLE
+                                                        ),
+                                                        "test"
+                                                )
                                         )
                                 )
-                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Right operand must be boolean."
-        );
-
-        testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, 1L),
-                                                LogicalOperator.AND,
-                                                new Expression.Literal(1, TRUE)
-                                        )
-                                )
-                        )
-                ),
-                "[line 1] Error: Left operand must be boolean."
-        );
-
-        testIncorrect(
-                List.of(
-                        new Statement.Expression(1,
-                                new Expression.Call(1,
-                                        new Expression.Variable(1, "System"),
-                                        "print",
-                                        new Expression.Logical(1,
-                                                new Expression.Literal(1, 1L),
-                                                LogicalOperator.OR,
-                                                new Expression.Literal(1, FALSE)
-                                        )
-                                )
-                        )
-                ),
-                "[line 1] Error: Left operand must be boolean."
+                "Right operand is computed!"
         );
     }
 
-    void testCorrect(List<Statement> statements, String expectedOutput) {
+    void testCorrect(ResolvedScript script, String expectedOutput) {
         StringWriter errorWriter = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(errorWriter);
 
@@ -1126,7 +1252,7 @@ class InterpreterTest {
         KnishCore core = new KnishCore(outputWriter);
 
 
-        Interpreter.interpret(core, new Statement.Block(0, statements), reporter);
+        Interpreter.interpret(core, script, reporter);
 
         assertFalse(reporter.hadError(), "The script is correct;" +
                 " the error message is:\n" + errorWriter.toString());
@@ -1137,12 +1263,12 @@ class InterpreterTest {
                         actual + "'.");
     }
 
-    void testIncorrect(List<Statement> statements, String expectedError) {
+    void testIncorrect(ResolvedScript script, String expectedError) {
         StringWriter error = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(error);
         KnishCore core = new KnishCore(new StringWriter());
 
-        Interpreter.interpret(core, new Statement.Block(0, statements), reporter);
+        Interpreter.interpret(core, script, reporter);
 
         assertTrue(reporter.hadError(), "The script is incorrect.");
         String actual = error.toString().strip();

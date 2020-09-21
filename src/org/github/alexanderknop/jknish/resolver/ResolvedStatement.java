@@ -1,8 +1,8 @@
 package org.github.alexanderknop.jknish.resolver;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+
+import static java.util.Collections.*;
 
 public abstract class ResolvedStatement {
     public final int line;
@@ -69,6 +69,11 @@ public abstract class ResolvedStatement {
             this.condition = condition;
             this.thenBranch = thenBranch;
             this.elseBranch = elseBranch;
+        }
+
+        public If(int line, ResolvedExpression condition,
+                  ResolvedStatement thenBranch) {
+            this(line, condition, thenBranch, null);
         }
 
         @Override
@@ -182,12 +187,27 @@ public abstract class ResolvedStatement {
         public final Map<Integer, String> names;
         public final Map<Integer, Class> classes;
 
-        public Block(int line, List<ResolvedStatement> resolvedStatements,
-                     Map<Integer, String> names, Map<Integer, Class> classes) {
+        public Block(int line, Map<Integer, String> names, Map<Integer, Class> classes,
+                     List<ResolvedStatement> resolvedStatements) {
             super(line);
             this.resolvedStatements = resolvedStatements;
             this.names = names;
             this.classes = classes;
+        }
+
+        public Block(int line, Map<Integer, String> names, Map<Integer, Class> classes,
+                     ResolvedStatement... resolvedStatements) {
+            this(line, names, classes, Arrays.asList(resolvedStatements));
+        }
+
+        public Block(int line, Map<Integer, String> names,
+                     ResolvedStatement... resolvedStatements) {
+            this(line, names, emptyMap(), Arrays.asList(resolvedStatements));
+        }
+
+        public Block(int line,
+                     ResolvedStatement... resolvedStatements) {
+            this(line, emptyMap(), emptyMap(), Arrays.asList(resolvedStatements));
         }
 
         @Override

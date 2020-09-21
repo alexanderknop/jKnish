@@ -44,7 +44,7 @@ public class Knish {
             return;
         }
 
-        Interpreter.interpret(core, script, reporter);
+        Interpreter.interpret(core, resolvedScript, reporter);
     }
 
     private static void runFile(String path) throws IOException {
