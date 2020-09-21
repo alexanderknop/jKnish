@@ -1,5 +1,6 @@
 package org.github.alexanderknop.jknish.objects;
 
+import org.github.alexanderknop.jknish.Knish;
 import org.github.alexanderknop.jknish.parser.MethodId;
 
 import java.util.HashMap;
@@ -13,6 +14,13 @@ public abstract class AbstractKnishObject implements KnishObject {
     abstract protected String getClassName();
 
     private final Map<MethodId, Method> methods = new HashMap<>();
+    public AbstractKnishObject() {
+        // register default object methods
+        register("!==", 1,
+                arguments -> KnishCore.bool(arguments.get(0) != this));
+        register("===", 1,
+                arguments -> KnishCore.bool(arguments.get(0) == this));
+    }
 
     public void register(String name, Integer arity, Method method) {
         methods.put(new MethodId(name, arity), method);

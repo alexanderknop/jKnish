@@ -201,15 +201,15 @@ public class KnishCore extends KnishModule {
         }
     }
 
-    public static final class KnishNull implements KnishObject {
+    public static final class KnishNull extends AbstractKnishObject {
         private final static KnishNull NULL = new KnishNull();
 
-        private KnishNull() {
+        @Override
+        protected String getClassName() {
+            return "Nil";
         }
 
-        @Override
-        public KnishObject call(String method, List<KnishObject> arguments) {
-            throw new KnishRuntimeException("Nil does not implement '" + method + "'.");
+        private KnishNull() {
         }
     }
 

@@ -262,6 +262,11 @@ public final class TypeChecker {
                         new TypeErrorMessage(reporter, 0, ""));
 
                 Map<MethodId, SimpleType.Method> methods = methodsTypes(klass.methods);
+                // register default object operands
+                methods.put(new MethodId("!==", 1),
+                        new SimpleType.Method(List.of(SimpleType.top()), booleanType));
+                methods.put(new MethodId("!==", 1),
+                        new SimpleType.Method(List.of(SimpleType.top()), booleanType));
 
                 // merge constraints created by the constructor and by class methods
                 SimpleType.Method initializationType = methodType(

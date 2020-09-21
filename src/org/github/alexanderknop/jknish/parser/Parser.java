@@ -231,7 +231,8 @@ public final class Parser {
     private Expression equality() {
         Expression expression = comparison();
 
-        while (match(BANG_EQUAL, EQUAL_EQUAL)) {
+        while (match(BANG_EQUAL, EQUAL_EQUAL,
+                BANG_EQUAL_EQUAL, EQUAL_EQUAL_EQUAL)) {
             Token operator = previous();
             Expression right = comparison();
             expression = new Expression.Call(operator.line,

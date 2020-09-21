@@ -55,8 +55,17 @@ public final class Scanner {
             case ';' -> addToken(SEMICOLON);
             case '*' -> addToken(STAR);
 
-            case '!' -> addToken(match('=') ? BANG_EQUAL : BANG);
-            case '=' -> addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+            case '!' -> {
+                addToken(match('=') ?
+                        match('=') ?
+                                BANG_EQUAL_EQUAL : BANG_EQUAL :
+                        BANG);
+            }
+
+            case '=' -> addToken(match('=') ?
+                    match('=') ?
+                            EQUAL_EQUAL_EQUAL : EQUAL_EQUAL :
+                    EQUAL);
             case '<' -> addToken(match('=') ? LESS_EQUAL : LESS);
             case '>' -> addToken(match('=') ? GREATER_EQUAL : GREATER);
 
