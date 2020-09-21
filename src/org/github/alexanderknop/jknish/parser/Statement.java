@@ -1,5 +1,6 @@
 package org.github.alexanderknop.jknish.parser;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -155,6 +156,9 @@ public abstract class Statement {
             this.name = name;
             this.initializer = initializer;
         }
+        public Var(int line, String name) {
+            this(line, name, null);
+        }
 
         @Override
         public boolean equals(Object o) {
@@ -226,6 +230,10 @@ public abstract class Statement {
         public Block(int line, List<Statement> statements) {
             super(line);
             this.statements = statements;
+        }
+
+        public Block(int line, Statement... statements) {
+            this(line, Arrays.asList(statements));
         }
 
         @Override
@@ -312,6 +320,16 @@ public abstract class Statement {
             this.name = name;
             this.argumentsNames = argumentsNames;
             this.body = new Block(line, body);
+        }
+
+        public Method(int line,
+                      String name, List<String> argumentsNames, Statement... body) {
+            this(line, name, argumentsNames, Arrays.asList(body));
+        }
+
+        public Method(int line,
+                      String name, Statement... body) {
+            this(line, name, null, Arrays.asList(body));
         }
 
         @Override

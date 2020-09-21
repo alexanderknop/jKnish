@@ -9,6 +9,8 @@ var shadowed = "global";
     var shadowed = "local";
     // expect: local
     HelloWorld.hello;
+    // expect: local
+    System.print(shadowed);
 }
 
 {
@@ -21,6 +23,8 @@ var shadowed = "global";
         // expect: global
         HelloWorld.hello;
         var shadowed = "local";
+        // expect: local
+        System.print(shadowed);
     }
 }
 
@@ -30,7 +34,8 @@ var shadowed = "global";
             System.print(shadowed);
         }
     }
-    // error: [line 20] Error: Use of unassigned local variable 'shadowed'
+    // error: [line 20] Error: Use of unassigned local variable 'shadowed'.
     HelloWorld.hello;
     var shadowed = "local";
+    System.print(shadowed);
 }

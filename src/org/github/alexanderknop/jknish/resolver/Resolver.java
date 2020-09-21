@@ -19,7 +19,7 @@ public class Resolver {
         private final KnishErrorReporter reporter;
 
         private final Stack<Map<String, VariableInformation>> scopes = new Stack<>();
-        private final Stack<Map<Integer, ResolvedStatement.Class>> classes = new Stack<>();
+        private final Stack<Map<Integer, Statement.Class>> classes = new Stack<>();
         private int currentVariable = 0;
 
         public ResolverVisitor(KnishErrorReporter reporter) {
@@ -43,7 +43,6 @@ public class Resolver {
         private ResolvedStatement resolveStatement(Statement statement) {
             return statement.accept(this);
         }
-
 
         private void beginScope() {
             this.scopes.push(new HashMap<>());
@@ -79,11 +78,8 @@ public class Resolver {
             variableInformation(line, name).defined = true;
         }
 
-        private void defineClass(int classVariable, ResolvedStatement.Class resolvedClass) {
-            classes.peek().put(
-                    classVariable,
-                    resolvedClass
-            );
+        private void defineClass(int classVariable, Statement.Class klass) {
+            classes.peek().put(classVariable, klass);
         }
 
         private int defineVariable(int line, String name) {
@@ -129,7 +125,38 @@ public class Resolver {
         }
 
         private Map<Integer, ResolvedStatement.Class> definedClasses() {
-            return Collections.unmodifiableMap(classes.peek());
+            final Map<Integer, ResolvedStatement.Class> classMap = new HashMap<>();
+            classes.peek().forEach(
+                    (id, klass) -> classMap.put(id, resolveClass(klass))
+            );
+            return classMap;
+        }
+
+        private ResolvedStatement.Class resolveClass(Statement.Class klass) {
+            beginScope();
+            Map<Integer, String> fields = new HashMap<>();
+            int thisId = defineVariable(klass.line, "this");
+            fields.put(thisId, "this");
+
+            List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
+            List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
+            endScope();
+
+            beginScope();
+            Map<Integer, String> staticFields = new HashMap<>();
+            int staticThisId = defineVariable(klass.line, "this");
+            staticFields.put(staticThisId, "this");
+
+            List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
+            endScope();
+
+            return new ResolvedStatement.Class(klass.line,
+                    staticMethods,
+                    constructors,
+                    methods,
+                    fields,
+                    staticFields, thisId, staticThisId
+            );
         }
 
         @Override
@@ -257,32 +284,7 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitClassStatement(Statement.Class klass) {
-            int classVariable = defineVariable(klass.line, klass.name, true);
-
-            beginScope();
-            Map<Integer, String> fields = new HashMap<>();
-            int thisId = defineVariable(klass.line, "this");
-            fields.put(thisId, "this");
-
-            List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
-            List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
-            endScope();
-
-            beginScope();
-            Map<Integer, String> staticFields = new HashMap<>();
-            int staticThisId = defineVariable(klass.line, "this");
-            staticFields.put(staticThisId, "this");
-
-            List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
-            endScope();
-
-            defineClass(classVariable, new ResolvedStatement.Class(klass.line,
-                    staticMethods,
-                    constructors,
-                    methods,
-                    fields,
-                    staticFields, thisId, staticThisId)
-            );
+            defineClass(defineVariable(klass.line, klass.name, true), klass);
             return null;
         }
 
