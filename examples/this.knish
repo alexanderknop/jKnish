@@ -1,0 +1,23 @@
+class T {
+    static staticF() {
+        this.staticG();
+    }
+
+    static staticG() {
+        System.print("Hello!");
+    }
+
+    construct new() {}
+
+    f() {
+        this.g();
+    }
+
+    g() {
+        System.print("Hello!");
+    }
+}
+// expect: Hello!
+T.staticF();
+// expect: Hello!
+T.new().f();

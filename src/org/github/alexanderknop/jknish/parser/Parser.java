@@ -340,6 +340,10 @@ public final class Parser {
             return new Expression.Variable(previous().line, previous().lexeme);
         }
 
+        if (match(THIS)) {
+            return new Expression.This(previous().line);
+        }
+
         if (match(FIELD_IDENTIFIER)) {
             return new Expression.Field(previous().line, previous().lexeme);
         }
@@ -347,6 +351,7 @@ public final class Parser {
         if (match(STATIC_FIELD_IDENTIFIER)) {
             return new Expression.StaticField(previous().line, previous().lexeme);
         }
+
 
         if (match(LEFT_PAREN)) {
             Expression expression = expression();

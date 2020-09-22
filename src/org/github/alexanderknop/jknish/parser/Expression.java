@@ -29,6 +29,8 @@ public abstract class Expression {
         V visitFieldExpression(Field field);
 
         V visitStaticFieldExpression(StaticField staticField);
+
+        V visitThisExpression(This aThis);
     }
 
     public static class Assign extends Expression {
@@ -376,6 +378,17 @@ public abstract class Expression {
         @Override
         public <N> N accept(Visitor<N> visitor) {
             return visitor.visitLogicalExpression(this);
+        }
+    }
+
+    public static class This extends Expression {
+        public This(int line) {
+            super(line);
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitThisExpression(this);
         }
     }
 

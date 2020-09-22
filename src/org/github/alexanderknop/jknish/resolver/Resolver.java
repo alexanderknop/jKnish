@@ -67,10 +67,12 @@ public class Resolver {
         private int staticFieldId(int line, String variable) {
             if (classScopes.isEmpty()) {
                 reporter.error(line,
-                        "Cannot reference a field " +
+                        "Cannot reference a field '" +
                         variable +
-                        "outside of a class definition.");
-                return defineVariable(line, variable);
+                        "' outside of a class definition.");
+                int variableId = defineVariable(line, variable);
+                useVariable(line, variable);
+                return variableId;
             }
 
             Map<String, Integer> staticClassScope;
@@ -95,15 +97,19 @@ public class Resolver {
         private int fieldId(int line, String variable) {
             if (classScopes.isEmpty()) {
                 reporter.error(line,
-                        "Cannot reference a field " +
+                        "Cannot reference a field '" +
                                 variable +
-                                "outside of a class definition.");
-                return defineVariable(line, variable);
+                                "' outside of a class definition.");
+                int variableId = defineVariable(line, variable);
+                useVariable(line, variable);
+                return variableId;
             } else if (classScopeTypes.peek() == ClassScopeType.STATIC) {
                 reporter.error(line,
-                        "Cannot use an instance field " + variable
-                                + " in a static method.");
-                return defineVariable(line, variable);
+                        "Cannot use an instance field '" + variable
+                                + "' in a static method.");
+                int variableId = defineVariable(line, variable);
+                useVariable(line, variable);
+                return variableId;
             }
 
             Map<String, Integer> classScope = classScopes.peek();
@@ -320,6 +326,23 @@ public class Resolver {
             return new ResolvedExpression.Variable(
                     staticField.line,
                     staticFieldId(staticField.line, staticField.name)
+            );
+        }
+
+        @Override
+        public ResolvedExpression visitThisExpression(Expression.This aThis) {
+            int thisId;
+            if (classScopes.isEmpty()) {
+                reporter.error(aThis.line,
+                        "Cannot reference 'this' outside of a class definition.");
+                thisId = defineVariable(aThis.line, "this");
+                useVariable(aThis.line, "this");
+            } else {
+                thisId = classScopes.peek().get("this");
+            }
+            return new ResolvedExpression.Variable(
+                    aThis.line,
+                    thisId
             );
         }
 
