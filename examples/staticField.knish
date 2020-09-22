@@ -1,0 +1,32 @@
+class SharedCounter {
+    static init {
+        __count = 0;
+    }
+
+    construct new() {}
+
+    add() {
+        __count = __count + 1;
+    }
+
+    count {
+        return __count;
+    }
+}
+
+SharedCounter.init;
+
+var c = SharedCounter.new();
+c.add();
+// expect: 1
+System.print(c.count);
+
+var c2 = SharedCounter.new();
+c2.add();
+// expect: 2
+System.print(c.count);
+// expect: 2
+System.print(c2.count);
+
+
+

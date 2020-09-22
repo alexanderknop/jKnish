@@ -34,7 +34,7 @@ class ClassInstance extends AbstractKnishObject {
             register(
                     constructor.name, arity,
                     arguments -> new Instance(
-                            name, klass, enclosing, evaluator,
+                            name, klass, classEnvironment, evaluator,
                             constructor, arguments
                     )
             );

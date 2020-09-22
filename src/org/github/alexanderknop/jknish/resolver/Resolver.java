@@ -317,8 +317,10 @@ public class Resolver {
 
         @Override
         public ResolvedExpression visitStaticFieldExpression(Expression.StaticField staticField) {
-            //todo
-            return null;
+            return new ResolvedExpression.Variable(
+                    staticField.line,
+                    staticFieldId(staticField.line, staticField.name)
+            );
         }
 
         @Override
