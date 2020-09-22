@@ -460,7 +460,7 @@ public class Resolver {
         private static class VariableInformation {
             public final int id;
             public final int line;
-            public boolean isClass;
+            public final boolean isClass;
             public boolean used;
             public boolean defined;
 

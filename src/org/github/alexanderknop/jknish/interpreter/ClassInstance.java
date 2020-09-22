@@ -25,7 +25,7 @@ class ClassInstance extends AbstractKnishObject {
         // register all the static methods
         for (var method : klass.staticMethods) {
             register(method.name, arityFromArgumentsList(method.argumentsIds),
-                    compileMethod(this, method, classEnvironment, evaluator));
+                    compileMethod(method, classEnvironment, evaluator));
         }
 
         // register all the constructors

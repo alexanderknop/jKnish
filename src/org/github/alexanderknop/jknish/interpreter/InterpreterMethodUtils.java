@@ -9,14 +9,15 @@ import java.util.Collections;
 import java.util.stream.IntStream;
 
 public class InterpreterMethodUtils {
-    static AbstractKnishObject.Method compileMethod(KnishObject instance,
-                                                    ResolvedStatement.Method method,
+    static AbstractKnishObject.Method compileMethod(ResolvedStatement.Method method,
                                                     Environment enclosing,
                                                     Interpreter.InterpreterVisitor evaluator) {
         return arguments -> {
             Environment withParameters = new Environment(enclosing,
                     method.argumentsIds == null ? Collections.emptyList() : method.argumentsIds);
             if (arguments != null) {
+                assert method.argumentsIds != null;
+                assert method.argumentsIds.size() == arguments.size();
                 IntStream.range(0, arguments.size())
                         .forEach(i ->
                                 withParameters.set(

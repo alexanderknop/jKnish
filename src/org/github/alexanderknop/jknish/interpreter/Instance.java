@@ -28,11 +28,11 @@ class Instance extends AbstractKnishObject {
         // register all the methods
         for (var method : klass.methods) {
             register(method.name, arityFromArgumentsList(method.argumentsIds),
-                    compileMethod(this, method, classEnvironment, evaluator));
+                    compileMethod(method, classEnvironment, evaluator));
         }
 
         // call the constructor
-        compileMethod(this, constructor, classEnvironment, evaluator).call(arguments);
+        compileMethod(constructor, classEnvironment, evaluator).call(arguments);
     }
 
     @Override

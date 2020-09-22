@@ -85,7 +85,7 @@ public abstract class Expression {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Assign assign = (Assign) o;
+            AssignField assign = (AssignField) o;
             return Objects.equals(variable, assign.variable) &&
                     Objects.equals(value, assign.value);
         }
@@ -97,7 +97,7 @@ public abstract class Expression {
 
         @Override
         public String toString() {
-            return "Assign{" +
+            return "AssignField{" +
                     "variable='" + variable + '\'' +
                     ", value=" + value +
                     '}';
@@ -123,7 +123,7 @@ public abstract class Expression {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Assign assign = (Assign) o;
+            AssignStaticField assign = (AssignStaticField) o;
             return Objects.equals(variable, assign.variable) &&
                     Objects.equals(value, assign.value);
         }
@@ -135,7 +135,7 @@ public abstract class Expression {
 
         @Override
         public String toString() {
-            return "Assign{" +
+            return "AssignStaticField{" +
                     "variable='" + variable + '\'' +
                     ", value=" + value +
                     '}';

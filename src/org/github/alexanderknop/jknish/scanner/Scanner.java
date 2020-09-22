@@ -55,12 +55,10 @@ public final class Scanner {
             case ';' -> addToken(SEMICOLON);
             case '*' -> addToken(STAR);
 
-            case '!' -> {
-                addToken(match('=') ?
-                        match('=') ?
-                                BANG_EQUAL_EQUAL : BANG_EQUAL :
-                        BANG);
-            }
+            case '!' -> addToken(match('=') ?
+                    match('=') ?
+                            BANG_EQUAL_EQUAL : BANG_EQUAL :
+                    BANG);
 
             case '=' -> addToken(match('=') ?
                     match('=') ?
