@@ -452,6 +452,11 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitReturnStatement(Statement.Return aReturn) {
+            if (classScopes.isEmpty()) {
+                reporter.error(aReturn.line, "Cannot return from top-level code.");
+                return null;
+            }
+
             return new ResolvedStatement.Return(aReturn.line,
                     resolveExpression(aReturn.value)
             );

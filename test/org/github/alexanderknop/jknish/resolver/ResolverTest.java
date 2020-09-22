@@ -369,6 +369,63 @@ class ResolverTest {
     }
 
     @Test
+    void testFields() {
+        testIncorrect(
+                new Statement.Block(0,
+                        new Statement.Expression(1,
+                                new Expression.Field(1, "_hello")
+                        )
+                ),
+                "[line 1] Error: Cannot reference a field '_hello' outside of a class definition."
+        );
+
+        testIncorrect(
+                new Statement.Block(0,
+                        new Statement.Expression(1,
+                                new Expression.AssignField(1,
+                                        "_hello",
+                                        new Expression.Literal(1, "hello")
+                                )
+                        )
+                ),
+                "[line 1] Error: Cannot reference a field '_hello' outside of a class definition."
+        );
+
+        testIncorrect(
+                new Statement.Block(0,
+                        new Statement.Expression(1,
+                                new Expression.StaticField(1, "__hello")
+                        )
+                ),
+                "[line 1] Error: Cannot reference a field '__hello' outside of a class definition."
+        );
+
+        testIncorrect(
+                new Statement.Block(0,
+                        new Statement.Expression(1,
+                                new Expression.AssignStaticField(1,
+                                        "__hello",
+                                        new Expression.Literal(1, "hello")
+                                )
+                        )
+                ),
+                "[line 1] Error: Cannot reference a field '__hello' outside of a class definition."
+        );
+    }
+
+    @Test
+    void testReturn() {
+        testIncorrect(
+                new Statement.Block(0,
+                        new Statement.Return(1,
+                                new Expression.Literal(1, "hello")
+                        )
+                ),
+                "[line 1] Error: Cannot return from top-level code."
+        );
+    }
+
+    @Test
     void testAssign() {
         testIncorrect(
                 new Statement.Block(0,
