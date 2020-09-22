@@ -21,16 +21,17 @@ class ResolverTest {
 
     private static final int SYSTEM_VARIABLE = 0;
     private static final int X_VARIABLE = 1;
+    private static final int X2_VARIABLE = 2;
     private static final int TEST_VARIABLE = 2;
-    private static final int THIS_VARIABLE = 4;
-    private static final int STATIC_THIS_VARIABLE = 5;
-    private static final int X2_VARIABLE = 3;
+    private static final int THIS_VARIABLE = 5;
+    private static final int STATIC_THIS_VARIABLE = 4;
+    private static final int X_AFTER_TEST_VARIABLE = 3;
+    public static final int TEST_BEFORE_X_VARIABLE = 1;
+    public static final int STATIC_THIS_BEFORE_X_VARIABLE = 2;
+    public static final int THIS_BEFORE_X_VARIABLE = 3;
 
     @Test
     void testVar() {
-        int xVariable = 1;
-        int x2Variable = 2;
-
         testIncorrect(
                 new Statement.Block(0,
                         List.of(
@@ -62,11 +63,10 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new ResolvedStatement.Expression(2,
-                                        new Variable(2, xVariable)
+                                        new Variable(2, X_VARIABLE)
                                 )
-                        )
                         ),
                         // todo: fix the problem with multiple elements defined globally
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -85,17 +85,16 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new ResolvedStatement.Expression(1,
                                         new ResolvedExpression.Assign(1,
-                                                xVariable,
+                                                X_VARIABLE,
                                                 new ResolvedExpression.Literal(1, 1L)
                                         )
                                 ),
                                 new ResolvedStatement.Expression(2,
-                                        new Variable(2, xVariable)
+                                        new Variable(2, X_VARIABLE)
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -151,20 +150,18 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Block(2,
-                                        Map.of(x2Variable, "x"), emptyMap(), List.of(
+                                        Map.of(X2_VARIABLE, "x"),
                                         new ResolvedStatement.Expression(2,
                                                 new Variable(2,
-                                                        x2Variable)
+                                                        X2_VARIABLE)
                                         )
-                                )
                                 ),
                                 new ResolvedStatement.Expression(5,
                                         new Variable(5,
-                                                xVariable)
+                                                X_VARIABLE)
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -187,7 +184,6 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new ResolvedStatement.If(1,
                                         new ResolvedExpression.Literal(1, 1L),
                                         new ResolvedStatement.Expression(2,
@@ -195,7 +191,6 @@ class ResolverTest {
                                         ),
                                         null
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -218,7 +213,6 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new ResolvedStatement.Expression(1,
                                         new ResolvedExpression.Call(1,
                                                 new Variable(1,
@@ -227,7 +221,6 @@ class ResolverTest {
                                                 new ResolvedExpression.Literal(1, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -236,9 +229,6 @@ class ResolverTest {
 
     @Test
     void testClass() {
-        int testClass = 1;
-        int thisId = 2;
-        int staticThisId = 3;
         testCorrect(
                 new Statement.Block(0,
                         List.of(
@@ -259,8 +249,8 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(testClass, "Test"),
-                                Map.of(testClass,
+                                Map.of(TEST_BEFORE_X_VARIABLE, "Test"),
+                                Map.of(TEST_BEFORE_X_VARIABLE,
                                         new ResolvedStatement.Class(1,
                                                 emptyList(),
                                                 emptyList(),
@@ -272,12 +262,13 @@ class ResolverTest {
                                                                 emptyMap()
                                                         )
                                                 ),
-                                                Map.of(thisId, "this"),
-                                                Map.of(staticThisId, "this"),
-                                                thisId, staticThisId)
+                                                Map.of(THIS_BEFORE_X_VARIABLE, "this"),
+                                                Map.of(STATIC_THIS_BEFORE_X_VARIABLE, "this"),
+                                                THIS_BEFORE_X_VARIABLE, STATIC_THIS_BEFORE_X_VARIABLE
+                                        )
                                 ),
                                 new ResolvedStatement.Expression(3,
-                                        new Variable(3, testClass)
+                                        new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -304,8 +295,8 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(testClass, "Test"),
-                                Map.of(testClass,
+                                Map.of(TEST_BEFORE_X_VARIABLE, "Test"),
+                                Map.of(TEST_BEFORE_X_VARIABLE,
                                         new ResolvedStatement.Class(1,
                                                 List.of(
                                                         new Method(2,
@@ -317,12 +308,12 @@ class ResolverTest {
                                                 ),
                                                 emptyList(),
                                                 emptyList(),
-                                                Map.of(thisId, "this"),
-                                                Map.of(staticThisId, "this"),
-                                                thisId, staticThisId)
+                                                Map.of(THIS_BEFORE_X_VARIABLE, "this"),
+                                                Map.of(STATIC_THIS_BEFORE_X_VARIABLE, "this"),
+                                                THIS_BEFORE_X_VARIABLE, STATIC_THIS_BEFORE_X_VARIABLE)
                                 ),
                                 new ResolvedStatement.Expression(3,
-                                        new Variable(3, testClass)
+                                        new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -351,8 +342,8 @@ class ResolverTest {
                 ),
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(testClass, "Test"),
-                                Map.of(testClass,
+                                Map.of(TEST_BEFORE_X_VARIABLE, "Test"),
+                                Map.of(TEST_BEFORE_X_VARIABLE,
                                         new ResolvedStatement.Class(1,
                                                 emptyList(),
                                                 List.of(
@@ -364,12 +355,12 @@ class ResolverTest {
                                                         )
                                                 ),
                                                 emptyList(),
-                                                Map.of(thisId, "this"),
-                                                Map.of(staticThisId, "this"),
-                                                thisId, staticThisId)
+                                                Map.of(THIS_BEFORE_X_VARIABLE, "this"),
+                                                Map.of(STATIC_THIS_BEFORE_X_VARIABLE, "this"),
+                                                THIS_BEFORE_X_VARIABLE, STATIC_THIS_BEFORE_X_VARIABLE)
                                 ),
                                 new ResolvedStatement.Expression(3,
-                                        new Variable(3, testClass)
+                                        new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
@@ -439,7 +430,7 @@ class ResolverTest {
                         new Block(0,
                                 Map.of(X_VARIABLE, "x"),
                                 new Block(2,
-                                        Map.of(TEST_VARIABLE, "Test", X2_VARIABLE, "x"),
+                                        Map.of(TEST_VARIABLE, "Test", X_AFTER_TEST_VARIABLE, "x"),
                                         Map.of(
                                                 TEST_VARIABLE,
                                                 new ResolvedStatement.Class(3,
@@ -450,7 +441,7 @@ class ResolverTest {
                                                                         new Block(4,
                                                                                 new ResolvedStatement.Expression(5,
                                                                                         new Variable(5,
-                                                                                                X2_VARIABLE
+                                                                                                X_AFTER_TEST_VARIABLE
                                                                                         )
                                                                                 )
                                                                         ),
