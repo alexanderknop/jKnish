@@ -14,6 +14,10 @@ public abstract class Expression {
     public interface Visitor<V> {
         V visitAssignExpression(Assign assign);
 
+        V visitAssignFieldExpression(AssignField assign);
+
+        V visitAssignStaticFieldExpression(AssignStaticField assign);
+
         V visitCallExpression(Call call);
 
         V visitLiteralExpression(Literal literal);
@@ -21,6 +25,10 @@ public abstract class Expression {
         V visitVariableExpression(Variable variable);
 
         V visitLogicalExpression(Logical logical);
+
+        V visitFieldExpression(Field field);
+
+        V visitStaticFieldExpression(StaticField staticField);
     }
 
     public static class Assign extends Expression {
@@ -58,6 +66,82 @@ public abstract class Expression {
         @Override
         public <N> N accept(Visitor<N> visitor) {
             return visitor.visitAssignExpression(this);
+        }
+    }
+
+    public static class AssignField extends Expression {
+        public final String variable;
+        public final Expression value;
+
+        public AssignField(int line, String variable, Expression value) {
+            super(line);
+            this.variable = variable;
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Assign assign = (Assign) o;
+            return Objects.equals(variable, assign.variable) &&
+                    Objects.equals(value, assign.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(variable, value);
+        }
+
+        @Override
+        public String toString() {
+            return "Assign{" +
+                    "variable='" + variable + '\'' +
+                    ", value=" + value +
+                    '}';
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitAssignFieldExpression(this);
+        }
+    }
+
+    public static class AssignStaticField extends Expression {
+        public final String variable;
+        public final Expression value;
+
+        public AssignStaticField(int line, String variable, Expression value) {
+            super(line);
+            this.variable = variable;
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Assign assign = (Assign) o;
+            return Objects.equals(variable, assign.variable) &&
+                    Objects.equals(value, assign.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(variable, value);
+        }
+
+        @Override
+        public String toString() {
+            return "Assign{" +
+                    "variable='" + variable + '\'' +
+                    ", value=" + value +
+                    '}';
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitAssignStaticFieldExpression(this);
         }
     }
 
@@ -181,6 +265,76 @@ public abstract class Expression {
             return visitor.visitVariableExpression(this);
         }
 
+    }
+
+    public static class Field extends Expression {
+        public final String name;
+
+        public Field(int line, String name) {
+            super(line);
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Field field = (Field) o;
+            return Objects.equals(name, field.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+        @Override
+        public String toString() {
+            return "Field{" +
+                    "line=" + line +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitFieldExpression(this);
+        }
+    }
+
+    public static class StaticField extends Expression {
+        public final String name;
+
+        public StaticField(int line, String name) {
+            super(line);
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            StaticField that = (StaticField) o;
+            return Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+        @Override
+        public String toString() {
+            return "StaticField{" +
+                    "line=" + line +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+
+        @Override
+        public <N> N accept(Visitor<N> visitor) {
+            return visitor.visitStaticFieldExpression(this);
+        }
     }
 
     public static class Logical extends Expression {

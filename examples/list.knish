@@ -1,0 +1,44 @@
+class Node {
+    construct new(next, value) {
+        _next = next;
+        _value = value;
+    }
+
+    next {
+        return _next;
+    }
+
+    value {
+        return _value;
+    }
+
+    toString {
+        return "";
+    }
+}
+
+class List {
+    construct new() {
+        _head = nil;
+    }
+
+    add(value) {
+        _head = Node.new(_head, value);
+    }
+
+    print() {
+        var head = _head;
+        while(head !== nil) {
+            System.print(head.value);
+            head = head.next;
+        }
+    }
+}
+
+var i = 0;
+var list = List.new();
+while(i < 10) {
+    list.add(i);
+    i = i + 1;
+}
+list.print();

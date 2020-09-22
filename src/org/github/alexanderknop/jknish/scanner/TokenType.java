@@ -13,7 +13,8 @@ public enum TokenType {
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
 
-    IDENTIFIER,
+    IDENTIFIER, THIS,
+    FIELD_IDENTIFIER, STATIC_FIELD_IDENTIFIER,
     // Literals.
     STRING, NUMBER,
     NIL,

@@ -192,6 +192,12 @@ public final class Parser {
             if (expression instanceof Expression.Variable) {
                 String name = ((Expression.Variable) expression).name;
                 return new Expression.Assign(equals.line, name, value);
+            } else if (expression instanceof Expression.Field) {
+                String name = ((Expression.Field) expression).name;
+                return new Expression.AssignField(equals.line, name, value);
+            } else if (expression instanceof Expression.StaticField) {
+                String name = ((Expression.StaticField) expression).name;
+                return new Expression.AssignStaticField(equals.line, name, value);
             }
 
             throw error(equals, "Invalid assignment target.");
@@ -332,6 +338,14 @@ public final class Parser {
 
         if (match(IDENTIFIER)) {
             return new Expression.Variable(previous().line, previous().lexeme);
+        }
+
+        if (match(FIELD_IDENTIFIER)) {
+            return new Expression.Field(previous().line, previous().lexeme);
+        }
+
+        if (match(STATIC_FIELD_IDENTIFIER)) {
+            return new Expression.StaticField(previous().line, previous().lexeme);
         }
 
         if (match(LEFT_PAREN)) {

@@ -20,6 +20,8 @@ public class Resolver {
 
         private final Stack<Map<String, VariableInformation>> scopes = new Stack<>();
         private final Stack<Map<Integer, Statement.Class>> classes = new Stack<>();
+        private final Stack<Map<String, Integer>> classScopes = new Stack<>();
+        private final Stack<ClassScopeType> classScopeTypes = new Stack<>();
         private int currentVariable = 0;
 
         public ResolverVisitor(KnishErrorReporter reporter) {
@@ -44,6 +46,85 @@ public class Resolver {
             return statement.accept(this);
         }
 
+        private int freshId() {
+            return currentVariable++;
+        }
+
+        private int beginClassScope(ClassScopeType type) {
+            this.classScopes.push(new HashMap<>());
+            this.classScopeTypes.push(type);
+
+            int thisId = freshId();
+            this.classScopes.peek().put("this", thisId);
+            return thisId;
+        }
+
+        private void endClassScope() {
+            classScopes.pop();
+            classScopeTypes.pop();
+        }
+
+        private int staticFieldId(int line, String variable) {
+            if (classScopes.isEmpty()) {
+                reporter.error(line,
+                        "Cannot reference a field " +
+                        variable +
+                        "outside of a class definition.");
+                return defineVariable(line, variable);
+            }
+
+            Map<String, Integer> staticClassScope;
+            if (classScopeTypes.peek() == ClassScopeType.STATIC) {
+                staticClassScope = classScopes.peek();
+            } else {
+                staticClassScope = classScopes.get(classScopes.size() - 2);
+            }
+
+            if (staticClassScope.containsKey(variable)) {
+                return staticClassScope.get(variable);
+            } else {
+                int newId = freshId();
+                staticClassScope.put(
+                        variable,
+                        newId
+                );
+                return newId;
+            }
+        }
+
+        private int fieldId(int line, String variable) {
+            if (classScopes.isEmpty()) {
+                reporter.error(line,
+                        "Cannot reference a field " +
+                                variable +
+                                "outside of a class definition.");
+                return defineVariable(line, variable);
+            } else if (classScopeTypes.peek() == ClassScopeType.STATIC) {
+                reporter.error(line,
+                        "Cannot use an instance field " + variable
+                                + " in a static method.");
+                return defineVariable(line, variable);
+            }
+
+            Map<String, Integer> classScope = classScopes.peek();
+            if (classScope.containsKey(variable)) {
+                return classScope.get(variable);
+            } else {
+                int newId = freshId();
+                classScope.put(
+                        variable,
+                        newId
+                );
+                return newId;
+            }
+        }
+
+        private Map<Integer, String> definedFields() {
+            HashMap<Integer, String> names = new HashMap<>();
+            classScopes.peek().forEach((name, id) -> names.put(id, name));
+            return Collections.unmodifiableMap(names);
+        }
+
         private void beginScope() {
             this.scopes.push(new HashMap<>());
             this.classes.push(new HashMap<>());
@@ -52,6 +133,7 @@ public class Resolver {
         private void endScope() {
             scopes.pop();
             classes.pop();
+
         }
 
         private void reportUnused() {
@@ -69,9 +151,10 @@ public class Resolver {
         }
 
         private int declareVariable(int line, String name) {
+            int newId = freshId();
             scopes.peek().put(name,
-                    new VariableInformation(line, currentVariable++, false, false));
-            return currentVariable - 1;
+                    new VariableInformation(line, newId, false, false));
+            return newId;
         }
 
         private void finishDefinition(int line, String name) {
@@ -87,9 +170,10 @@ public class Resolver {
         }
 
         private int defineVariable(int line, String name, boolean isClass) {
+            int newId = freshId();
             scopes.peek().put(name,
-                    new VariableInformation(line, currentVariable++, true, isClass));
-            return currentVariable - 1;
+                    new VariableInformation(line, newId, true, isClass));
+            return newId;
         }
 
         private VariableInformation variableInformation(int line, String variable) {
@@ -100,10 +184,10 @@ public class Resolver {
             }
 
             reporter.error(line, "Undeclared variable " + variable + ".");
+
             defineVariable(line, variable);
-            VariableInformation variableInformation = scopes.peek().get(variable);
-            variableInformation.used = true;
-            return variableInformation;
+            useVariable(line, variable);
+            return variableInformation(line, variable);
         }
 
         private int variableId(int line, String variable) {
@@ -133,22 +217,22 @@ public class Resolver {
         }
 
         private ResolvedStatement.Class resolveClass(Statement.Class klass) {
-            beginScope();
-            Map<Integer, String> fields = new HashMap<>();
-            int thisId = defineVariable(klass.line, "this");
-            fields.put(thisId, "this");
+            int staticThisId = beginClassScope(ClassScopeType.STATIC);
+            List<ResolvedStatement.Method> staticMethods =
+                    resolveMethods(klass.staticMethods);
 
-            List<ResolvedStatement.Method> methods = resolveMethods(klass.methods);
-            List<ResolvedStatement.Method> constructors = resolveMethods(klass.constructors);
-            endScope();
+            int thisId = beginClassScope(ClassScopeType.REGULAR);
 
-            beginScope();
-            Map<Integer, String> staticFields = new HashMap<>();
-            int staticThisId = defineVariable(klass.line, "this");
-            staticFields.put(staticThisId, "this");
+            List<ResolvedStatement.Method> methods =
+                    resolveMethods(klass.methods);
+            List<ResolvedStatement.Method> constructors =
+                    resolveMethods(klass.constructors);
 
-            List<ResolvedStatement.Method> staticMethods = resolveMethods(klass.staticMethods);
-            endScope();
+            Map<Integer, String> fields = definedFields();
+            endClassScope();
+
+            Map<Integer, String> staticFields = definedFields();
+            endClassScope();
 
             return new ResolvedStatement.Class(klass.line,
                     staticMethods,
@@ -174,6 +258,23 @@ public class Resolver {
                         resolveExpression(assign.value)
                 );
             }
+        }
+
+        @Override
+        public ResolvedExpression visitAssignFieldExpression(Expression.AssignField assign) {
+            int fieldId = fieldId(assign.line, assign.variable);
+            return new ResolvedExpression.Assign(assign.line,
+                    fieldId,
+                    resolveExpression(assign.value)
+            );
+        }
+
+        @Override
+        public ResolvedExpression visitAssignStaticFieldExpression(Expression.AssignStaticField assign) {
+            int variableId = staticFieldId(assign.line, assign.variable);
+            return new ResolvedExpression.Assign(assign.line,
+                    variableId,
+                    resolveExpression(assign.value));
         }
 
         @Override
@@ -204,6 +305,20 @@ public class Resolver {
 
             return new ResolvedExpression.Variable(variable.line,
                     information.id);
+        }
+
+        @Override
+        public ResolvedExpression visitFieldExpression(Expression.Field field) {
+            return new ResolvedExpression.Variable(
+                    field.line,
+                    fieldId(field.line, field.name)
+            );
+        }
+
+        @Override
+        public ResolvedExpression visitStaticFieldExpression(Expression.StaticField staticField) {
+            //todo
+            return null;
         }
 
         @Override
@@ -331,6 +446,10 @@ public class Resolver {
                 this.defined = defined;
                 this.isClass = isClass;
             }
+        }
+
+        private enum ClassScopeType {
+            STATIC, REGULAR
         }
     }
 }

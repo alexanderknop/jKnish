@@ -124,6 +124,12 @@ public final class Scanner {
         String text = source.substring(start, current);
         TokenType type = keywords.getOrDefault(text, IDENTIFIER);
 
+        if (text.startsWith("__")) {
+            type = STATIC_FIELD_IDENTIFIER;
+        } else if (text.startsWith("_")) {
+            type = FIELD_IDENTIFIER;
+        }
+
         addToken(type);
     }
 
@@ -185,6 +191,7 @@ public final class Scanner {
 
     static {
         keywords = new HashMap<>();
+        keywords.put("this", THIS);
         keywords.put("nil", NIL);
         keywords.put("true", TRUE);
         keywords.put("false", FALSE);
