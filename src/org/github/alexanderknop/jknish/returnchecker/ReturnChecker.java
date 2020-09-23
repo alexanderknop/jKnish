@@ -89,7 +89,9 @@ public class ReturnChecker {
             boolean previousInMethod = inMethod;
             inMethod = true;
 
-            check(method.body);
+            if (!check(method.body)) {
+                setReturnType(method.line, ReturnType.EMPTY);
+            }
 
             returnType = previousReturnType;
             inMethod = previousInMethod;

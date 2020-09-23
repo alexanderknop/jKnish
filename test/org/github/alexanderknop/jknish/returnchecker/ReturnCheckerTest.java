@@ -77,7 +77,7 @@ class ReturnCheckerTest {
 
     @Test
     void testMixedReturn() {
-        Method badMethod = new Method(2,
+        Method badMethod1 = new Method(2,
                 "test",
                 null,
                 new Block(2,
@@ -97,6 +97,23 @@ class ReturnCheckerTest {
                 ),
                 emptyMap()
         );
+        Method badMethod2 = new Method(2,
+                "test",
+                null,
+                new Block(2,
+                        new If(3,
+                                new Literal(3,
+                                        Boolean.TRUE
+                                ),
+                                new Return(3,
+                                        new Literal(3,
+                                                1L
+                                        )
+                                )
+                        )
+                ),
+                emptyMap()
+        );
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
@@ -105,7 +122,7 @@ class ReturnCheckerTest {
                                         new ResolvedStatement.Class(1,
                                                 emptyList(),
                                                 emptyList(),
-                                                List.of(badMethod),
+                                                List.of(badMethod1),
                                                 emptyMap(),
                                                 emptyMap(),
                                                 THIS_ID, STATIC_THIS_ID
@@ -124,7 +141,7 @@ class ReturnCheckerTest {
                                 Map.of(0,
                                         new ResolvedStatement.Class(1,
                                                 emptyList(),
-                                                List.of(badMethod),
+                                                List.of(badMethod1),
                                                 emptyList(),
                                                 emptyMap(),
                                                 emptyMap(),
@@ -143,7 +160,7 @@ class ReturnCheckerTest {
                                 Map.of(TEST_ID, "Test"),
                                 Map.of(0,
                                         new ResolvedStatement.Class(1,
-                                                List.of(badMethod),
+                                                List.of(badMethod1),
                                                 emptyList(),
                                                 emptyList(),
                                                 emptyMap(),
@@ -155,6 +172,26 @@ class ReturnCheckerTest {
                         emptyMap()
                 ),
                 "[line 4] Error: Cannot return nothing and some value in the same method."
+        );
+
+        testIncorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_ID, "Test"),
+                                Map.of(0,
+                                        new ResolvedStatement.Class(1,
+                                                List.of(badMethod2),
+                                                emptyList(),
+                                                emptyList(),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                THIS_ID, STATIC_THIS_ID
+                                        )
+                                )
+                        ),
+                        emptyMap()
+                ),
+                "[line 2] Error: Cannot return nothing and some value in the same method."
         );
     }
 
