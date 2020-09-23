@@ -104,12 +104,10 @@ class SimpleType {
 
     private static SimpleType.Method fromKnishMethod(KnishModule.Method method,
                                               Map<KnishModule.Class, SimpleType> defined) {
-        List<SimpleType> arguments = null;
-        if (method.getArguments() != null) {
-            arguments = method.getArguments().stream().map(
-                    argument -> fromKnishIntersection(argument, defined)
-            ).collect(Collectors.toList());
-        }
+        List<SimpleType> arguments = MethodId.processArgumentsList(
+                method.getArguments(),
+                argument -> fromKnishIntersection(argument, defined)
+        );
 
         SimpleType value = fromKnishUnion(method.getValue(), defined);
 

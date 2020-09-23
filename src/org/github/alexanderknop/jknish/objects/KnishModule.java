@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.*;
+import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
 
 public abstract class KnishModule {
     private final Map<String, Class> classes = new HashMap<>();
@@ -140,16 +140,16 @@ public abstract class KnishModule {
 
         public Method(List<Class> arguments, Class value) {
             this(
-                    arguments == null ? null :
-                            arguments.stream()
-                                    .map(t -> new Intersection(singleton(t)))
-                                    .collect(Collectors.toList()),
+                    processArgumentsList(
+                            arguments,
+                            t -> new Intersection(singleton(t))
+                    ),
                     new Union(singleton(value))
             );
         }
 
         public List<Intersection> getArguments() {
-            return arguments != null ? unmodifiableList(arguments) : null;
+            return arguments == null ? null : unmodifiableList(arguments);
         }
 
         public Union getValue() {

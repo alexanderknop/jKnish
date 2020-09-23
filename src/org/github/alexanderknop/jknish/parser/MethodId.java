@@ -2,6 +2,8 @@ package org.github.alexanderknop.jknish.parser;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class MethodId {
     public static <V> Integer arityFromArgumentsList(List<V> arguments) {
@@ -9,6 +11,15 @@ public final class MethodId {
             return null;
         } else {
             return arguments.size();
+        }
+    }
+
+    public static <U, V> List<U> processArgumentsList(
+            List<V> arguments, Function<V, U> mapper) {
+        if (arguments == null) {
+            return null;
+        } else {
+            return arguments.stream().map(mapper).collect(Collectors.toList());
         }
     }
 

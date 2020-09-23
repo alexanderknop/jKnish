@@ -8,6 +8,8 @@ import org.github.alexanderknop.jknish.parser.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
+
 public class Resolver {
     public static ResolvedScript resolve(
             KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
@@ -72,8 +74,8 @@ public class Resolver {
             if (classScopes.isEmpty()) {
                 reporter.error(line,
                         "Cannot reference a field '" +
-                        variable +
-                        "' outside of a class definition.");
+                                variable +
+                                "' outside of a class definition.");
                 int variableId = defineVariable(line, variable);
                 useVariable(line, variable);
                 return variableId;
@@ -292,6 +294,7 @@ public class Resolver {
             return new ResolvedExpression.Call(call.line,
                     resolveExpression(call.object),
                     call.method,
+                    //  CHECK ARITY
                     call.arguments == null ? null : call.arguments.stream()
                             .map(this::resolveExpression)
                             .collect(Collectors.toList())
@@ -437,9 +440,10 @@ public class Resolver {
             for (Statement.Method method : methods) {
                 beginScope();
                 List<Integer> argumentsIds =
-                        method.argumentsNames == null ? null : method.argumentsNames.stream()
-                                .map(name -> defineVariable(method.line, name))
-                                .collect(Collectors.toList());
+                        processArgumentsList(
+                                method.argumentsNames,
+                                name -> defineVariable(method.line, name)
+                        );
                 resolvedMethods.add(
                         new ResolvedStatement.Method(
                                 method.line,

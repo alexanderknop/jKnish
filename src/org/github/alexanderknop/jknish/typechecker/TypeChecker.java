@@ -119,10 +119,9 @@ public final class TypeChecker {
             List<SimpleType> arguments;
             MethodId methodId;
             if (call.arguments != null) {
-                int arity = call.arguments.size();
-                methodId = new MethodId(call.method, arity);
+                methodId = new MethodId(call.method, call.arguments.size());
                 arguments = new ArrayList<>();
-                for (int i = 0; i < arity; i++) {
+                for (int i = 0; i < call.arguments.size(); i++) {
                     arguments.add(new SimpleType.Variable());
                 }
             } else {
@@ -140,9 +139,7 @@ public final class TypeChecker {
                             "An object does not implement " + methodId + "."));
 
             if (call.arguments != null) {
-                int arity = call.arguments.size();
-
-                for (int i = 0; i < arity; i++) {
+                for (int i = 0; i < call.arguments.size(); i++) {
                     constrainer.constrain(expressionType(call.arguments.get(i)), arguments.get(i),
                             new TypeErrorMessage(reporter, call.line,
                                     "The value of " + i + "th argument has incompatible type."));
@@ -280,6 +277,7 @@ public final class TypeChecker {
                 );
 
                 SimpleType.Method constructorType;
+                // CHECK ARITY
                 if (constructor.argumentsIds == null) {
                     constructorType = new SimpleType.Method(
                             null,
@@ -372,7 +370,7 @@ public final class TypeChecker {
             beginScope(argumentsNames);
 
             SimpleType returnType = visitBlockStatement(body);
-
+            //  CHECK ARITY
             List<SimpleType> argumentTypes =
                     argumentsIds == null ? null : argumentsIds.stream()
                             .map(this::variableType)

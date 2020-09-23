@@ -1,6 +1,9 @@
 package org.github.alexanderknop.jknish.typechecker;
 
+import org.github.alexanderknop.jknish.parser.MethodId;
+
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -36,12 +39,13 @@ class Constrainer {
             SimpleType.Class leftClass = (SimpleType.Class) left;
             SimpleType.Class rightClass = (SimpleType.Class) right;
 
-            for (var method : rightClass.methods.entrySet()) {
-                if (!leftClass.methods.containsKey(method.getKey())) {
+            for (Map.Entry<MethodId, SimpleType.Method> method : rightClass.methods.entrySet()) {
+                if (leftClass.methods.containsKey(method.getKey())) {
+                    constrain(leftClass.methods.get(method.getKey()), method.getValue(), message);
+                } else {
                     message.send();
                     break;
                 }
-                constrain(leftClass.methods.get(method.getKey()), method.getValue(), message);
             }
         } else if (left instanceof SimpleType.Variable) {
             SimpleType.Variable variable = (SimpleType.Variable) left;

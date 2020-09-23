@@ -4,6 +4,7 @@ import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.objects.KnishRuntimeException;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
@@ -11,6 +12,8 @@ import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
 
 public final class Interpreter {
     public static void interpret(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
@@ -74,10 +77,8 @@ public final class Interpreter {
 
         @Override
         public KnishObject visitCallExpression(ResolvedExpression.Call call) {
-            List<KnishObject> arguments = null;
-            if (call.arguments != null) {
-                arguments = call.arguments.stream().map(this::evaluate).collect(Collectors.toList());
-            }
+            List<KnishObject> arguments =
+                    processArgumentsList(call.arguments, this::evaluate);
 
             try {
                 return evaluate(call.object).call(call.method, arguments);

@@ -13,6 +13,7 @@ public class InterpreterMethodUtils {
                                                     Environment enclosing,
                                                     Interpreter.InterpreterVisitor evaluator) {
         return arguments -> {
+            // CHECK ARITY
             Environment withParameters = new Environment(enclosing,
                     method.argumentsIds == null ? Collections.emptyList() : method.argumentsIds);
             if (arguments != null) {
