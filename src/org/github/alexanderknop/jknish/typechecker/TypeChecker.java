@@ -225,6 +225,7 @@ public final class TypeChecker {
 
             SimpleType returnType = new SimpleType.Variable();
             for (ResolvedStatement statement : block.resolvedStatements) {
+                // this error is impossible since returnType is a fresh variable
                 constrainer.constrain(checkStatement(statement), returnType,
                         new TypeErrorMessage(reporter, statement.line,
                                 "Incompatible return types"));
