@@ -4,7 +4,7 @@ import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
-public class ReturnCheck {
+public class ReturnChecker {
 
     public static void check(ResolvedScript script, KnishErrorReporter reporter) {
         new ReturnCheckVisitor(reporter).check(script);

@@ -1,7 +1,6 @@
 package org.github.alexanderknop.jknish.returnchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
-import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Literal;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
@@ -18,7 +17,7 @@ import static org.github.alexanderknop.jknish.resolver.ResolvedStatement.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ReturnCheckTest {
+class ReturnCheckerTest {
 
     public static final int STATIC_THIS_ID = 2;
     public static final int THIS_ID = 1;
@@ -162,7 +161,7 @@ class ReturnCheckTest {
     private void testIncorrect(ResolvedScript script, String message) {
         StringWriter errors = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(errors);
-        ReturnCheck.check(script, reporter);
+        ReturnChecker.check(script, reporter);
 
         assertTrue(reporter.hadError());
         assertEquals(message.strip(), errors.toString().strip());

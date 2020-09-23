@@ -6,7 +6,7 @@ import org.github.alexanderknop.jknish.parser.Parser;
 import org.github.alexanderknop.jknish.parser.Statement;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.Resolver;
-import org.github.alexanderknop.jknish.returnchecker.ReturnCheck;
+import org.github.alexanderknop.jknish.returnchecker.ReturnChecker;
 import org.github.alexanderknop.jknish.scanner.Scanner;
 import org.github.alexanderknop.jknish.scanner.Token;
 import org.github.alexanderknop.jknish.typechecker.TypeChecker;
@@ -39,7 +39,7 @@ public class Knish {
         }
 
         ResolvedScript resolvedScript = Resolver.resolve(core, script, reporter);
-        ReturnCheck.check(resolvedScript, reporter);
+        ReturnChecker.check(resolvedScript, reporter);
         TypeChecker.check(core, resolvedScript, reporter);
         if (reporter.hadError()) {
             return;
