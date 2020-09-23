@@ -39,7 +39,11 @@ public class Resolver {
         }
 
         private ResolvedExpression resolveExpression(Expression expression) {
-            return expression.accept(this);
+            if (expression != null) {
+                return expression.accept(this);
+            } else {
+                return null;
+            }
         }
 
         private ResolvedStatement resolveStatement(Statement statement) {
@@ -452,11 +456,6 @@ public class Resolver {
 
         @Override
         public ResolvedStatement visitReturnStatement(Statement.Return aReturn) {
-            if (classScopes.isEmpty()) {
-                reporter.error(aReturn.line, "Cannot return from top-level code.");
-                return null;
-            }
-
             return new ResolvedStatement.Return(aReturn.line,
                     resolveExpression(aReturn.value)
             );

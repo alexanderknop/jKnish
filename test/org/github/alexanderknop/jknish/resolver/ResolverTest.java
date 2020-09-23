@@ -412,18 +412,18 @@ class ResolverTest {
                 "[line 1] Error: Cannot reference a field '__hello' outside of a class definition."
         );
     }
-
-    @Test
-    void testReturn() {
-        testIncorrect(
-                new Statement.Block(0,
-                        new Statement.Return(1,
-                                new Expression.Literal(1, "hello")
-                        )
-                ),
-                "[line 1] Error: Cannot return from top-level code."
-        );
-    }
+//
+//    @Test
+//    void testReturn() {
+//        testIncorrect(
+//                new Statement.Block(0,
+//                        new Statement.Return(1,
+//                                new Expression.Literal(1, "hello")
+//                        )
+//                ),
+//                "[line 1] Error: Cannot return from top-level code."
+//        );
+//    }
 
     @Test
     void testAssign() {

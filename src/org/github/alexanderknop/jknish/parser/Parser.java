@@ -68,9 +68,13 @@ public final class Parser {
     }
 
     private Statement.Return returnStatement() {
-        Statement.Return aReturn = new Statement.Return(previous().line, expression());
+        int line = previous().line;
+        Expression value = null;
+        if (!check(SEMICOLON)) {
+            value = expression();
+        }
         consume(SEMICOLON, "Expect ';' after return statement.");
-        return aReturn;
+        return new Statement.Return(line, value);
     }
 
     private Statement classStatement() {
