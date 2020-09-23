@@ -1,28 +1,24 @@
-class Node {
-    construct new(next, value) {
-        _next = next;
-        _value = value;
-    }
-
-    next {
-        return _next;
-    }
-
-    value {
-        return _value;
-    }
-
-    toString {
-        return "";
-    }
-}
-
 class List {
     construct new() {
         _head = nil;
     }
 
     add(value) {
+        class Node {
+            construct new(next, value) {
+                _next = next;
+                _value = value;
+            }
+
+            next {
+                return _next;
+            }
+
+            value {
+                return _value;
+            }
+        }
+
         _head = Node.new(_head, value);
     }
 
