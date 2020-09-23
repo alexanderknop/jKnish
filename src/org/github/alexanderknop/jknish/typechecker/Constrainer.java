@@ -8,6 +8,15 @@ class Constrainer {
     private final Set<Inequality> cash = new HashSet<>();
 
     void constrain(SimpleType left, SimpleType right, TypeErrorMessage message) {
+
+        if (left instanceof SimpleType.Bottom) {
+            return;
+        }
+
+        if (right instanceof SimpleType.Top) {
+            return;
+        }
+
         final Inequality inequality = new Inequality(left, right);
         if (cash.contains(inequality)) {
             return;

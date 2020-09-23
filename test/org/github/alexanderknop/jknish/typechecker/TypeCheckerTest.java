@@ -534,7 +534,6 @@ class TypeCheckerTest {
                                 "test",
                                 null,
                                 new Block(2,
-                                        emptyMap(), emptyMap(), List.of(
                                         new If(3,
                                                 new Literal(3, Boolean.TRUE),
                                                 new Return(3,
@@ -546,7 +545,6 @@ class TypeCheckerTest {
                                                                 "Hello World")
                                                 )
                                         )
-                                )
                                 ),
                                 emptyMap()
                         )
@@ -559,10 +557,11 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass2
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Variable(4, SYSTEM_VARIABLE),
@@ -574,7 +573,6 @@ class TypeCheckerTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -628,6 +626,52 @@ class TypeCheckerTest {
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
                 "[line 4] Error: The value of 0th argument has incompatible type."
+        );
+
+        ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
+                List.of(
+                        new Method(2,
+                                "test",
+                                null,
+                                new Block(2,
+                                        new If(3,
+                                                new Literal(3, Boolean.TRUE),
+                                                new Return(3,
+                                                        new Literal(3,
+                                                                1L)
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyList(),
+                emptyList(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE);
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass3
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4, SYSTEM_VARIABLE),
+                                                "print",
+                                                new Call(4,
+                                                        new Variable(4,
+                                                                TEST_VARIABLE),
+                                                        "test"
+                                                )
+                                        )
+                                )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
         );
     }
 
@@ -1100,6 +1144,26 @@ class TypeCheckerTest {
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
         );
+        testCorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE,
+                                                new Literal(1, Boolean.TRUE)
+                                        )
+                                ),
+                                new If(2,
+                                        new Variable(2, X_VARIABLE),
+                                        new Expression(3, new Literal(3, 1L))
+                                )
+                        )
+                        ),
+                        Map.of(SYSTEM_VARIABLE, "System")
+                )
+        );
+
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,

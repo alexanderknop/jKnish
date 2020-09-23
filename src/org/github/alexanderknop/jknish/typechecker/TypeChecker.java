@@ -196,7 +196,10 @@ public final class TypeChecker {
                     new TypeErrorMessage(reporter, anIf.line,
                             "If conditions must have type Boolean."));
             SimpleType thenReturnType = checkStatement(anIf.thenBranch);
-            SimpleType elseReturnType = checkStatement(anIf.elseBranch);
+            SimpleType elseReturnType = SimpleType.bottom();
+            if (anIf.elseBranch != null) {
+                elseReturnType = checkStatement(anIf.elseBranch);
+            }
             SimpleType returnType = new SimpleType.Variable();
             // the following error statements are impossible
             constrainer.constrain(thenReturnType, returnType,
