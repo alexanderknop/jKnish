@@ -82,8 +82,16 @@ public final class Interpreter {
 
             try {
                 return evaluate(call.object).call(call.method, arguments);
+            } catch (RuntimeExceptionWithLine e) {
+                // this is fine if we got a runtime error thrown by Knish
+                throw e;
             } catch (KnishRuntimeException e) {
+                // this is also fine if we got a runtime error thrown by a foreign object
                 throw new RuntimeExceptionWithLine(call.line, e);
+            } catch (Exception e) {
+                // however, the foreign objects are allowed to throw only KnishRuntimeExceptions
+                throw new RuntimeExceptionWithLine(call.line,
+                        "Unknown exception with the message: " + e.getMessage());
             }
         }
 
