@@ -77,11 +77,12 @@ public final class Interpreter {
 
         @Override
         public KnishObject visitCallExpression(ResolvedExpression.Call call) {
+            KnishObject object = evaluate(call.object);
             List<KnishObject> arguments =
                     processArgumentsList(call.arguments, this::evaluate);
 
             try {
-                return evaluate(call.object).call(call.method, arguments);
+                return object.call(call.method, arguments);
             } catch (RuntimeExceptionWithLine e) {
                 // this is fine if we got a runtime error thrown by Knish
                 throw e;
