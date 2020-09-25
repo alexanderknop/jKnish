@@ -1,5 +1,6 @@
 package org.github.alexanderknop.jknish;
 
+import org.github.alexanderknop.jknish.initialization.InitializationChecker;
 import org.github.alexanderknop.jknish.interpreter.Interpreter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Parser;
@@ -39,6 +40,7 @@ public class Knish {
         }
 
         ResolvedScript resolvedScript = Resolver.resolve(core, script, reporter);
+        InitializationChecker.check(resolvedScript, reporter);
         ReturnChecker.check(resolvedScript, reporter);
         TypeChecker.check(core, resolvedScript, reporter);
         if (reporter.hadError()) {
