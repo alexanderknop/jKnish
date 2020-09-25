@@ -1,4 +1,4 @@
-package org.github.alexanderknop.jknish.initialization;
+package org.github.alexanderknop.jknish.initializationchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression;

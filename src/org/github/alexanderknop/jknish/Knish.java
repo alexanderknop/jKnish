@@ -1,6 +1,6 @@
 package org.github.alexanderknop.jknish;
 
-import org.github.alexanderknop.jknish.initialization.InitializationChecker;
+import org.github.alexanderknop.jknish.initializationchecker.InitializationChecker;
 import org.github.alexanderknop.jknish.interpreter.Interpreter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Parser;
