@@ -41,6 +41,30 @@ public class InitializationChecker {
             statement.accept(this);
         }
 
+        private void defineClasses(ResolvedStatement.Block block) {
+            classes.putAll(block.classes);
+        }
+
+        private void declareVariables(ResolvedStatement.Block block) {
+            variableNames.putAll(block.names);
+        }
+
+        private void initialize(Integer variableId) {
+            initialized.add(variableId);
+        }
+
+        private void initialize(Collection<Integer> variableIds) {
+            initialized.addAll(variableIds);
+        }
+
+        private boolean isInitialized(Integer variableId) {
+            return initialized.contains(variableId);
+        }
+
+        private String variableName(int variableId) {
+            return variableNames.get(variableId);
+        }
+
         @Override
         public Void visitExpressionStatement(ResolvedStatement.Expression expression) {
             check(expression.resolvedExpression);
@@ -79,10 +103,11 @@ public class InitializationChecker {
 
         @Override
         public Void visitBlockStatement(ResolvedStatement.Block block) {
-            variableNames.putAll(block.names);
+            declareVariables(block);
+            defineClasses(block);
+
             // the class variables are initialized by default
-            initialized.addAll(block.classes.keySet());
-            classes.putAll(block.classes);
+            initialize(block.classes.keySet());
 
             for (ResolvedStatement statement : block.resolvedStatements) {
                 check(statement);
@@ -100,7 +125,7 @@ public class InitializationChecker {
 
         @Override
         public Void visitAssignExpression(ResolvedExpression.Assign assign) {
-            initialized.add(assign.variableId);
+            initialize(assign.variableId);
 
             return null;
         }
@@ -124,9 +149,9 @@ public class InitializationChecker {
 
         @Override
         public Void visitVariableExpression(ResolvedExpression.Variable variable) {
-            if (!initialized.contains(variable.variableId)) {
+            if (!isInitialized(variable.variableId)) {
                 reporter.error(variable.line, "Use of unassigned local variable '" +
-                        variableNames.get(variable.variableId) + "'.");
+                        variableName(variable.variableId) + "'.");
             }
 
             // if we use an object that closures on some local variables,
