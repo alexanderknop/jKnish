@@ -13,7 +13,6 @@ import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Method;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
@@ -231,10 +230,11 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass2
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Call(4,
@@ -246,7 +246,6 @@ class InterpreterTest {
                                                 "test"
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -385,10 +384,11 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass1
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Variable(4,
@@ -396,7 +396,6 @@ class InterpreterTest {
                                                 "test2"
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -633,7 +632,6 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1, Boolean.TRUE),
@@ -641,7 +639,6 @@ class InterpreterTest {
                                                 new Literal(1, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -651,7 +648,6 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1, 1L),
@@ -659,7 +655,6 @@ class InterpreterTest {
                                                 new Literal(1, Boolean.TRUE)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -669,14 +664,12 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1, 1L),
                                                 "+"
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -686,7 +679,6 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -698,7 +690,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -708,7 +699,6 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -719,7 +709,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -729,7 +718,6 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -741,7 +729,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -774,7 +761,6 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -786,7 +772,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -797,7 +782,6 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -809,7 +793,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -819,7 +802,6 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -831,7 +813,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -844,7 +825,7 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1, X_VARIABLE,
                                                 new Literal(1, 1L))
@@ -856,7 +837,6 @@ class InterpreterTest {
                                                 new Variable(2, X_VARIABLE)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -866,13 +846,13 @@ class InterpreterTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1, X_VARIABLE,
                                                 new Literal(1, 1L))
                                 ),
                                 new Block(2,
-                                        Map.of(X2_VARIABLE, "x"), emptyMap(), List.of(
+                                        Map.of(X2_VARIABLE, "x"),
                                         new Expression(3,
                                                 new Assign(3,
                                                         X2_VARIABLE,
@@ -889,8 +869,6 @@ class InterpreterTest {
                                                 )
                                         )
                                 )
-                                )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -1206,9 +1184,7 @@ class InterpreterTest {
                                 ),
                                 new While(2,
                                         new Variable(2, X_VARIABLE),
-                                        new Block(3,
-                                                emptyMap(), emptyMap(), List.of()
-                                        )
+                                        new Block(3)
                                 )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")

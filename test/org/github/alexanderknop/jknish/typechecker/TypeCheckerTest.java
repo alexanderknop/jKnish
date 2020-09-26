@@ -35,7 +35,6 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
@@ -43,7 +42,6 @@ class TypeCheckerTest {
                                                 new Literal(1, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -52,14 +50,12 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Variable(1, SYSTEM_VARIABLE),
                                                 "print"
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -487,12 +483,10 @@ class TypeCheckerTest {
                         new Method(2,
                                 null,
                                 new Block(2,
-                                        emptyMap(), emptyMap(), List.of(
                                         new Return(3,
                                                 new Literal(3,
                                                         "Hello World")
                                         )
-                                )
                                 ),
                                 emptyMap()
                         )
@@ -605,10 +599,11 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass2
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Literal(4, 1L),
@@ -620,7 +615,6 @@ class TypeCheckerTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -678,7 +672,6 @@ class TypeCheckerTest {
     void testAddition() {
         testCorrect(new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1, 1L),
@@ -686,7 +679,6 @@ class TypeCheckerTest {
                                                 new Literal(1, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -695,7 +687,6 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1, 1L),
@@ -704,7 +695,6 @@ class TypeCheckerTest {
                                                         Boolean.TRUE)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -714,7 +704,6 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1,
@@ -723,7 +712,6 @@ class TypeCheckerTest {
                                                 new Literal(1, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -733,7 +721,6 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1,
@@ -743,7 +730,6 @@ class TypeCheckerTest {
                                                         "World")
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -752,7 +738,6 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                emptyMap(), emptyMap(), List.of(
                                 new Expression(1,
                                         new Call(1,
                                                 new Literal(1,
@@ -761,7 +746,6 @@ class TypeCheckerTest {
                                                 new Literal(1, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -775,7 +759,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -789,7 +773,6 @@ class TypeCheckerTest {
                                                 new Literal(2, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -798,7 +781,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(2,
                                         new Call(2,
                                                 new Variable(2,
@@ -807,7 +790,6 @@ class TypeCheckerTest {
                                                 new Literal(2, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -816,7 +798,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(2,
                                         new Call(2,
                                                 new Variable(2,
@@ -826,7 +808,6 @@ class TypeCheckerTest {
                                                         xVariable)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -835,7 +816,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(2,
                                         new Call(2,
                                                 new Variable(2,
@@ -845,7 +826,6 @@ class TypeCheckerTest {
                                                         "y")
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -854,7 +834,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -868,7 +848,6 @@ class TypeCheckerTest {
                                                 new Literal(2, "s")
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -881,7 +860,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -902,7 +881,6 @@ class TypeCheckerTest {
                                                 new Literal(2, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -911,7 +889,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -930,7 +908,6 @@ class TypeCheckerTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -939,7 +916,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -952,7 +929,6 @@ class TypeCheckerTest {
                                                 new Literal(2, "y")
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -961,7 +937,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -981,7 +957,6 @@ class TypeCheckerTest {
                                                 new Literal(3, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -991,7 +966,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -1011,7 +986,6 @@ class TypeCheckerTest {
                                                 new Literal(3, "y")
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -1021,7 +995,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -1041,7 +1015,6 @@ class TypeCheckerTest {
                                                 new Literal(3, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -1051,7 +1024,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(xVariable, "x"), emptyMap(), List.of(
+                                Map.of(xVariable, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 xVariable,
@@ -1071,7 +1044,6 @@ class TypeCheckerTest {
                                                 new Variable(1, xVariable)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -1083,7 +1055,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 X_VARIABLE,
@@ -1094,7 +1066,6 @@ class TypeCheckerTest {
                                         new Variable(2, X_VARIABLE),
                                         new Expression(3, new Literal(3, 1L))
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -1102,7 +1073,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 X_VARIABLE,
@@ -1113,7 +1084,6 @@ class TypeCheckerTest {
                                         new Variable(2, X_VARIABLE),
                                         new Expression(3, new Literal(3, 1L))
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -1126,7 +1096,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 X_VARIABLE,
@@ -1138,7 +1108,6 @@ class TypeCheckerTest {
                                         new Expression(3, new Literal(3, 1L)),
                                         new Expression(4, new Literal(3, 1L))
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -1146,7 +1115,7 @@ class TypeCheckerTest {
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 X_VARIABLE,
@@ -1157,7 +1126,6 @@ class TypeCheckerTest {
                                         new Variable(2, X_VARIABLE),
                                         new Expression(3, new Literal(3, 1L))
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -1166,7 +1134,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 X_VARIABLE,
@@ -1178,7 +1146,6 @@ class TypeCheckerTest {
                                         new Expression(3, new Literal(3, 1L)),
                                         new Expression(4, new Literal(3, 1L))
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -1187,7 +1154,7 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE, "x"), emptyMap(), List.of(
+                                Map.of(X_VARIABLE, "x"),
                                 new Expression(1,
                                         new Assign(1,
                                                 X_VARIABLE,
@@ -1205,7 +1172,6 @@ class TypeCheckerTest {
                                         new Expression(3, new Literal(3, 1L)),
                                         new Expression(4, new Literal(3, 1L))
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
