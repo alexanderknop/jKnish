@@ -257,10 +257,14 @@ class InitializationCheckerTest {
 
         testCorrect(new ResolvedScript(
                         new Block(0,
-                                Map.of(X_VARIABLE_ID, "x", TEST_VARIABLE_ID, "Test"),
+                                Map.of(X_VARIABLE_ID, "x",
+                                        TEST_VARIABLE_ID, "Test",
+                                        TEST_2_VARIABLE_ID, "Test2"),
                                 Map.of(
                                         TEST_VARIABLE_ID,
-                                        testClass2
+                                        testClass3,
+                                        TEST_2_VARIABLE_ID,
+                                        testClass4
                                 ),
                                 new Expression(4,
                                         new Variable(4, TEST_VARIABLE_ID)
