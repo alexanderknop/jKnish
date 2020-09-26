@@ -155,11 +155,14 @@ public class InitializationChecker {
             }
 
             // if we use an object that closures on some local variables,
-            // we need to check that they are initialized
+            // we need to check that they are initialized;
+            // however, we need to avoid dead cycles
             ResolvedStatement.Class klass = classes.get(variable.variableId);
             if (klass != null && !checkedClasses.contains(klass)) {
                 checkedClasses.add(klass);
+                Set<Integer> initialized = new HashSet<>(this.initialized);
                 checkClass(klass);
+                this.initialized = initialized;
             }
 
             return null;
