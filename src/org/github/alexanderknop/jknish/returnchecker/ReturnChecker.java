@@ -1,6 +1,7 @@
 package org.github.alexanderknop.jknish.returnchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
@@ -83,7 +84,7 @@ public class ReturnChecker {
             return alwaysReturn;
         }
 
-        private void checkMethod(ResolvedStatement.Method method) {
+        private void checkMethod(MethodId methodId, ResolvedStatement.Method method) {
             ReturnType previousReturnType = returnType;
             returnType = ReturnType.NOT_FIXED;
             boolean previousInMethod = inMethod;

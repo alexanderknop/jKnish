@@ -1,6 +1,7 @@
 package org.github.alexanderknop.jknish.initializationchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Literal;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Variable;
@@ -139,11 +140,11 @@ class InitializationCheckerTest {
     @Test
     void testClass() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                emptyList(),
-                emptyList(),
-                List.of(
+                emptyMap(),
+                emptyMap(),
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(3,
@@ -176,11 +177,11 @@ class InitializationCheckerTest {
         );
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
-                emptyList(),
-                emptyList(),
-                List.of(
+                emptyMap(),
+                emptyMap(),
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(3,
@@ -217,11 +218,11 @@ class InitializationCheckerTest {
         );
 
         ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
-                emptyList(),
-                emptyList(),
-                List.of(
+                emptyMap(),
+                emptyMap(),
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(3,
@@ -236,11 +237,11 @@ class InitializationCheckerTest {
                 THIS_ID, STATIC_THIS_ID
         );
         ResolvedStatement.Class testClass4 = new ResolvedStatement.Class(1,
-                emptyList(),
-                emptyList(),
-                List.of(
+                emptyMap(),
+                emptyMap(),
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(3,

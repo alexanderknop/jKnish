@@ -1,5 +1,7 @@
 package org.github.alexanderknop.jknish.resolver;
 
+import org.github.alexanderknop.jknish.parser.MethodId;
+
 import java.util.*;
 
 import static java.util.Collections.*;
@@ -243,16 +245,18 @@ public abstract class ResolvedStatement {
 
     public static class Class {
         public final int line;
-        public final List<Method> methods;
-        public final List<Method> constructors;
-        public final List<Method> staticMethods;
+        public final Map<MethodId, Method> methods;
+        public final Map<MethodId, Method> constructors;
+        public final Map<MethodId, Method> staticMethods;
         public final Map<Integer, String> fields;
         public final Map<Integer, String> staticFields;
         public final int thisId;
         public final int staticThisId;
 
         public Class(int line,
-                     List<Method> staticMethods, List<Method> constructors, List<Method> methods,
+                     Map<MethodId, Method> staticMethods,
+                     Map<MethodId, Method> constructors,
+                     Map<MethodId, Method> methods,
                      Map<Integer, String> fields, Map<Integer, String> staticFields,
                      int thisId, int staticThisId) {
             this.line = line;
@@ -302,16 +306,14 @@ public abstract class ResolvedStatement {
 
     public final static class Method {
         public final int line;
-        public final String name;
         public final List<Integer> argumentsIds;
         public final Map<Integer, String> argumentNames;
         public final Block body;
 
         public Method(int line,
-                      String name, List<Integer> argumentsIds, Block body,
+                      List<Integer> argumentsIds, Block body,
                       Map<Integer, String> argumentNames) {
             this.line = line;
-            this.name = name;
             this.argumentsIds = argumentsIds;
             this.argumentNames = argumentNames;
             this.body = body;
@@ -323,21 +325,19 @@ public abstract class ResolvedStatement {
             if (o == null || getClass() != o.getClass()) return false;
             Method method = (Method) o;
             return line == method.line &&
-                    Objects.equals(name, method.name) &&
                     Objects.equals(argumentsIds, method.argumentsIds) &&
                     Objects.equals(body, method.body);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(line, name, argumentsIds, body);
+            return Objects.hash(line, argumentsIds, body);
         }
 
         @Override
         public String toString() {
             return "Method{" +
                     "line=" + line +
-                    ", name='" + name + '\'' +
                     ", argumentsNames=" + argumentsIds +
                     ", body=" + body +
                     '}';

@@ -3,11 +3,13 @@ package org.github.alexanderknop.jknish.resolver;
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Expression;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
 
 public class Resolver {
@@ -230,14 +232,14 @@ public class Resolver {
 
         private ResolvedStatement.Class resolveClass(Statement.Class klass) {
             int staticThisId = beginClassScope(ClassScopeType.STATIC);
-            List<ResolvedStatement.Method> staticMethods =
+            Map<MethodId, ResolvedStatement.Method> staticMethods =
                     resolveMethods(klass.staticMethods);
 
             int thisId = beginClassScope(ClassScopeType.REGULAR);
 
-            List<ResolvedStatement.Method> methods =
+            Map<MethodId, ResolvedStatement.Method> methods =
                     resolveMethods(klass.methods);
-            List<ResolvedStatement.Method> constructors =
+            Map<MethodId, ResolvedStatement.Method> constructors =
                     resolveMethods(klass.constructors);
 
             Map<Integer, String> fields = definedFields();
@@ -435,8 +437,9 @@ public class Resolver {
             return null;
         }
 
-        private List<ResolvedStatement.Method> resolveMethods(List<Statement.Method> methods) {
-            List<ResolvedStatement.Method> resolvedMethods = new ArrayList<>();
+        private Map<MethodId, ResolvedStatement.Method> resolveMethods(
+                List<Statement.Method> methods) {
+            Map<MethodId, ResolvedStatement.Method> resolvedMethods = new HashMap<>();
             for (Statement.Method method : methods) {
                 beginScope();
                 List<Integer> argumentsIds =
@@ -444,10 +447,10 @@ public class Resolver {
                                 method.argumentsNames,
                                 name -> defineVariable(method.line, name)
                         );
-                resolvedMethods.add(
+                resolvedMethods.put(
+                        new MethodId(method.name, arityFromArgumentsList(argumentsIds)),
                         new ResolvedStatement.Method(
                                 method.line,
-                                method.name,
                                 argumentsIds,
                                 visitBlockStatement(method.body),
                                 definedVariables()

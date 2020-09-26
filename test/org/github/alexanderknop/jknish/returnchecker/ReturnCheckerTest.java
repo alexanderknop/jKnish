@@ -1,19 +1,20 @@
 package org.github.alexanderknop.jknish.returnchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Literal;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Block;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.If;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Method;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Return;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.github.alexanderknop.jknish.resolver.ResolvedStatement.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,7 +49,6 @@ class ReturnCheckerTest {
         );
 
         Method goodMethod = new Method(2,
-                "test",
                 null,
                 new Block(2),
                 emptyMap()
@@ -59,9 +59,12 @@ class ReturnCheckerTest {
                                 Map.of(TEST_ID, "Test"),
                                 Map.of(0,
                                         new ResolvedStatement.Class(1,
-                                                List.of(goodMethod),
-                                                emptyList(),
-                                                emptyList(),
+                                                Map.of(
+                                                        new MethodId("test", null),
+                                                        goodMethod
+                                                ),
+                                                emptyMap(),
+                                                emptyMap(),
                                                 emptyMap(),
                                                 emptyMap(),
                                                 THIS_ID, STATIC_THIS_ID
@@ -78,7 +81,6 @@ class ReturnCheckerTest {
     @Test
     void testMixedReturn() {
         Method badMethod1 = new Method(2,
-                "test",
                 null,
                 new Block(2,
                         new If(3,
@@ -98,7 +100,6 @@ class ReturnCheckerTest {
                 emptyMap()
         );
         Method badMethod2 = new Method(2,
-                "test",
                 null,
                 new Block(2,
                         new If(3,
@@ -120,9 +121,12 @@ class ReturnCheckerTest {
                                 Map.of(TEST_ID, "Test"),
                                 Map.of(0,
                                         new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                emptyList(),
-                                                List.of(badMethod1),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                Map.of(
+                                                        new MethodId("test", null),
+                                                        badMethod1
+                                                ),
                                                 emptyMap(),
                                                 emptyMap(),
                                                 THIS_ID, STATIC_THIS_ID
@@ -140,29 +144,12 @@ class ReturnCheckerTest {
                                 Map.of(TEST_ID, "Test"),
                                 Map.of(0,
                                         new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                List.of(badMethod1),
-                                                emptyList(),
                                                 emptyMap(),
+                                                Map.of(
+                                                        new MethodId("test", null),
+                                                        badMethod1
+                                                ),
                                                 emptyMap(),
-                                                THIS_ID, STATIC_THIS_ID
-                                        )
-                                )
-                        ),
-                        emptyMap()
-                ),
-                "[line 4] Error: Cannot return nothing and some value in the same method."
-        );
-
-        testIncorrect(
-                new ResolvedScript(
-                        new Block(0,
-                                Map.of(TEST_ID, "Test"),
-                                Map.of(0,
-                                        new ResolvedStatement.Class(1,
-                                                List.of(badMethod1),
-                                                emptyList(),
-                                                emptyList(),
                                                 emptyMap(),
                                                 emptyMap(),
                                                 THIS_ID, STATIC_THIS_ID
@@ -180,9 +167,35 @@ class ReturnCheckerTest {
                                 Map.of(TEST_ID, "Test"),
                                 Map.of(0,
                                         new ResolvedStatement.Class(1,
-                                                List.of(badMethod2),
-                                                emptyList(),
-                                                emptyList(),
+                                                Map.of(
+                                                        new MethodId("test", null),
+                                                        badMethod1
+                                                ),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                THIS_ID, STATIC_THIS_ID
+                                        )
+                                )
+                        ),
+                        emptyMap()
+                ),
+                "[line 4] Error: Cannot return nothing and some value in the same method."
+        );
+
+        testIncorrect(
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(TEST_ID, "Test"),
+                                Map.of(0,
+                                        new ResolvedStatement.Class(1,
+                                                Map.of(
+                                                        new MethodId("test", null),
+                                                        badMethod2
+                                                ),
+                                                emptyMap(),
+                                                emptyMap(),
                                                 emptyMap(),
                                                 emptyMap(),
                                                 THIS_ID, STATIC_THIS_ID

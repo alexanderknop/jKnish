@@ -3,6 +3,7 @@ package org.github.alexanderknop.jknish.resolver;
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Expression;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.parser.Statement;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Variable;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Block;
@@ -252,11 +253,11 @@ class ResolverTest {
                                 Map.of(TEST_BEFORE_X_VARIABLE, "Test"),
                                 Map.of(TEST_BEFORE_X_VARIABLE,
                                         new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                emptyList(),
-                                                List.of(
+                                                emptyMap(),
+                                                emptyMap(),
+                                                Map.of(
+                                                        new MethodId("test", null),
                                                         new Method(2,
-                                                                "test",
                                                                 null,
                                                                 new Block(2),
                                                                 emptyMap()
@@ -298,16 +299,16 @@ class ResolverTest {
                                 Map.of(TEST_BEFORE_X_VARIABLE, "Test"),
                                 Map.of(TEST_BEFORE_X_VARIABLE,
                                         new ResolvedStatement.Class(1,
-                                                List.of(
+                                                Map.of(
+                                                        new MethodId("test", null),
                                                         new Method(2,
-                                                                "test",
                                                                 null,
                                                                 new Block(2),
                                                                 emptyMap()
                                                         )
                                                 ),
-                                                emptyList(),
-                                                emptyList(),
+                                                emptyMap(),
+                                                emptyMap(),
                                                 Map.of(THIS_BEFORE_X_VARIABLE, "this"),
                                                 Map.of(STATIC_THIS_BEFORE_X_VARIABLE, "this"),
                                                 THIS_BEFORE_X_VARIABLE, STATIC_THIS_BEFORE_X_VARIABLE)
@@ -345,16 +346,16 @@ class ResolverTest {
                                 Map.of(TEST_BEFORE_X_VARIABLE, "Test"),
                                 Map.of(TEST_BEFORE_X_VARIABLE,
                                         new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                List.of(
+                                                emptyMap(),
+                                                Map.of(
+                                                        new MethodId("test", null),
                                                         new Method(2,
-                                                                "test",
                                                                 null,
                                                                 new Block(2),
                                                                 emptyMap()
                                                         )
                                                 ),
-                                                emptyList(),
+                                                emptyMap(),
                                                 Map.of(THIS_BEFORE_X_VARIABLE, "this"),
                                                 Map.of(STATIC_THIS_BEFORE_X_VARIABLE, "this"),
                                                 THIS_BEFORE_X_VARIABLE, STATIC_THIS_BEFORE_X_VARIABLE)
@@ -439,6 +440,27 @@ class ResolverTest {
 
     @Test
     void testShadow() {
+        ResolvedStatement.Class testClass = new ResolvedStatement.Class(3,
+                Map.of(
+                        new MethodId("test", null),
+                        new Method(4,
+                                null,
+                                new Block(4,
+                                        new ResolvedStatement.Expression(5,
+                                                new Variable(5,
+                                                        X_AFTER_TEST_VARIABLE
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyMap(),
+                emptyMap(),
+                Map.of(THIS_VARIABLE, "this"),
+                Map.of(STATIC_THIS_VARIABLE, "this"),
+                THIS_VARIABLE, STATIC_THIS_VARIABLE
+        );
         testCorrect(
                 new Statement.Block(0,
                         new Statement.Var(1, "x"),
@@ -475,30 +497,11 @@ class ResolverTest {
                         new Block(0,
                                 Map.of(X_VARIABLE, "x"),
                                 new Block(2,
-                                        Map.of(TEST_VARIABLE, "Test", X_AFTER_TEST_VARIABLE, "x"),
+                                        Map.of(TEST_VARIABLE, "Test",
+                                                X_AFTER_TEST_VARIABLE, "x"),
                                         Map.of(
                                                 TEST_VARIABLE,
-                                                new ResolvedStatement.Class(3,
-                                                        List.of(
-                                                                new Method(4,
-                                                                        "test",
-                                                                        null,
-                                                                        new Block(4,
-                                                                                new ResolvedStatement.Expression(5,
-                                                                                        new Variable(5,
-                                                                                                X_AFTER_TEST_VARIABLE
-                                                                                        )
-                                                                                )
-                                                                        ),
-                                                                        emptyMap()
-                                                                )
-                                                        ),
-                                                        emptyList(),
-                                                        emptyList(),
-                                                        Map.of(THIS_VARIABLE, "this"),
-                                                        Map.of(STATIC_THIS_VARIABLE, "this"),
-                                                        THIS_VARIABLE, STATIC_THIS_VARIABLE
-                                                )
+                                                testClass
                                         ),
                                         new ResolvedStatement.Expression(7,
                                                 new Variable(7, TEST_VARIABLE)

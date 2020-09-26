@@ -1,11 +1,9 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
-import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import static org.github.alexanderknop.jknish.interpreter.InterpreterMethodUtils.compileMethod;
-import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 class ClassInstance extends AbstractKnishObject {
 
@@ -23,22 +21,19 @@ class ClassInstance extends AbstractKnishObject {
         classEnvironment.set(klass.staticThisId, this);
 
         // register all the static methods
-        for (var method : klass.staticMethods) {
-            register(method.name, arityFromArgumentsList(method.argumentsIds),
-                    compileMethod(method, classEnvironment, evaluator));
-        }
+        klass.staticMethods.forEach(
+                (methodId, method) ->
+                        register(methodId, compileMethod(method, classEnvironment, evaluator))
+        );
 
         // register all the constructors
-        for (ResolvedStatement.Method constructor : klass.constructors) {
-            Integer arity = MethodId.arityFromArgumentsList(constructor.argumentsIds);
-            register(
-                    constructor.name, arity,
-                    arguments -> new Instance(
-                            name, klass, classEnvironment, evaluator,
-                            constructor, arguments
-                    )
-            );
-        }
+        klass.constructors.forEach((methodId, constructor) -> register(
+                methodId,
+                arguments -> new Instance(
+                        name, klass, classEnvironment, evaluator,
+                        constructor, arguments
+                )
+        ));
     }
 
     @Override

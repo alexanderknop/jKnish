@@ -7,7 +7,6 @@ import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 import java.util.List;
 
 import static org.github.alexanderknop.jknish.interpreter.InterpreterMethodUtils.compileMethod;
-import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 class Instance extends AbstractKnishObject {
     private final String name;
@@ -26,10 +25,9 @@ class Instance extends AbstractKnishObject {
         classEnvironment.set(klass.thisId, this);
 
         // register all the methods
-        for (var method : klass.methods) {
-            register(method.name, arityFromArgumentsList(method.argumentsIds),
-                    compileMethod(method, classEnvironment, evaluator));
-        }
+        klass.methods.forEach((methodId, method) ->
+                register(methodId,
+                        compileMethod(method, classEnvironment, evaluator)));
 
         // call the constructor
         compileMethod(constructor, classEnvironment, evaluator).call(arguments);

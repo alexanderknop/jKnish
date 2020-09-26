@@ -170,15 +170,15 @@ public class InitializationChecker {
 
         private void checkClass(ResolvedStatement.Class klass) {
             Set<Integer> initialized = this.initialized;
-            Set<Integer> result = checkMethods(initialized, klass.methods);
-            result.retainAll(checkMethods(initialized, klass.staticMethods));
-            result.retainAll(checkMethods(initialized, klass.constructors));
+            Set<Integer> result = checkMethods(initialized, klass.methods.values());
+            result.retainAll(checkMethods(initialized, klass.staticMethods.values()));
+            result.retainAll(checkMethods(initialized, klass.constructors.values()));
 
             this.initialized = result;
         }
 
         private Set<Integer> checkMethods(Set<Integer> initialized,
-                                          List<ResolvedStatement.Method> methods) {
+                                          Collection<ResolvedStatement.Method> methods) {
             Set<Integer> result = null;
             for (ResolvedStatement.Method method : methods) {
                 this.initialized = new HashSet<>(initialized);

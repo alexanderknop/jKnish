@@ -26,6 +26,10 @@ public abstract class AbstractKnishObject implements KnishObject {
         methods.put(new MethodId(name, arity), method);
     }
 
+    public void register(MethodId methodId, Method method) {
+        methods.put(methodId, method);
+    }
+
     @Override
     public KnishObject call(String methodName, List<KnishObject> arguments) {
         Integer arity = arityFromArgumentsList(arguments);

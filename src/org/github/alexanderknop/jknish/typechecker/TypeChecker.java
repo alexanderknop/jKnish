@@ -254,7 +254,7 @@ public final class TypeChecker {
             // add all the methods
             Map<MethodId, SimpleType.Method> staticMethods = methodsTypes(klass.staticMethods);
             // add all the constructors
-            for (ResolvedStatement.Method constructor : klass.constructors) {
+            klass.constructors.forEach((constructorId, constructor) -> {
                 SimpleType.Variable classType = new SimpleType.Variable();
                 beginScope(klass.fields);
                 // make this of the class to be of the same type as the class
@@ -277,7 +277,6 @@ public final class TypeChecker {
                 );
 
                 SimpleType.Method constructorType;
-                // CHECK ARITY
                 if (constructor.argumentsIds == null) {
                     constructorType = new SimpleType.Method(
                             null,
@@ -298,14 +297,14 @@ public final class TypeChecker {
                         new TypeErrorMessage(
                                 reporter,
                                 constructor.line,
-                                "Incompatible constraints on " +
-                                        constructor.name + "."
+                                "Incompatible constraints on '" +
+                                        constructorId + "'."
                         )
                 );
 
                 String errorMessage =
                         "Incompatible constraints on " + className +
-                                " created in " + constructor.name + ".";
+                                " created in '" + constructorId + "'.";
                 constrainer.constrain(
                         new SimpleType.Class(methods),
                         classType,
@@ -319,21 +318,15 @@ public final class TypeChecker {
                                 reporter,
                                 constructor.line,
                                 "Incompatible constraints on the " +
-                                        "instance of " + className + " returned by " +
-                                        constructor.name + "."
+                                        "instance of " + className + " returned by '" +
+                                        constructorId + "'."
                         )
                 );
 
-                MethodId constructorId =
-                        new MethodId(
-                                constructor.name,
-                                arityFromArgumentsList(constructor.argumentsIds)
-                        );
                 staticMethods.put(constructorId, constructorType);
 
-
                 endScope();
-            }
+            });
 
             String errorMessage =
                     "Incompatible constraints on " + className + " metaclass.";
@@ -347,18 +340,19 @@ public final class TypeChecker {
         }
 
         private Map<MethodId, SimpleType.Method> methodsTypes(
-                List<ResolvedStatement.Method> methodStatements) {
+                Map<MethodId, ResolvedStatement.Method> methodStatements) {
 
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
-            for (ResolvedStatement.Method method : methodStatements) {
-                MethodId methodId =
-                        new MethodId(method.name, arityFromArgumentsList(method.argumentsIds));
-                methods.put(methodId,
-                        methodType(method.argumentsIds,
-                                method.argumentNames,
-                                method.body)
-                );
-            }
+            methodStatements.forEach(
+                    (methodId, method) ->
+                            methods.put(methodId,
+                                    methodType(
+                                            method.argumentsIds,
+                                            method.argumentNames,
+                                            method.body
+                                    )
+                            )
+            );
 
             return methods;
         }
@@ -370,11 +364,8 @@ public final class TypeChecker {
             beginScope(argumentsNames);
 
             SimpleType returnType = visitBlockStatement(body);
-            //  CHECK ARITY
             List<SimpleType> argumentTypes =
-                    argumentsIds == null ? null : argumentsIds.stream()
-                            .map(this::variableType)
-                            .collect(Collectors.toList());
+                    MethodId.processArgumentsList(argumentsIds, this::variableType);
 
             endScope();
             return new SimpleType.Method(argumentTypes, returnType);

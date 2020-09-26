@@ -2,6 +2,7 @@ package org.github.alexanderknop.jknish.typechecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Assign;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Call;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Literal;
@@ -75,16 +76,16 @@ class TypeCheckerTest {
                                 Map.of(
                                         TEST_VARIABLE,
                                         new ResolvedStatement.Class(1,
-                                                List.of(
+                                                Map.of(
+                                                        new MethodId("test", null),
                                                         new Method(2,
-                                                                "test",
                                                                 null,
                                                                 new Block(2),
                                                                 emptyMap()
                                                         )
                                                 ),
-                                                emptyList(),
-                                                emptyList(),
+                                                emptyMap(),
+                                                emptyMap(),
                                                 Map.of(THIS_VARIABLE, "this"),
                                                 Map.of(STATIC_THIS_VARIABLE, "this"),
                                                 THIS_VARIABLE, STATIC_THIS_VARIABLE)
@@ -107,9 +108,9 @@ class TypeCheckerTest {
                                 Map.of(
                                         TEST_VARIABLE,
                                         new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                emptyList(),
-                                                emptyList(),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                emptyMap(),
                                                 Map.of(THIS_VARIABLE, "this"),
                                                 Map.of(STATIC_THIS_VARIABLE, "this"),
                                                 THIS_VARIABLE, STATIC_THIS_VARIABLE)
@@ -133,9 +134,9 @@ class TypeCheckerTest {
                                 Map.of(
                                         TEST_VARIABLE,
                                         new ResolvedStatement.Class(1,
-                                                emptyList(),
-                                                emptyList(),
-                                                emptyList(),
+                                                emptyMap(),
+                                                emptyMap(),
+                                                emptyMap(),
                                                 Map.of(THIS_VARIABLE, "this"),
                                                 Map.of(STATIC_THIS_VARIABLE, "this"),
                                                 THIS_VARIABLE, STATIC_THIS_VARIABLE)
@@ -156,16 +157,16 @@ class TypeCheckerTest {
     @Test
     void testClassConstructors() {
         ResolvedStatement.Class testClass = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(2,
-                                "new",
                                 emptyList(),
                                 new Block(2),
                                 emptyMap()
                         )
                 ),
-                emptyList(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -192,22 +193,20 @@ class TypeCheckerTest {
     @Test
     void testClassMethods() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(2,
-                                "new",
                                 emptyList(),
                                 new Block(2),
                                 emptyMap()
                         )
                 ),
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
-                                new Block(2,
-                                        emptyMap(), emptyMap(), emptyList()
-                                ),
+                                new Block(2),
                                 emptyMap()
                         )
                 ),
@@ -238,18 +237,18 @@ class TypeCheckerTest {
         );
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(2,
-                                "new",
                                 emptyList(),
                                 new Block(2),
                                 emptyMap()
                         )
                 ),
-                List.of(
+                Map.of(
+                        new MethodId("test", 1),
                         new Method(2,
-                                "test",
                                 List.of(
                                         X_ARGUMENT_VARIABLE
                                 ),
@@ -322,16 +321,16 @@ class TypeCheckerTest {
         );
 
         ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(2,
-                                "new",
                                 emptyList(),
                                 new Block(2),
                                 emptyMap()
                         )
                 ),
-                emptyList(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -359,24 +358,24 @@ class TypeCheckerTest {
     @Test
     void testThis() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(2,
-                                "new",
                                 emptyList(),
                                 new Block(2),
                                 emptyMap()
                         )
                 ),
-                List.of(
+                Map.of(
+                        new MethodId("test1", null),
                         new Method(3,
-                                "test1",
                                 null,
                                 new Block(3),
                                 emptyMap()
                         ),
+                        new MethodId("test2", null),
                         new Method(4,
-                                "test2",
                                 null,
                                 new Block(4,
                                         new Expression(5,
@@ -418,24 +417,24 @@ class TypeCheckerTest {
         );
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(2,
-                                "new",
                                 emptyList(),
                                 new Block(2),
                                 emptyMap()
                         )
                 ),
-                List.of(
+                Map.of(
+                        new MethodId("test1", null),
                         new Method(3,
-                                "test1",
                                 null,
                                 new Block(3),
                                 emptyMap()
                         ),
+                        new MethodId("test2", null),
                         new Method(4,
-                                "test2",
                                 null,
                                 new Block(4,
                                         new Expression(5,
@@ -476,16 +475,16 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 2] Error: Incompatible constraints on Test created in new."
+                "[line 2] Error: Incompatible constraints on Test created in 'new()'."
         );
     }
 
     @Test
     void testReturn() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         emptyMap(), emptyMap(), List.of(
@@ -498,18 +497,19 @@ class TypeCheckerTest {
                                 emptyMap()
                         )
                 ),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
         testCorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass1
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass1
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Variable(4, SYSTEM_VARIABLE),
@@ -521,7 +521,6 @@ class TypeCheckerTest {
                                                 )
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 )
@@ -529,9 +528,9 @@ class TypeCheckerTest {
 
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new If(3,
@@ -549,8 +548,8 @@ class TypeCheckerTest {
                                 emptyMap()
                         )
                 ),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -581,10 +580,11 @@ class TypeCheckerTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass2
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Call(4,
@@ -596,7 +596,6 @@ class TypeCheckerTest {
                                                 new Literal(4, 1L)
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -629,9 +628,9 @@ class TypeCheckerTest {
         );
 
         ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new If(3,
@@ -645,8 +644,8 @@ class TypeCheckerTest {
                                 emptyMap()
                         )
                 ),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);

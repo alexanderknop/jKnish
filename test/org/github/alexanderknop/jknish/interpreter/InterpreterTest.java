@@ -3,6 +3,7 @@ package org.github.alexanderknop.jknish.interpreter;
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.LogicalOperator;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.*;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
@@ -81,9 +82,9 @@ class InterpreterTest {
     @Test
     void testClassStaticMethods() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(2,
@@ -99,8 +100,8 @@ class InterpreterTest {
                                 emptyMap()
                         )
                 ),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -126,9 +127,9 @@ class InterpreterTest {
         );
 
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
-                emptyList(),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -158,18 +159,18 @@ class InterpreterTest {
     void testClassMethods() {
 
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(3,
-                                "new",
                                 emptyList(),
                                 new Block(3),
                                 emptyMap()
                         )
                 ),
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(2,
@@ -214,16 +215,16 @@ class InterpreterTest {
                 "Hello World!"
         );
         ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
-                emptyList(),
-                List.of(
+                emptyMap(),
+                Map.of(
+                        new MethodId("new", 0),
                         new Method(3,
-                                "new",
                                 emptyList(),
                                 new Block(3),
                                 emptyMap()
                         )
                 ),
-                emptyList(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -256,9 +257,9 @@ class InterpreterTest {
     @Test
     void testReturn() {
         ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new ResolvedStatement.Return(2,
@@ -269,8 +270,8 @@ class InterpreterTest {
                                 emptyMap()
                         )
                 ),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
@@ -342,9 +343,9 @@ class InterpreterTest {
     void testThis() {
         ResolvedStatement.Class testClass1 =
                 new ResolvedStatement.Class(1,
-                        List.of(
+                        Map.of(
+                                new MethodId("test1", null),
                                 new Method(2,
-                                        "test1",
                                         null,
                                         new Block(2,
                                                 new Expression(3,
@@ -359,8 +360,8 @@ class InterpreterTest {
                                         ),
                                         emptyMap()
                                 ),
+                                new MethodId("test2", null),
                                 new Method(3,
-                                        "test2",
                                         null,
                                         new Block(3,
                                                 new Expression(3,
@@ -374,8 +375,8 @@ class InterpreterTest {
                                         emptyMap()
                                 )
                         ),
-                        emptyList(),
-                        emptyList(),
+                        emptyMap(),
+                        emptyMap(),
                         Map.of(THIS_VARIABLE, "this"),
                         Map.of(STATIC_THIS_VARIABLE, "this"),
                         THIS_VARIABLE, STATIC_THIS_VARIABLE
@@ -404,9 +405,9 @@ class InterpreterTest {
 
         ResolvedStatement.Class testClass2 =
                 new ResolvedStatement.Class(1,
-                        List.of(
+                        Map.of(
+                                new MethodId("test1", null),
                                 new Method(2,
-                                        "test1",
                                         null,
                                         new Block(2,
                                                 new Expression(3,
@@ -421,8 +422,8 @@ class InterpreterTest {
                                         ),
                                         emptyMap()
                                 ),
+                                new MethodId("test2", null),
                                 new Method(3,
-                                        "test2",
                                         null,
                                         new Block(3,
                                                 new Expression(3,
@@ -436,8 +437,8 @@ class InterpreterTest {
                                         emptyMap()
                                 )
                         ),
-                        emptyList(),
-                        emptyList(),
+                        emptyMap(),
+                        emptyMap(),
                         Map.of(THIS_VARIABLE, "this"),
                         Map.of(STATIC_THIS_VARIABLE, "this"),
                         THIS_VARIABLE, STATIC_THIS_VARIABLE
@@ -446,10 +447,11 @@ class InterpreterTest {
         testIncorrect(
                 new ResolvedScript(
                         new Block(0,
-                                Map.of(TEST_VARIABLE, "Test"), Map.of(
-                                TEST_VARIABLE,
-                                testClass2
-                        ), List.of(
+                                Map.of(TEST_VARIABLE, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE,
+                                        testClass2
+                                ),
                                 new Expression(4,
                                         new Call(4,
                                                 new Variable(4,
@@ -457,7 +459,6 @@ class InterpreterTest {
                                                 "test2"
                                         )
                                 )
-                        )
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
@@ -469,10 +470,10 @@ class InterpreterTest {
     void testConstructor() {
         ResolvedStatement.Class testClass1 =
                 new ResolvedStatement.Class(1,
-                        emptyList(),
-                        List.of(
+                        emptyMap(),
+                        Map.of(
+                                new MethodId("new", 0),
                                 new Method(2,
-                                        "new",
                                         emptyList(),
                                         new Block(2,
                                                 new Expression(3,
@@ -486,9 +487,9 @@ class InterpreterTest {
                                         emptyMap()
                                 )
                         ),
-                        List.of(
+                        Map.of(
+                                new MethodId("test", null),
                                 new Method(2,
-                                        "test",
                                         null,
                                         new Block(2,
                                                 new Expression(3,
@@ -533,10 +534,10 @@ class InterpreterTest {
 
         ResolvedStatement.Class testClass2 =
                 new ResolvedStatement.Class(1,
-                        emptyList(),
-                        List.of(
+                        emptyMap(),
+                        Map.of(
+                                new MethodId("new1", 0),
                                 new Method(4,
-                                        "new1",
                                         emptyList(),
                                         new Block(4,
                                                 new Expression(5,
@@ -552,8 +553,8 @@ class InterpreterTest {
                                         ),
                                         emptyMap()
                                 ),
+                                new MethodId("new2", 0),
                                 new Method(4,
-                                        "new2",
                                         emptyList(),
                                         new Block(4,
                                                 new Expression(5,
@@ -570,7 +571,7 @@ class InterpreterTest {
                                         emptyMap()
                                 )
                         ),
-                        emptyList(),
+                        emptyMap(),
                         Map.of(THIS_VARIABLE, "this"),
                         Map.of(STATIC_THIS_VARIABLE, "this"),
                         THIS_VARIABLE, STATIC_THIS_VARIABLE
@@ -1273,9 +1274,9 @@ class InterpreterTest {
         );
 
         ResolvedStatement.Class testClass = new ResolvedStatement.Class(1,
-                List.of(
+                Map.of(
+                        new MethodId("test", null),
                         new Method(2,
-                                "test",
                                 null,
                                 new Block(2,
                                         new Expression(1,
@@ -1294,8 +1295,8 @@ class InterpreterTest {
                                 emptyMap()
                         )
                 ),
-                emptyList(),
-                emptyList(),
+                emptyMap(),
+                emptyMap(),
                 Map.of(THIS_VARIABLE, "this"),
                 Map.of(STATIC_THIS_VARIABLE, "this"),
                 THIS_VARIABLE, STATIC_THIS_VARIABLE);
