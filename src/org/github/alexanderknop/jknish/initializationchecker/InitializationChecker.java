@@ -1,11 +1,14 @@
 package org.github.alexanderknop.jknish.initializationchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
+import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.*;
+
+import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 
 public class InitializationChecker {
     public static void check(ResolvedScript script, KnishErrorReporter reporter) {
@@ -132,14 +135,38 @@ public class InitializationChecker {
 
         @Override
         public Void visitCallExpression(ResolvedExpression.Call call) {
-            check(call.object);
+            if (isStaticCall(call)) {
+                checkMethod(
+                        classes.get(
+                                ((ResolvedExpression.Variable) call.object).variableId
+                        ).staticMethods.get(
+                                new MethodId(call.method, arityFromArgumentsList(call.arguments))
+                        )
+                );
+            } else {
+                check(call.object);
+            }
             if (call.arguments != null) {
-                for (ResolvedExpression argument : call.arguments) {
-                    check(argument);
-                }
+                call.arguments.forEach(this::check);
             }
 
             return null;
+        }
+
+        private boolean isStaticCall(ResolvedExpression.Call call) {
+            if (call.object instanceof ResolvedExpression.Variable) {
+                ResolvedExpression.Variable variable = (ResolvedExpression.Variable) call.object;
+                ResolvedStatement.Class klass = classes.get(variable.variableId);
+                return klass != null &&
+                        klass.staticMethods.containsKey(
+                                new MethodId(
+                                        call.method,
+                                        arityFromArgumentsList(call.arguments)
+                                )
+                        );
+            } else {
+                return false;
+            }
         }
 
         @Override
