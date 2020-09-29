@@ -2,7 +2,8 @@ package org.github.alexanderknop.jknish.initializationchecker;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.parser.MethodId;
-import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
+import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Assign;
+import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Call;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Literal;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.Variable;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
@@ -14,10 +15,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -56,7 +55,7 @@ class InitializationCheckerTest {
                                 new ResolvedStatement.While(1,
                                         new Literal(1, Boolean.FALSE),
                                         new Expression(2,
-                                                new ResolvedExpression.Assign(2,
+                                                new Assign(2,
                                                         X_VARIABLE_ID,
                                                         new Literal(2,
                                                                 1L
@@ -84,7 +83,7 @@ class InitializationCheckerTest {
                                 new ResolvedStatement.If(1,
                                         new Literal(1, Boolean.TRUE),
                                         new Expression(2,
-                                                new ResolvedExpression.Assign(2,
+                                                new Assign(2,
                                                         X_VARIABLE_ID,
                                                         new Literal(2,
                                                                 1L
@@ -110,7 +109,7 @@ class InitializationCheckerTest {
                                 new ResolvedStatement.If(1,
                                         new Literal(1, Boolean.TRUE),
                                         new Expression(2,
-                                                new ResolvedExpression.Assign(2,
+                                                new Assign(2,
                                                         X_VARIABLE_ID,
                                                         new Literal(2,
                                                                 1L
@@ -118,7 +117,7 @@ class InitializationCheckerTest {
                                                 )
                                         ),
                                         new Expression(3,
-                                                new ResolvedExpression.Assign(3,
+                                                new Assign(3,
                                                         X_VARIABLE_ID,
                                                         new Literal(3,
                                                                 1L
@@ -185,7 +184,7 @@ class InitializationCheckerTest {
                                 null,
                                 new Block(2,
                                         new Expression(3,
-                                                new ResolvedExpression.Assign(3,
+                                                new Assign(3,
                                                         X_VARIABLE_ID,
                                                         new Literal(3, null)
                                                 )
@@ -276,12 +275,169 @@ class InitializationCheckerTest {
         );
     }
 
+    @Test
+    void testThis() {
+        ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
+                emptyMap(),
+                emptyMap(),
+                Map.of(
+                        new MethodId("test2", null),
+                        new Method(4,
+                                null,
+                                new Block(4,
+                                        new Expression(5,
+                                                new Call(5,
+                                                        new Variable(3,
+                                                                THIS_ID
+                                                        ),
+                                                        "test1"
+                                                )
+                                        ),
+                                        new Expression(6,
+                                                new Variable(6,
+                                                        X_VARIABLE_ID
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        ),
+                        new MethodId("test1", null),
+                        new Method(2,
+                                null,
+                                new Block(2,
+                                        new Expression(3,
+                                                new Assign(3,
+                                                        X_VARIABLE_ID,
+                                                        new Literal(3, 1L)
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyMap(),
+                emptyMap(),
+                THIS_ID, STATIC_THIS_ID
+        );
+        testCorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x", TEST_VARIABLE_ID, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE_ID,
+                                        testClass1
+                                ),
+                                new Expression(7,
+                                        new Variable(7, TEST_VARIABLE_ID)
+                                )
+                        ),
+                        emptyMap()
+                )
+        );
+
+        ResolvedStatement.Class testClass2 = new ResolvedStatement.Class(1,
+                emptyMap(),
+                emptyMap(),
+                Map.of(
+                        new MethodId("test2", null),
+                        new Method(4,
+                                null,
+                                new Block(4,
+                                        new Expression(5,
+                                                new Call(5,
+                                                        new Variable(3,
+                                                                THIS_ID
+                                                        ),
+                                                        "test1"
+                                                )
+                                        ),
+                                        new Expression(6,
+                                                new Variable(6,
+                                                        X_VARIABLE_ID
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        ),
+                        new MethodId("test1", null),
+                        new Method(2,
+                                null,
+                                new Block(2),
+                                emptyMap()
+                        )
+                ),
+                emptyMap(),
+                emptyMap(),
+                THIS_ID, STATIC_THIS_ID
+        );
+        testIncorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x", TEST_VARIABLE_ID, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE_ID,
+                                        testClass2
+                                ),
+                                new Expression(7,
+                                        new Variable(7, TEST_VARIABLE_ID)
+                                )
+                        ),
+                        emptyMap()
+                ),
+                "[line 6] Error: Use of unassigned local variable 'x'."
+        );
+    }
+
+    @Test
+    void testStatic() {
+        ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
+                Map.of(
+                        new MethodId("test", null),
+                        new Method(2,
+                                null,
+                                new Block(2,
+                                        new Expression(3,
+                                                new Assign(3,
+                                                        X_VARIABLE_ID,
+                                                        new Literal(3, 1L)
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                THIS_ID, STATIC_THIS_ID
+        );
+        testCorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x", TEST_VARIABLE_ID, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE_ID,
+                                        testClass1
+                                ),
+                                new Expression(7,
+                                        new Call(7,
+                                            new Variable(7, TEST_VARIABLE_ID),
+                                                "test"
+                                        )
+                                ),
+                                new Expression(8,
+                                        new Variable(8, X_VARIABLE_ID)
+                                )
+                        ),
+                        emptyMap()
+                )
+        );
+    }
+
     private void testCorrect(ResolvedScript script) {
         Writer errors = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(errors);
         InitializationChecker.check(script, reporter);
         assertFalse(reporter.hadError(),
-                "The script is supposed to be incorrect: " + errors.toString());
+                "The script is supposed to be correct: " + errors.toString());
     }
 
     private void testIncorrect(ResolvedScript script, String message) {
