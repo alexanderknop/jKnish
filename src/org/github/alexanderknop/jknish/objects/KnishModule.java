@@ -2,10 +2,7 @@ package org.github.alexanderknop.jknish.objects;
 
 import org.github.alexanderknop.jknish.parser.MethodId;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Collections.*;
 import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
@@ -49,8 +46,16 @@ public abstract class KnishModule {
         return new Union(types);
     }
 
+    protected Union union(Class... types) {
+        return new Union(new HashSet<>(Arrays.asList(types)));
+    }
+
     protected Intersection intersection(Set<Class> types) {
         return new Intersection(types);
+    }
+
+    protected Intersection intersection(Class... types) {
+        return new Intersection(new HashSet<>(Arrays.asList(types)));
     }
 
     protected void define(String name,

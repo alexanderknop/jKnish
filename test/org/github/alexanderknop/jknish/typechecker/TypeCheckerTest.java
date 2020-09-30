@@ -1179,6 +1179,43 @@ class TypeCheckerTest {
         );
     }
 
+    @Test
+    void testPointerEquality() {
+        Object[] literals = {
+                null,
+                Boolean.TRUE,
+                1L,
+                "hello"
+        };
+        String[] operators = {"===", "!=="};
+
+        for (Object literal : literals) {
+            for (String operator : operators) {
+                testCorrect(
+                        new ResolvedScript(
+                                new Block(0,
+                                        Map.of(X_VARIABLE, "x"),
+                                        new Expression(1,
+                                                new Assign(1,
+                                                        X_VARIABLE,
+                                                        new Literal(1, literal)
+                                                )
+                                        ),
+                                        new Expression(2,
+                                                new Call(2,
+                                                        new Variable(2, X_VARIABLE),
+                                                        operator,
+                                                        new Variable(2, X_VARIABLE)
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                );
+            }
+        }
+    }
+
 
     private void testCorrect(ResolvedScript script) {
         Writer errors = new StringWriter();

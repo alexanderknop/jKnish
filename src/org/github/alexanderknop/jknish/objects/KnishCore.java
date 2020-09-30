@@ -15,10 +15,14 @@ public class KnishCore extends KnishModule {
         Class unit = declareClass("Unit");
 
         bool.getter("toString", str)
-                .getter("!", bool);
+                .getter("!", bool)
+                .method("===", List.of(top()), union(bool))
+                .method("!==", List.of(top()), union(bool));
 
         str.getter("toString", str)
-                .method("+", List.of(str), str);
+                .method("+", List.of(str), str)
+                .method("===", List.of(top()), union(bool))
+                .method("!==", List.of(top()), union(bool));
 
         num.getter("toString", str)
                 .getter("-", num)
@@ -29,13 +33,17 @@ public class KnishCore extends KnishModule {
                 .method(">", List.of(num), bool)
                 .method("<", List.of(num), bool)
                 .method(">=", List.of(num), bool)
-                .method("<=", List.of(num), bool);
+                .method("<=", List.of(num), bool)
+                .method("===", List.of(top()), union(bool))
+                .method("!==", List.of(top()), union(bool));
 
         Class systemMetaclass =
                 declareClass("System metaclass")
                         .method("print",
                                 List.of(anonymousClass().getter("toString", str)), unit)
-                        .getter("clock", num);
+                        .getter("clock", num)
+                        .method("===", List.of(top()), union(bool))
+                        .method("!==", List.of(top()), union(bool));
 
         define(
                 "System",
@@ -56,7 +64,8 @@ public class KnishCore extends KnishModule {
                                     }
                                     return KnishNull.NULL;
                                 })
-                        .getter("clock", (writer, arguments) -> num(System.currentTimeMillis()))
+                        .getter("clock",
+                                (writer, arguments) -> num(System.currentTimeMillis()))
                         .construct(output),
                 systemMetaclass
         );
