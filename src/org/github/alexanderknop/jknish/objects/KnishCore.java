@@ -1,5 +1,7 @@
 package org.github.alexanderknop.jknish.objects;
 
+import org.github.alexanderknop.jknish.parser.MethodId;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -210,6 +212,10 @@ public class KnishCore extends KnishModule {
         }
 
         private KnishNull() {
+            register(
+                    new MethodId("toString", null),
+                    arguments -> str("nil")
+            );
         }
     }
 

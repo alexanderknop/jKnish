@@ -178,7 +178,7 @@ public final class TypeChecker {
                     new TypeErrorMessage(reporter, logical.line,
                             "Left operand of " + logical.operator + " must have type Boolean."));
 
-            return null;
+            return booleanType;
         }
 
         @Override
@@ -266,7 +266,7 @@ public final class TypeChecker {
                 // register default object operands
                 methods.put(new MethodId("!==", 1),
                         new SimpleType.Method(List.of(SimpleType.top()), booleanType));
-                methods.put(new MethodId("!==", 1),
+                methods.put(new MethodId("===", 1),
                         new SimpleType.Method(List.of(SimpleType.top()), booleanType));
 
                 // merge constraints created by the constructor and by class methods
