@@ -98,7 +98,7 @@ public class InitializationChecker {
             BitSet initialized = (BitSet) this.initialized.clone();
 
             localObjects.put(klass.staticThisId, klass);
-            initialized.set(klass.staticThisId);
+            klass.staticFields.keySet().forEach(initialized::set);
             klass.staticMethods.forEach(
                     (id, method) -> {
                         checkMethod(klass, method);
@@ -110,7 +110,7 @@ public class InitializationChecker {
             localObjects.put(klass.thisId, klass);
             localFunctions.put(klass.thisId, new HashMap<>());
             klass.methods.forEach(localFunctions.get(klass.thisId)::put);
-            initialized.set(klass.thisId);
+            klass.fields.keySet().forEach(initialized::set);
             klass.constructors.forEach(
                     (id, method) -> {
                         checkMethod(klass, method);
@@ -272,7 +272,7 @@ public class InitializationChecker {
             block.classes.forEach((id, klass) -> {
                 localFunctions.put(id, new HashMap<>());
                 klass.staticMethods.forEach(localFunctions.get(id)::put);
-                initialized.set(klass.staticThisId);
+                klass.staticFields.keySet().forEach(initialized::set);
                 localObjects.put(klass.staticThisId, klass);
             });
 
