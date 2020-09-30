@@ -25,11 +25,12 @@ class InitializationCheckerTest {
 
     private static final int X_VARIABLE_ID = 1;
     private static final int TEST_VARIABLE_ID = 2;
-    public static final int THIS_ID = 3;
-    public static final int STATIC_THIS_ID = 4;
+    private static final int THIS_ID = 3;
+    private static final int STATIC_THIS_ID = 4;
     private static final int TEST_2_VARIABLE_ID = 5;
-    public static final int THIS_2_ID = 6;
-    public static final int STATIC_2_THIS_ID = 7;
+    private static final int THIS_2_ID = 6;
+    private static final int STATIC_2_THIS_ID = 7;
+    private static final int Y_VARIABLE_ID = 5;
 
     @Test
     void simpleTest() {
@@ -403,6 +404,59 @@ class InitializationCheckerTest {
                         emptyMap()
                 ),
                 "[line 6] Error: Use of unassigned local variable 'x'."
+        );
+
+        ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
+                Map.of(
+                        new MethodId("test", null),
+                        new Method(1,
+                                null,
+                                new Block(1,
+                                        new Expression(2,
+                                                new Assign(2,
+                                                        X_VARIABLE_ID,
+                                                        new Variable(2, STATIC_THIS_ID)
+                                                )
+                                        )
+                                ),
+                                emptyMap()
+                        ),
+                        new MethodId("test1", null),
+                        new Method(3,
+                                null,
+                                new Block(3,
+                                        new Expression(3,
+                                                new Variable(3, Y_VARIABLE_ID)
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                THIS_ID, STATIC_THIS_ID
+        );
+        testIncorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x",
+                                        TEST_VARIABLE_ID, "Test",
+                                        Y_VARIABLE_ID, "y"),
+                                Map.of(
+                                        TEST_VARIABLE_ID,
+                                        testClass3
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(7, TEST_VARIABLE_ID),
+                                                "test"
+                                        )
+                                )
+                        ),
+                        emptyMap()
+                ),
+                "[line 3] Error: Use of unassigned local variable 'y'."
         );
     }
 
