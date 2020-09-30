@@ -11,6 +11,7 @@ import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Block;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Expression;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Method;
+import org.github.alexanderknop.jknish.resolver.ResolvedStatement.Return;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
@@ -44,6 +45,25 @@ class InitializationCheckerTest {
                         emptyMap()
                 ),
                 "[line 1] Error: Use of unassigned local variable 'x'."
+        );
+
+        testCorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x"),
+                                new Expression(1,
+                                        new Assign(1,
+                                                X_VARIABLE_ID,
+                                                new Literal(1, null)
+                                        )
+                                ),
+                                new Expression(2,
+                                        new Variable(2,
+                                                X_VARIABLE_ID
+                                        )
+                                )
+                        ),
+                        emptyMap()
+                )
         );
     }
 
@@ -419,12 +439,77 @@ class InitializationCheckerTest {
                                 ),
                                 new Expression(7,
                                         new Call(7,
-                                            new Variable(7, TEST_VARIABLE_ID),
+                                                new Variable(7, TEST_VARIABLE_ID),
                                                 "test"
                                         )
                                 ),
                                 new Expression(8,
                                         new Variable(8, X_VARIABLE_ID)
+                                )
+                        ),
+                        emptyMap()
+                )
+        );
+    }
+
+    @Test
+    void testReturn() {
+        ResolvedStatement.Class testClass1 = new ResolvedStatement.Class(1,
+                Map.of(
+                        new MethodId("test", null),
+                        new Method(1,
+                                null,
+                                new Block(1,
+                                        new Return(2,
+                                                new Variable(3, X_VARIABLE_ID)
+                                        )
+                                ),
+                                emptyMap()
+                        )
+                ),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                THIS_ID, STATIC_THIS_ID
+        );
+        testIncorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x", TEST_VARIABLE_ID, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE_ID,
+                                        testClass1
+                                ),
+                                new Expression(3,
+                                        new Call(3,
+                                                new Variable(3, TEST_VARIABLE_ID),
+                                                "test"
+                                        )
+                                )
+                        ),
+                        emptyMap()
+                ),
+                "[line 3] Error: Use of unassigned local variable 'x'."
+        );
+
+        testCorrect(new ResolvedScript(
+                        new Block(0,
+                                Map.of(X_VARIABLE_ID, "x", TEST_VARIABLE_ID, "Test"),
+                                Map.of(
+                                        TEST_VARIABLE_ID,
+                                        testClass1
+                                ),
+                                new Expression(3,
+                                        new Assign(3,
+                                                X_VARIABLE_ID,
+                                                new Literal(3, 1L)
+                                        )
+                                ),
+                                new Expression(4,
+                                        new Call(4,
+                                                new Variable(4, TEST_VARIABLE_ID),
+                                                "test"
+                                        )
                                 )
                         ),
                         emptyMap()
