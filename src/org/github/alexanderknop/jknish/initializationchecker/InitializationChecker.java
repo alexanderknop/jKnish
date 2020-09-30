@@ -10,8 +10,6 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
-
 public class InitializationChecker {
     public static void check(ResolvedScript script, KnishErrorReporter reporter) {
         new InitializationCheckerVisitor(reporter).check(script);
@@ -23,21 +21,61 @@ public class InitializationChecker {
         private final KnishErrorReporter reporter;
 
         private final Map<Integer, String> variableNames = new HashMap<>();
-        private final Map<Integer, ResolvedStatement.Class> classes = new HashMap<>();
+
+        private final Map<Integer, ResolvedStatement.Class> localObjects =
+                new HashMap<>();
+        private final Map<Integer, Map<MethodId, ResolvedStatement.Method>>
+                localFunctions = new HashMap<>();
+
         private final Map<ResolvedStatement.Class, Map<ResolvedStatement.Method, BitSet>>
                 beforeMethod = new HashMap<>();
         private final Map<ResolvedStatement.Class, Map<ResolvedStatement.Method, BitSet>>
                 afterMethod = new HashMap<>();
 
-        private int thisId = -1;
-        private ResolvedStatement.Class thisClass;
-
         private BitSet initialized;
-        private Map<MethodId, ResolvedStatement.Method> thisContext;
 
         private InitializationCheckerVisitor(KnishErrorReporter reporter) {
             this.reporter = reporter;
 
+        }
+
+        private boolean isLocalCall(ResolvedExpression.Call call) {
+            if (call.object instanceof ResolvedExpression.Variable) {
+                ResolvedExpression.Variable variable =
+                        ((ResolvedExpression.Variable) call.object);
+                if (localObjects.containsKey(variable.variableId)) {
+                    MethodId methodId =
+                            new MethodId(
+                                    call.method,
+                                    MethodId.arityFromArgumentsList(call.arguments)
+                            );
+                    return localFunctions.get(variable.variableId).containsKey(methodId);
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        private boolean isLocalObject(int variableId) {
+            return localObjects.containsKey(variableId);
+        }
+
+        private ResolvedStatement.Class classOfLocalObject(int variableId) {
+            return localObjects.get(variableId);
+        }
+
+        private void checkLocalCall(ResolvedExpression.Call call) {
+            ResolvedExpression.Variable localVariable =
+                    (ResolvedExpression.Variable) call.object;
+
+            ResolvedStatement.Class klass = classOfLocalObject(localVariable.variableId);
+            ResolvedStatement.Method method = localFunctions.get(localVariable.variableId).get(
+                    new MethodId(call.method, MethodId.arityFromArgumentsList(call.arguments))
+            );
+
+            checkMethod(klass, method);
         }
 
         private void check(ResolvedScript script) {
@@ -45,7 +83,7 @@ public class InitializationChecker {
 
             script.globals.keySet().forEach(id -> initialized.set(id));
 
-            check(script.code);
+            visitBlockStatement(script.code);
         }
 
         private void check(ResolvedExpression expression) {
@@ -58,40 +96,35 @@ public class InitializationChecker {
 
         private void checkClass(ResolvedStatement.Class klass) {
             BitSet initialized = (BitSet) this.initialized.clone();
-            int previousThisId = thisId;
-            ResolvedStatement.Class previousThisClass = thisClass;
-            Map<MethodId, ResolvedStatement.Method> previousThisContext = thisContext;
 
-            thisClass = klass;
-
-            thisId = klass.staticThisId;
-            thisContext = new HashMap<>(klass.staticMethods);
-            thisContext.putAll(klass.constructors);
+            localObjects.put(klass.staticThisId, klass);
+            initialized.set(klass.staticThisId);
             klass.staticMethods.forEach(
                     (id, method) -> {
                         checkMethod(klass, method);
                         this.initialized = (BitSet) initialized.clone();
                     }
             );
+            localObjects.remove(klass.staticThisId);
+
+            localObjects.put(klass.thisId, klass);
+            localFunctions.put(klass.thisId, new HashMap<>());
+            klass.methods.forEach(localFunctions.get(klass.thisId)::put);
+            initialized.set(klass.thisId);
             klass.constructors.forEach(
                     (id, method) -> {
                         checkMethod(klass, method);
                         this.initialized = (BitSet) initialized.clone();
                     }
             );
-
-            thisId = klass.thisId;
-            thisContext = klass.methods;
             klass.methods.forEach(
                     (id, method) -> {
                         checkMethod(klass, method);
                         this.initialized = (BitSet) initialized.clone();
                     }
             );
-
-            thisId = previousThisId;
-            thisClass = previousThisClass;
-            thisContext = previousThisContext;
+            localObjects.remove(klass.thisId);
+            localFunctions.remove(klass.thisId);
         }
 
         private BitSet setBefore(ResolvedStatement.Class klass,
@@ -128,27 +161,10 @@ public class InitializationChecker {
                     method.argumentsIds.forEach(initialized::set);
                 }
                 method.argumentNames.forEach(variableNames::put);
-
                 check(method.body);
                 afterMethod.get(klass).put(method, this.initialized);
             } else {
                 this.initialized = (BitSet) afterMethod.get(klass).get(method).clone();
-            }
-        }
-
-        private boolean isStaticCall(ResolvedExpression.Call call) {
-            if (call.object instanceof ResolvedExpression.Variable) {
-                ResolvedExpression.Variable variable = (ResolvedExpression.Variable) call.object;
-                ResolvedStatement.Class klass = classes.get(variable.variableId);
-                return klass != null &&
-                        klass.staticMethods.containsKey(
-                                new MethodId(
-                                        call.method,
-                                        arityFromArgumentsList(call.arguments)
-                                )
-                        );
-            } else {
-                return false;
             }
         }
 
@@ -162,31 +178,19 @@ public class InitializationChecker {
 
         @Override
         public Void visitCallExpression(ResolvedExpression.Call call) {
-            if (isThisCall(call)) {
-                MethodId methodId =
-                        new MethodId(call.method, arityFromArgumentsList(call.arguments));
-                checkMethod(thisClass, thisContext.get(methodId));
-            } else if (isStaticCall(call)) {
-                MethodId methodId =
-                        new MethodId(call.method, arityFromArgumentsList(call.arguments));
-                ResolvedStatement.Class klass =
-                        classes.get(((ResolvedExpression.Variable) call.object).variableId);
-                thisId = klass.staticThisId;
-                thisContext = klass.staticMethods;
-                thisClass = klass;
-                checkMethod(klass, klass.staticMethods.get(methodId));
+            if (isLocalCall(call)) {
+                // if this is a local call, we may go into the method to see
+                // what variables it initializes
+                checkLocalCall(call);
             } else {
                 check(call.object);
-                if (call.arguments != null) {
-                    call.arguments.forEach(this::check);
-                }
             }
-            return null;
-        }
+            // check that the arguments are not using not initialized variables
+            if (call.arguments != null) {
+                call.arguments.forEach(this::check);
+            }
 
-        private boolean isThisCall(ResolvedExpression.Call call) {
-            return call.object instanceof ResolvedExpression.Variable &&
-                    ((ResolvedExpression.Variable) call.object).variableId == thisId;
+            return null;
         }
 
         @Override
@@ -196,15 +200,13 @@ public class InitializationChecker {
 
         @Override
         public Void visitVariableExpression(ResolvedExpression.Variable variable) {
-            if (thisId == variable.variableId) {
-                checkClass(thisClass);
+            if (isLocalObject(variable.variableId)) {
+                checkClass(classOfLocalObject(variable.variableId));
             } else if (!initialized.get(variable.variableId)) {
                 reporter.error(variable.line,
                         "Use of unassigned local variable '" +
                                 variableNames.get(variable.variableId) + "'.");
 
-            } else if (classes.containsKey(variable.variableId)) {
-                checkClass(classes.get(variable.variableId));
             }
 
             return null;
@@ -262,10 +264,17 @@ public class InitializationChecker {
         public Void visitBlockStatement(ResolvedStatement.Block block) {
             // class variables are initialized by default
             block.classes.keySet().forEach(initialized::set);
-            // store class declarations
-            block.classes.forEach(classes::put);
             // store variable names
             block.names.forEach(variableNames::put);
+            // all meta classes are local object
+            block.classes.forEach(localObjects::put);
+            // make all static functions local
+            block.classes.forEach((id, klass) -> {
+                localFunctions.put(id, new HashMap<>());
+                klass.staticMethods.forEach(localFunctions.get(id)::put);
+                initialized.set(klass.staticThisId);
+                localObjects.put(klass.staticThisId, klass);
+            });
 
             block.resolvedStatements.forEach(this::check);
 
