@@ -16,8 +16,8 @@ public abstract class KnishModule {
         return unmodifiableMap(objects);
     }
 
-    public Class getClass(String className) {
-        return classes.get(className);
+    public Map<String, Class> getClasses() {
+        return unmodifiableMap(classes);
     }
 
     public Class getObjectType(String objectName) {
@@ -62,10 +62,6 @@ public abstract class KnishModule {
                           KnishObject object, Class klass) {
         objects.put(name, object);
         objectsClasses.put(name, klass);
-    }
-
-    public Map<String, Class> getClasses() {
-        return unmodifiableMap(classes);
     }
 
     public final static class Union {

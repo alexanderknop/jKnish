@@ -108,6 +108,18 @@ public class KnishCore extends KnishModule {
         );
     }
 
+    public Class numType() {
+        return getClasses().get("Num");
+    }
+
+    public Class boolType() {
+        return getClasses().get("Bool");
+    }
+
+    public Class stringType() {
+        return getClasses().get("String");
+    }
+
     public static KnishObject num(long value) {
         return new KnishNumber(value);
     }

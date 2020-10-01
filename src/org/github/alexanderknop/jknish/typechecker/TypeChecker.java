@@ -41,19 +41,20 @@ public final class TypeChecker {
         private void check(ResolvedScript script) {
             Map<KnishModule.Class, SimpleType> types = SimpleType.fromKnishModule(core);
 
-            numberType = types.get(core.getClass("Num"));
-            booleanType = types.get(core.getClass("Bool"));
-            stringType = types.get(core.getClass("String"));
+            numberType = types.get(core.numType());
+            booleanType = types.get(core.boolType());
+            stringType = types.get(core.stringType());
 
             // define globals, we expect that all the globals are defined in core
             HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
             script.globals.forEach((id, name) ->
                     {
-                        String className = core.getObjectType(name).getName();
+                        KnishModule.Class objectType = core.getObjectType(name);
+                        String className = objectType.getName();
                         newScope.put(id,
                                 new TypedVariableInformation(
                                         name,
-                                        types.get(core.getObjectType(name)),
+                                        types.get(objectType),
                                         className == null ? name : className
                                 )
                         );
