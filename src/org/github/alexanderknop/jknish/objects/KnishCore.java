@@ -69,7 +69,7 @@ public class KnishCore extends KnishModule {
                                     } catch (IOException e) {
                                         throw new KnishRuntimeException(e.getMessage());
                                     }
-                                    return KnishNull.NULL;
+                                    return nil();
                                 })
                         .method("print", 0,
                                 (writer, arguments) -> {
@@ -79,7 +79,7 @@ public class KnishCore extends KnishModule {
                                     } catch (IOException e) {
                                         throw new KnishRuntimeException(e.getMessage());
                                     }
-                                    return KnishNull.NULL;
+                                    return nil();
                                 }
                         )
                         .getter("clock",
