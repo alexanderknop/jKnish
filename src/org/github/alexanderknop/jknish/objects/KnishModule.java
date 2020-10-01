@@ -1,10 +1,12 @@
 package org.github.alexanderknop.jknish.objects;
 
+import org.github.alexanderknop.jknish.objects.KnishWrappedObject.KnishWrappedObjectConstructor;
 import org.github.alexanderknop.jknish.parser.MethodId;
 
 import java.util.*;
 
 import static java.util.Collections.*;
+import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
 
 public abstract class KnishModule {
@@ -62,6 +64,10 @@ public abstract class KnishModule {
                           KnishObject object, Class klass) {
         objects.put(name, object);
         objectsClasses.put(name, klass);
+    }
+
+    protected <U, V> ClassDefinition<U, V> defineClass(String name) {
+        return new ClassDefinition<>(name);
     }
 
     public final static class Union {
@@ -161,6 +167,39 @@ public abstract class KnishModule {
 
         public Union getValue() {
             return value;
+        }
+    }
+
+    public class ClassDefinition<U, V> {
+        private final String name;
+        private final Class metaClass;
+        private final KnishWrappedObjectConstructor<U> staticInstance;
+
+        private ClassDefinition(String name) {
+            this.name = name;
+            this.metaClass = declareClass(name + " metaclass");
+            staticInstance = KnishWrappedObject.object(name);
+        }
+
+        protected ClassDefinition<U, V> staticMethod(String methodName,
+                                                     List<Class> arguments,
+                                                     Class value,
+                                                     KnishWrappedObject.Method<U> method) {
+            staticInstance.method(methodName, arityFromArgumentsList(arguments), method);
+            metaClass.method(methodName, arguments, value);
+            return this;
+        }
+
+        protected ClassDefinition<U,V> staticGetter(String methodName,
+                                                    Class value,
+                                                    KnishWrappedObject.Method<U> method) {
+            staticInstance.getter(methodName, method);
+            metaClass.getter(methodName, value);
+            return this;
+        }
+
+        protected void finishDefinition(U state) {
+            define(name, staticInstance.construct(state), metaClass);
         }
     }
 }

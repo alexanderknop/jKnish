@@ -7,6 +7,8 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.Collections.emptyList;
+
 public class KnishCore extends KnishModule {
     public KnishCore(Writer output) {
         Class str = declareClass("String");
@@ -37,75 +39,56 @@ public class KnishCore extends KnishModule {
                 .method("===", List.of(top()), union(bool))
                 .method("!==", List.of(top()), union(bool));
 
-        Class systemMetaclass =
-                declareClass("System metaclass")
-                        .method("print",
-                                List.of(anonymousClass().getter("toString", str)), unit)
-                        .getter("clock", num)
-                        .method("===", List.of(top()), union(bool))
-                        .method("!==", List.of(top()), union(bool));
 
-        Class numMetaclass =
-                declareClass("Num metaclass")
-                        .method("fromString",
-                                List.of(str), num)
-                        .method("===", List.of(top()), union(bool))
-                        .method("!==", List.of(top()), union(bool));
-
-        define(
-                "System",
-                KnishWrappedObject.<Writer>object("System metaclass")
-                        .method("print", 1,
-                                (writer, arguments) -> {
-                                    try {
-                                        KnishObject string =
-                                                arguments.get(0).call("toString", null);
-                                        if (!(string instanceof KnishString)) {
-                                            throw new KnishRuntimeException("toString must return a String.");
-                                        }
-                                        writer.write(string.toString());
-                                        writer.write("\n");
-                                        writer.flush();
-                                    } catch (IOException e) {
-                                        throw new KnishRuntimeException(e.getMessage());
-                                    }
-                                    return nil();
-                                })
-                        .method("print", 0,
-                                (writer, arguments) -> {
-                                    try {
-                                        writer.write("\n");
-                                        writer.flush();
-                                    } catch (IOException e) {
-                                        throw new KnishRuntimeException(e.getMessage());
-                                    }
-                                    return nil();
+        this.<Writer, Void>defineClass("System")
+                .staticMethod("print",
+                        List.of(anonymousClass().getter("toString", str)), unit,
+                        (writer, arguments) -> {
+                            try {
+                                KnishObject string =
+                                        arguments.get(0).call("toString", null);
+                                if (!(string instanceof KnishString)) {
+                                    throw new KnishRuntimeException("toString must return a String.");
                                 }
-                        )
-                        .getter("clock",
-                                (writer, arguments) -> num(System.currentTimeMillis()))
-                        .construct(output),
-                systemMetaclass
-        );
+                                writer.write(string.toString());
+                                writer.write("\n");
+                                writer.flush();
+                            } catch (IOException e) {
+                                throw new KnishRuntimeException(e.getMessage());
+                            }
+                            return nil();
+                        })
+                .staticMethod("print",
+                        emptyList(), unit,
+                        (writer, arguments) -> {
+                            try {
+                                writer.write("\n");
+                                writer.flush();
+                            } catch (IOException e) {
+                                throw new KnishRuntimeException(e.getMessage());
+                            }
+                            return nil();
+                        })
+                .staticGetter("clock",
+                        num,
+                        (writer, arguments) -> num(System.currentTimeMillis()))
+                .finishDefinition(output);
 
-        define(
-                "Num",
-                KnishWrappedObject.<Void>object("Num metaclass")
-                        .method("fromString", 1,
-                                (ignored, arguments) -> {
-                                    if (arguments.get(0) instanceof KnishString) {
-                                        KnishString string = ((KnishString) arguments.get(0));
-                                        return num(Long.parseLong(string.value));
-                                    } else {
-                                        throw new KnishRuntimeException(
-                                                "Argument must be a string."
-                                        );
-                                    }
-                                }
-                        )
-                        .construct(null),
-                numMetaclass
-        );
+
+        this.<Void, Void>defineClass("Num")
+                .staticMethod("fromString",
+                        List.of(anonymousClass().getter("toString", str)), unit,
+                        (writer, arguments) -> {
+                            if (arguments.get(0) instanceof KnishString) {
+                                KnishString string = ((KnishString) arguments.get(0));
+                                return num(Long.parseLong(string.value));
+                            } else {
+                                throw new KnishRuntimeException(
+                                        "Argument must be a string."
+                                );
+                            }
+                        })
+                .finishDefinition(null);
     }
 
     public Class numType() {
