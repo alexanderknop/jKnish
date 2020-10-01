@@ -6,12 +6,39 @@ import org.github.alexanderknop.jknish.parser.MethodId;
 import java.util.*;
 
 class SimpleType {
-    public static Top top() {
+    static Top top() {
         return Top.TOP;
     }
 
-    public static SimpleType bottom() {
+    static SimpleType bottom() {
         return Bottom.BOTTOM;
+    }
+
+    static Method functionVariable(Integer arity) {
+        List<SimpleType> arguments = null;
+        if (arity != null) {
+            arguments = new ArrayList<>();
+            for (int i = 0; i < arity; i++) {
+                arguments.add(new Variable());
+            }
+        }
+        return new Method(arguments, new Variable());
+    }
+    static Method functionVariable(Integer arity, SimpleType value) {
+        List<SimpleType> arguments = null;
+        if (arity != null) {
+            arguments = new ArrayList<>();
+            for (int i = 0; i < arity; i++) {
+                arguments.add(new Variable());
+            }
+        }
+        return new Method(arguments, value);
+    }
+
+    static Class classVariable(Set<MethodId> methods) {
+        Map<MethodId, Method> methodTypes = new HashMap<>();
+        methods.forEach(method -> methodTypes.put(method, functionVariable(method.arity)));
+        return new Class(methodTypes);
     }
 
     static class Variable extends SimpleType {

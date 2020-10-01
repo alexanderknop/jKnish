@@ -9,8 +9,6 @@ import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public final class TypeChecker {
     public static void check(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
@@ -128,8 +126,10 @@ public final class TypeChecker {
             }
 
             SimpleType.Variable value = new SimpleType.Variable();
-            SimpleType.Class klass = new SimpleType.Class(Map.of(methodId,
-                    new SimpleType.Method(arguments, value)));
+            SimpleType.Class klass = new SimpleType.Class(
+                    Map.of(methodId,
+                            new SimpleType.Method(arguments, value))
+            );
 
             SimpleType objectType = expressionType(call.object);
             constrainer.constrain(objectType, klass,
@@ -246,72 +246,64 @@ public final class TypeChecker {
 
             // make this of the metaclass to be of the same type as the metaclass
             constrainer.constrain(metaClassType, variableType(klass.staticThisId),
-                    // this error is impossible since variableType(thisId) is fresh
+                    // this error is impossible since variableType(staticThisId) is fresh
                     new TypeErrorMessage(reporter, 0, ""));
 
+            // restrict the list of static methods, before we check their types
+            Map<MethodId, SimpleType.Method> staticMethods = new HashMap<>();
+            klass.staticMethods.keySet().forEach(methodId ->
+                    staticMethods.put(methodId, SimpleType.functionVariable(methodId.arity)));
+            klass.constructors.keySet().forEach(methodId ->
+                    staticMethods.put(methodId,
+                            SimpleType.functionVariable(
+                                    methodId.arity,
+                                    SimpleType.classVariable(instanceSignature(klass).keySet())
+                            )
+                    )
+            );
+            constrainer.constrain(
+                    new SimpleType.Class(staticMethods),
+                    metaClassType,
+                    // this error is impossible since variableName(classId) is fresh
+                    new TypeErrorMessage(reporter, klass.line, "")
+            );
+
             // add all the methods
-            Map<MethodId, SimpleType.Method> staticMethods = methodsTypes(klass.staticMethods);
+            checkMethodTypes(klass.staticMethods, staticMethods);
+
             // add all the constructors
             klass.constructors.forEach((constructorId, constructor) -> {
                 SimpleType.Variable classType = new SimpleType.Variable();
+
+                // restrict the list of methods, before we check their types
+                Map<MethodId, SimpleType.Method> methods = instanceSignature(klass);
+                constrainer.constrain(
+                        new SimpleType.Class(methods),
+                        classType,
+                        // this error is impossible since classType is fresh
+                        new TypeErrorMessage(reporter, klass.line, "")
+                );
+
                 beginScope(klass.fields);
                 // make this of the class to be of the same type as the class
                 constrainer.constrain(classType, variableType(klass.thisId),
                         // this error is impossible since variableType(thisId) is fresh
                         new TypeErrorMessage(reporter, 0, ""));
 
-                Map<MethodId, SimpleType.Method> methods = methodsTypes(klass.methods);
-                // register default object operands
-                methods.put(new MethodId("!==", 1),
-                        new SimpleType.Method(List.of(SimpleType.top()), booleanType));
-                methods.put(new MethodId("===", 1),
-                        new SimpleType.Method(List.of(SimpleType.top()), booleanType));
+                checkMethodTypes(klass.methods, methods);
 
                 // merge constraints created by the constructor and by class methods
-                SimpleType.Method initializationType = methodType(
+                checkMethod(
+                        constructorId,
                         constructor.argumentsIds,
                         constructor.argumentNames,
-                        constructor.body
-                );
+                        constructor.body,
+                        staticMethods.get(constructorId));
 
-                SimpleType.Method constructorType;
-                if (constructor.argumentsIds == null) {
-                    constructorType = new SimpleType.Method(
-                            null,
-                            new SimpleType.Variable()
-                    );
-                } else {
-                    constructorType = new SimpleType.Method(
-                            IntStream.range(0, constructor.argumentsIds.size())
-                                    .mapToObj(i -> new SimpleType.Variable())
-                                    .collect(Collectors.toList()),
-                            new SimpleType.Variable()
-                    );
-                }
-
-                constrainer.constrain(
-                        constructorType,
-                        initializationType,
-                        new TypeErrorMessage(
-                                reporter,
-                                constructor.line,
-                                "Incompatible constraints on '" +
-                                        constructorId + "'."
-                        )
-                );
-
-                String errorMessage =
-                        "Incompatible constraints on " + className +
-                                " created in '" + constructorId + "'.";
-                constrainer.constrain(
-                        new SimpleType.Class(methods),
-                        classType,
-                        new TypeErrorMessage(reporter, constructor.line, errorMessage)
-                );
 
                 constrainer.constrain(
                         classType,
-                        constructorType.value,
+                        staticMethods.get(constructorId).value,
                         new TypeErrorMessage(
                                 reporter,
                                 constructor.line,
@@ -321,44 +313,43 @@ public final class TypeChecker {
                         )
                 );
 
-                staticMethods.put(constructorId, constructorType);
-
                 endScope();
             });
-
-            String errorMessage =
-                    "Incompatible constraints on " + className + " metaclass.";
-            constrainer.constrain(
-                    new SimpleType.Class(staticMethods),
-                    metaClassType,
-                    new TypeErrorMessage(reporter, klass.line, errorMessage)
-            );
 
             endScope();
         }
 
-        private Map<MethodId, SimpleType.Method> methodsTypes(
-                Map<MethodId, ResolvedStatement.Method> methodStatements) {
-
+        private Map<MethodId, SimpleType.Method> instanceSignature(ResolvedStatement.Class klass) {
             Map<MethodId, SimpleType.Method> methods = new HashMap<>();
-            methodStatements.forEach(
-                    (methodId, method) ->
-                            methods.put(methodId,
-                                    methodType(
-                                            method.argumentsIds,
-                                            method.argumentNames,
-                                            method.body
-                                    )
-                            )
-            );
-
+            klass.methods.keySet().forEach(methodId ->
+                    methods.put(methodId, SimpleType.functionVariable(methodId.arity)));
+            methods.put(new MethodId("!==", 1),
+                    new SimpleType.Method(List.of(SimpleType.top()), booleanType));
+            methods.put(new MethodId("===", 1),
+                    new SimpleType.Method(List.of(SimpleType.top()), booleanType));
             return methods;
         }
 
-        private SimpleType.Method methodType(
+        private void checkMethodTypes(
+                Map<MethodId, ResolvedStatement.Method> methods,
+                Map<MethodId, SimpleType.Method> expectedTypes) {
+            methods.forEach(
+                    (methodId, method) ->
+                            checkMethod(
+                                    methodId,
+                                    method.argumentsIds,
+                                    method.argumentNames,
+                                    method.body,
+                                    expectedTypes.get(methodId)
+                            )
+            );
+        }
+
+        private void checkMethod(
+                MethodId methodId,
                 List<Integer> argumentsIds,
                 Map<Integer, String> argumentsNames,
-                ResolvedStatement.Block body) {
+                ResolvedStatement.Block body, SimpleType.Method expectedType) {
             beginScope(argumentsNames);
 
             SimpleType returnType = visitBlockStatement(body);
@@ -366,7 +357,9 @@ public final class TypeChecker {
                     MethodId.processArgumentsList(argumentsIds, this::variableType);
 
             endScope();
-            return new SimpleType.Method(argumentTypes, returnType);
+            constrainer.constrain(new SimpleType.Method(argumentTypes, returnType), expectedType,
+                    new TypeErrorMessage(reporter, body.line,
+                            "Incompatible constraints on '" + methodId + "'."));
         }
     }
 

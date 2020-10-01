@@ -471,7 +471,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 2] Error: Incompatible constraints on Test created in 'new()'."
+                "[line 5] Error: An object does not implement test."
         );
     }
 
