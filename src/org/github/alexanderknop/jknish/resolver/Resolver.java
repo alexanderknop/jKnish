@@ -439,7 +439,7 @@ public class Resolver {
 
         private Map<MethodId, ResolvedStatement.Method> resolveMethods(
                 List<Statement.Method> methods) {
-            Map<MethodId, ResolvedStatement.Method> resolvedMethods = new HashMap<>();
+            Map<MethodId, ResolvedStatement.Method> resolvedMethods = new LinkedHashMap<>();
             for (Statement.Method method : methods) {
                 beginScope();
                 List<Integer> argumentsIds =

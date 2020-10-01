@@ -6,6 +6,7 @@ class TypeErrorMessage {
     private final KnishErrorReporter reporter;
     private final int line;
     private final String message;
+    private boolean sent = false;
 
     TypeErrorMessage(KnishErrorReporter reporter, int line, String message) {
         this.reporter = reporter;
@@ -14,6 +15,9 @@ class TypeErrorMessage {
     }
 
     public void send() {
-        reporter.error(line, message);
+        if (!sent) {
+            reporter.error(line, message);
+            sent = true;
+        }
     }
 }
