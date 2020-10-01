@@ -71,6 +71,17 @@ public class KnishCore extends KnishModule {
                                     }
                                     return KnishNull.NULL;
                                 })
+                        .method("print", 0,
+                                (writer, arguments) -> {
+                                    try {
+                                        writer.write("\n");
+                                        writer.flush();
+                                    } catch (IOException e) {
+                                        throw new KnishRuntimeException(e.getMessage());
+                                    }
+                                    return KnishNull.NULL;
+                                }
+                        )
                         .getter("clock",
                                 (writer, arguments) -> num(System.currentTimeMillis()))
                         .construct(output),
