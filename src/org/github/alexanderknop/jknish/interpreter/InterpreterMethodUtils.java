@@ -2,7 +2,6 @@ package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
 import org.github.alexanderknop.jknish.objects.KnishCore;
-import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.Collections;

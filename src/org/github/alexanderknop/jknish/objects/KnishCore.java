@@ -10,8 +10,8 @@ import java.util.Objects;
 public class KnishCore extends KnishModule {
     public KnishCore(Writer output) {
         Class str = declareClass("String");
-        Class num = declareClass("Number");
-        Class bool = declareClass("Boolean");
+        Class num = declareClass("Num");
+        Class bool = declareClass("Bool");
         Class unit = declareClass("Unit");
 
         bool.getter("toString", str)
@@ -45,6 +45,13 @@ public class KnishCore extends KnishModule {
                         .method("===", List.of(top()), union(bool))
                         .method("!==", List.of(top()), union(bool));
 
+        Class numMetaclass =
+                declareClass("Num metaclass")
+                        .method("fromString",
+                                List.of(str), num)
+                        .method("===", List.of(top()), union(bool))
+                        .method("!==", List.of(top()), union(bool));
+
         define(
                 "System",
                 KnishWrappedObject.<Writer>object("System metaclass")
@@ -68,6 +75,25 @@ public class KnishCore extends KnishModule {
                                 (writer, arguments) -> num(System.currentTimeMillis()))
                         .construct(output),
                 systemMetaclass
+        );
+
+        define(
+                "Num",
+                KnishWrappedObject.<Void>object("Num metaclass")
+                        .method("fromString", 1,
+                                (ignored, arguments) -> {
+                                    if (arguments.get(0) instanceof KnishString) {
+                                        KnishString string = ((KnishString) arguments.get(0));
+                                        return num(Long.parseLong(string.value));
+                                    } else {
+                                        throw new KnishRuntimeException(
+                                                "Argument must be a string."
+                                        );
+                                    }
+                                }
+                        )
+                        .construct(null),
+                numMetaclass
         );
     }
 

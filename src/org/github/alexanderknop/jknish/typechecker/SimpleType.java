@@ -4,7 +4,6 @@ import org.github.alexanderknop.jknish.objects.KnishModule;
 import org.github.alexanderknop.jknish.parser.MethodId;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 class SimpleType {
     public static Top top() {
@@ -45,12 +44,16 @@ class SimpleType {
 
     static final class Top extends SimpleType {
         private static final Top TOP = new Top();
-        private Top() {}
+
+        private Top() {
+        }
     }
 
     static final class Bottom extends SimpleType {
         private static final Bottom BOTTOM = new Bottom();
-        private Bottom() {}
+
+        private Bottom() {
+        }
     }
 
     static class Method {
@@ -78,7 +81,7 @@ class SimpleType {
     }
 
     private static SimpleType fromKnishClass(KnishModule.Class klass,
-                                      Map<KnishModule.Class, SimpleType> defined) {
+                                             Map<KnishModule.Class, SimpleType> defined) {
         if (defined.containsKey(klass)) {
             return defined.get(klass);
         } else {
@@ -90,8 +93,8 @@ class SimpleType {
     }
 
     private static SimpleType.Variable fromKnishClass(KnishModule.Class klass,
-                                               SimpleType.Variable classVariable,
-                                               Map<KnishModule.Class, SimpleType> defined) {
+                                                      SimpleType.Variable classVariable,
+                                                      Map<KnishModule.Class, SimpleType> defined) {
         Map<MethodId, SimpleType.Method> methods = new HashMap<>();
         SimpleType.Class simpleClass = new SimpleType.Class(methods);
         klass.getMethods().forEach(
@@ -103,7 +106,7 @@ class SimpleType {
     }
 
     private static SimpleType.Method fromKnishMethod(KnishModule.Method method,
-                                              Map<KnishModule.Class, SimpleType> defined) {
+                                                     Map<KnishModule.Class, SimpleType> defined) {
         List<SimpleType> arguments = MethodId.processArgumentsList(
                 method.getArguments(),
                 argument -> fromKnishIntersection(argument, defined)
@@ -124,7 +127,7 @@ class SimpleType {
     }
 
     private static SimpleType fromKnishUnion(KnishModule.Union union,
-                                      Map<KnishModule.Class, SimpleType> inProcess) {
+                                             Map<KnishModule.Class, SimpleType> inProcess) {
         SimpleType.Variable variable = new SimpleType.Variable();
         union.getTypes().stream()
                 .map(klass -> fromKnishClass(klass, inProcess))

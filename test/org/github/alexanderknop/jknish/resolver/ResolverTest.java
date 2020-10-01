@@ -20,16 +20,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ResolverTest {
 
-    private static final int SYSTEM_VARIABLE = 0;
-    private static final int X_VARIABLE = 1;
-    private static final int X2_VARIABLE = 2;
-    private static final int TEST_VARIABLE = 2;
-    private static final int THIS_VARIABLE = 5;
-    private static final int STATIC_THIS_VARIABLE = 4;
-    private static final int X_AFTER_TEST_VARIABLE = 3;
-    public static final int TEST_BEFORE_X_VARIABLE = 1;
-    public static final int STATIC_THIS_BEFORE_X_VARIABLE = 2;
-    public static final int THIS_BEFORE_X_VARIABLE = 3;
+    private static final int SYSTEM_VARIABLE = 1;
+    private static final int NUM_VARIABLE = 0;
+    private static final int X_VARIABLE = 2;
+    private static final int X2_VARIABLE = 3;
+    private static final int TEST_VARIABLE = 3;
+    private static final int THIS_VARIABLE = 6;
+    private static final int STATIC_THIS_VARIABLE = 5;
+    private static final int X_AFTER_TEST_VARIABLE = 4;
+    public static final int TEST_BEFORE_X_VARIABLE = 2;
+    public static final int STATIC_THIS_BEFORE_X_VARIABLE = 3;
+    public static final int THIS_BEFORE_X_VARIABLE = 4;
 
     @Test
     void testVar() {
@@ -70,7 +71,7 @@ class ResolverTest {
                                 )
                         ),
                         // todo: fix the problem with multiple elements defined globally
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
 
@@ -97,7 +98,7 @@ class ResolverTest {
                                         new Variable(2, X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
 
@@ -164,7 +165,7 @@ class ResolverTest {
                                                 X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
     }
@@ -193,7 +194,7 @@ class ResolverTest {
                                         null
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
     }
@@ -223,7 +224,7 @@ class ResolverTest {
                                         )
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
     }
@@ -272,7 +273,7 @@ class ResolverTest {
                                         new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
 
@@ -317,7 +318,7 @@ class ResolverTest {
                                         new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
 
@@ -364,7 +365,7 @@ class ResolverTest {
                                         new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
     }
@@ -511,7 +512,7 @@ class ResolverTest {
                                         new Variable(7, X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System")
+                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
                 )
         );
     }

@@ -12,8 +12,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
-
 public final class TypeChecker {
     public static void check(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
         TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, reporter);
@@ -45,8 +43,8 @@ public final class TypeChecker {
         private void check(ResolvedScript script) {
             Map<KnishModule.Class, SimpleType> types = SimpleType.fromKnishModule(core);
 
-            numberType = types.get(core.getClass("Number"));
-            booleanType = types.get(core.getClass("Boolean"));
+            numberType = types.get(core.getClass("Num"));
+            booleanType = types.get(core.getClass("Bool"));
             stringType = types.get(core.getClass("String"));
 
             // define globals, we expect that all the globals are defined in core
