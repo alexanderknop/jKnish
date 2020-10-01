@@ -47,11 +47,18 @@ public final class TypeChecker {
 
             // define globals, we expect that all the globals are defined in core
             HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
-            script.globals.forEach((id, name) -> newScope.put(id,
-                    new TypedVariableInformation(name,
-                            types.get(core.getObjectType(name))
-                    )
-            ));
+            script.globals.forEach((id, name) ->
+                    {
+                        String className = core.getObjectType(name).getName();
+                        newScope.put(id,
+                                new TypedVariableInformation(
+                                        name,
+                                        types.get(core.getObjectType(name)),
+                                        className == null ? name : className
+                                )
+                        );
+                    }
+            );
             scopes.push(newScope);
 
             visitBlockStatement(script.code);
@@ -65,15 +72,31 @@ public final class TypeChecker {
             return statement.accept(this);
         }
 
-        private void beginScope(Map<Integer, String> names) {
+        private void beginScope(Map<Integer, String> names, Set<Integer> classVariables) {
             HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
-            for (var variable : names.entrySet()) {
-                newScope.put(variable.getKey(),
-                        new TypedVariableInformation(variable.getValue(),
-                                new SimpleType.Variable()
-                        )
-                );
-            }
+            names.forEach((id, name) ->
+                    newScope.put(id,
+                            new TypedVariableInformation(
+                                    name,
+                                    new SimpleType.Variable(),
+                                    classVariables.contains(id) ? name + " metaclass" : null
+                            )
+                    )
+            );
+            scopes.push(newScope);
+        }
+
+        private void beginScope(Map<Integer, String> names, Map<Integer, String> classNames) {
+            HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
+            names.forEach((id, name) ->
+                    newScope.put(id,
+                            new TypedVariableInformation(
+                                    name,
+                                    new SimpleType.Variable(),
+                                    classNames.get(id)
+                            )
+                    )
+            );
             scopes.push(newScope);
         }
 
@@ -131,10 +154,19 @@ public final class TypeChecker {
                             new SimpleType.Method(arguments, value))
             );
 
+            String message = "An object does not implement " + methodId + ".";
+            if (call.object instanceof ResolvedExpression.Variable) {
+                ResolvedExpression.Variable object = (ResolvedExpression.Variable) call.object;
+                if (variableInformation(object.variableId).className == null) {
+                    message = "An object referred by the variable '" + variableName(object.variableId) +
+                            "' does not implement " + methodId + ".";
+                } else {
+                    message = variableInformation(object.variableId).className + " does not implement " + methodId + ".";
+                }
+            }
             SimpleType objectType = expressionType(call.object);
             constrainer.constrain(objectType, klass,
-                    new TypeErrorMessage(reporter, call.line,
-                            "An object does not implement " + methodId + "."));
+                    new TypeErrorMessage(reporter, call.line, message));
 
             if (call.arguments != null) {
                 for (int i = 0; i < call.arguments.size(); i++) {
@@ -214,7 +246,7 @@ public final class TypeChecker {
 
         @Override
         public SimpleType visitBlockStatement(ResolvedStatement.Block block) {
-            beginScope(block.names);
+            beginScope(block.names, block.classes.keySet());
 
             block.classes.forEach(this::defineClass);
 
@@ -242,7 +274,7 @@ public final class TypeChecker {
         public void defineClass(int classId, ResolvedStatement.Class klass) {
             String className = variableName(classId);
             SimpleType metaClassType = variableType(classId);
-            beginScope(klass.staticFields);
+            beginScope(klass.staticFields, Map.of(klass.staticThisId, className + " metaclass"));
 
             // make this of the metaclass to be of the same type as the metaclass
             constrainer.constrain(metaClassType, variableType(klass.staticThisId),
@@ -284,7 +316,7 @@ public final class TypeChecker {
                         new TypeErrorMessage(reporter, klass.line, "")
                 );
 
-                beginScope(klass.fields);
+                beginScope(klass.fields, Map.of(klass.thisId, className));
                 // make this of the class to be of the same type as the class
                 constrainer.constrain(classType, variableType(klass.thisId),
                         // this error is impossible since variableType(thisId) is fresh
@@ -350,7 +382,7 @@ public final class TypeChecker {
                 List<Integer> argumentsIds,
                 Map<Integer, String> argumentsNames,
                 ResolvedStatement.Block body, SimpleType.Method expectedType) {
-            beginScope(argumentsNames);
+            beginScope(argumentsNames, Collections.emptySet());
 
             SimpleType returnType = visitBlockStatement(body);
             List<SimpleType> argumentTypes =
@@ -366,10 +398,12 @@ public final class TypeChecker {
     private static class TypedVariableInformation {
         public final String name;
         public final SimpleType type;
+        public final String className;
 
-        public TypedVariableInformation(String name, SimpleType type) {
+        public TypedVariableInformation(String name, SimpleType type, String className) {
             this.name = name;
             this.type = type;
+            this.className = className;
         }
     }
 }

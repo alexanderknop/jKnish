@@ -59,7 +59,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: An object does not implement print."
+                "[line 1] Error: System metaclass does not implement print."
         );
     }
 
@@ -120,7 +120,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 4] Error: An object does not implement test."
+                "[line 4] Error: Test metaclass does not implement test."
         );
 
         testIncorrect(
@@ -146,7 +146,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 4] Error: An object does not implement test."
+                "[line 4] Error: Test metaclass does not implement test."
         );
     }
 
@@ -347,7 +347,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 4] Error: An object does not implement test."
+                "[line 4] Error: Test metaclass does not implement test."
         );
     }
 
@@ -471,7 +471,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 5] Error: An object does not implement test."
+                "[line 5] Error: Test does not implement test."
         );
     }
 
@@ -1018,7 +1018,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 3] Error: An object does not implement +(_)."
+                "[line 3] Error: An object referred by the variable 'x' does not implement +(_)."
         );
 
         testCorrect(

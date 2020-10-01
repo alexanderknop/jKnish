@@ -25,13 +25,13 @@ public abstract class KnishModule {
     }
 
     protected Class declareClass(String className) {
-        Class builder = new Class();
+        Class builder = new Class(className);
         classes.put(className, builder);
         return builder;
     }
 
     protected Class anonymousClass() {
-        return new Class();
+        return new Class(null);
     }
 
     protected Intersection top() {
@@ -94,8 +94,10 @@ public abstract class KnishModule {
 
     public static final class Class {
         private final Map<MethodId, Method> methods;
+        private final String name;
 
-        private Class() {
+        private Class(String name) {
+            this.name = name;
             methods = new HashMap<>();
         }
 
@@ -131,6 +133,10 @@ public abstract class KnishModule {
 
         public Map<MethodId, Method> getMethods() {
             return unmodifiableMap(methods);
+        }
+
+        public String getName() {
+            return name;
         }
     }
 
