@@ -2,6 +2,7 @@ package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
+import org.github.alexanderknop.jknish.objects.KnishStandardModule;
 import org.github.alexanderknop.jknish.parser.LogicalOperator;
 import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression.*;
@@ -642,7 +643,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Boolean does not implement '+(_)'."
+                "[line 1] Error: Bool does not implement '+(_)'."
         );
 
         testIncorrect(
@@ -658,7 +659,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Right operand must be a number."
+                "[line 1] Error: Argument must be a wrapped Long."
         );
 
         testIncorrect(
@@ -673,7 +674,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Number does not implement '+'."
+                "[line 1] Error: Num does not implement '+'."
         );
 
         testCorrect(
@@ -796,7 +797,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Boolean does not implement '*(_)'."
+                "[line 1] Error: Bool does not implement '*(_)'."
         );
 
         testIncorrect(
@@ -816,7 +817,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Right operand must be a number."
+                "[line 1] Error: Argument must be a wrapped Long."
         );
     }
 
@@ -1099,7 +1100,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 1] Error: Condition must have type Boolean."
+                "[line 1] Error: Condition must be a wrapped Boolean."
         );
 
         testIncorrect(
@@ -1189,7 +1190,7 @@ class InterpreterTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 2] Error: Condition must have type Boolean."
+                "[line 2] Error: Condition must be a wrapped Boolean."
         );
 
         testIncorrect(
@@ -1383,10 +1384,11 @@ class InterpreterTest {
         KnishErrorReporter reporter = new KnishErrorReporter(errorWriter);
 
         StringWriter outputWriter = new StringWriter();
-        KnishCore core = new KnishCore(outputWriter);
+        KnishCore core = KnishCore.core(/*outputWriter*/);
 
 
-        Interpreter.interpret(core, script, reporter);
+        Interpreter.interpret(script, reporter,
+                core, new KnishStandardModule(outputWriter));
 
         assertFalse(reporter.hadError(), "The script is correct;" +
                 " the error message is:\n" + errorWriter.toString());
@@ -1400,9 +1402,10 @@ class InterpreterTest {
     void testIncorrect(ResolvedScript script, String expectedError) {
         StringWriter error = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(error);
-        KnishCore core = new KnishCore(new StringWriter());
+        KnishCore core = KnishCore.core(/*new StringWriter()*/);
 
-        Interpreter.interpret(core, script, reporter);
+        Interpreter.interpret(script, reporter,
+                core, new KnishStandardModule(new StringWriter()));
 
         assertTrue(reporter.hadError(), "The script is incorrect.");
         String actual = error.toString().strip();

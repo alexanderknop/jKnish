@@ -17,9 +17,9 @@ public abstract class AbstractKnishObject implements KnishObject {
     public AbstractKnishObject() {
         // register default object methods
         register("!==", 1,
-                arguments -> KnishCore.bool(arguments.get(0) != this));
+                arguments -> KnishCore.core().bool(arguments.get(0) != this));
         register("===", 1,
-                arguments -> KnishCore.bool(arguments.get(0) == this));
+                arguments -> KnishCore.core().bool(arguments.get(0) == this));
     }
 
     public void register(String name, Integer arity, Method method) {

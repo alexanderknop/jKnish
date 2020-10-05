@@ -1,293 +1,154 @@
 package org.github.alexanderknop.jknish.objects;
 
-import org.github.alexanderknop.jknish.parser.MethodId;
-
-import java.io.IOException;
-import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-
-import static java.util.Collections.emptyList;
+import java.util.Map;
 
 public class KnishCore extends KnishModule {
-    public KnishCore(Writer output) {
-        Class str = declareClass("String");
-        Class num = declareClass("Num");
-        Class bool = declareClass("Bool");
-        Class unit = declareClass("Unit");
 
-        bool.getter("toString", str)
-                .getter("!", bool)
-                .method("===", List.of(top()), union(bool))
-                .method("!==", List.of(top()), union(bool));
+    private final ClassDefinition<Void, Long> numMeta;
+    private final ClassDefinition<Void, Boolean> boolMeta;
+    private final ClassDefinition<Void, String> stringMeta;
 
-        str.getter("toString", str)
-                .method("+", List.of(str), str)
-                .method("===", List.of(top()), union(bool))
-                .method("!==", List.of(top()), union(bool));
+    private final Map<Boolean, KnishObject> booleanValues = new HashMap<>();
 
-        num.getter("toString", str)
-                .getter("-", num)
-                .method("+", List.of(num), num)
-                .method("-", List.of(num), num)
-                .method("*", List.of(num), num)
-                .method("/", List.of(num), num)
-                .method(">", List.of(num), bool)
-                .method("<", List.of(num), bool)
-                .method(">=", List.of(num), bool)
-                .method("<=", List.of(num), bool)
-                .method("===", List.of(top()), union(bool))
-                .method("!==", List.of(top()), union(bool));
+    private final static KnishCore CORE = new KnishCore();
+    private final KnishObject nullObject;
 
+    public static KnishCore core() {
+        return CORE;
+    }
 
-        this.<Writer, Void>defineClass("System")
-                .staticMethod("print",
-                        List.of(anonymousClass().getter("toString", str)), unit,
-                        (writer, arguments) -> {
-                            try {
-                                KnishObject string =
-                                        arguments.get(0).call("toString", null);
-                                if (!(string instanceof KnishString)) {
-                                    throw new KnishRuntimeException("toString must return a String.");
-                                }
-                                writer.write(string.toString());
-                                writer.write("\n");
-                                writer.flush();
-                            } catch (IOException e) {
-                                throw new KnishRuntimeException(e.getMessage());
-                            }
-                            return nil();
+    private KnishCore() {
+        super();
+
+        // the order of class definitions is important since
+        // super uses boolean type to define ===
+        boolMeta = this.defineClass("Bool");
+        numMeta = this.defineClass("Num");
+        stringMeta = this.defineClass("String");
+
+        nullObject = this.defineClass("Null").construct(null);
+
+        Class num = numMeta.getInstanceClass();
+        Class str = stringMeta.getInstanceClass();
+        Class bool = boolMeta.getInstanceClass();
+
+        boolMeta
+                .getter("!",
+                        bool,
+                        (value, arguments) -> bool(!value))
+                .getter("toString",
+                        str,
+                        (value, arguments) -> str(Boolean.toString(value)))
+                .finishDefinition(null);
+
+        stringMeta
+                .getter("toString",
+                        str,
+                        (value, argument) -> str(value))
+                .method("+",
+                        List.of(str), str,
+                        (value, arguments) -> {
+                            String argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), String.class,
+                                            "Argument must be a wrapped String.");
+                            return stringMeta.construct(value + argumentValue);
+                        });
+
+        numMeta.staticMethod("fromString",
+                List.of(str), num,
+                (ignored, arguments) -> {
+                    String value = KnishWrappedObject.unwrap(arguments.get(0), String.class,
+                            "Argument must be a wrapped String.");
+                    return num(Long.parseLong(value));
+                })
+                .getter("toString", str,
+                        (value, arguments) -> stringMeta.construct(Long.toString(value)))
+                .method("+",
+                        List.of(num), num,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return numMeta.construct(value + argumentValue);
                         })
-                .staticMethod("print",
-                        emptyList(), unit,
-                        (writer, arguments) -> {
-                            try {
-                                writer.write("\n");
-                                writer.flush();
-                            } catch (IOException e) {
-                                throw new KnishRuntimeException(e.getMessage());
-                            }
-                            return nil();
+                .method("-",
+                        List.of(num), num,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return numMeta.construct(value - argumentValue);
                         })
-                .staticGetter("clock",
+                .getter("-",
                         num,
-                        (writer, arguments) -> num(System.currentTimeMillis()))
-                .finishDefinition(output);
-
-
-        this.<Void, Void>defineClass("Num")
-                .staticMethod("fromString",
-                        List.of(anonymousClass().getter("toString", str)), unit,
-                        (writer, arguments) -> {
-                            if (arguments.get(0) instanceof KnishString) {
-                                KnishString string = ((KnishString) arguments.get(0));
-                                return num(Long.parseLong(string.value));
-                            } else {
-                                throw new KnishRuntimeException(
-                                        "Argument must be a string."
-                                );
-                            }
+                        (value, arguments) -> numMeta.construct(-value))
+                .method("*",
+                        List.of(num), num,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return numMeta.construct(value * argumentValue);
+                        })
+                .method("/",
+                        List.of(num), num,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    ((KnishWrappedObject<Long>) arguments.get(0)).getValue();
+                            return numMeta.construct(value / argumentValue);
+                        })
+                .method("<",
+                        List.of(num), bool,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return bool(value < argumentValue);
+                        })
+                .method(">",
+                        List.of(num), bool,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    ((KnishWrappedObject<Long>) arguments.get(0)).getValue();
+                            return bool(value > argumentValue);
+                        })
+                .method("<=",
+                        List.of(num), bool,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return bool(value <= argumentValue);
+                        })
+                .method(">=",
+                        List.of(num), bool,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return bool(value >= argumentValue);
                         })
                 .finishDefinition(null);
+
+        booleanValues.put(true, boolMeta.construct(true));
+        booleanValues.put(false, boolMeta.construct(false));
     }
 
-    public Class numType() {
-        return getClasses().get("Num");
+    public KnishObject num(long value) {
+        return numMeta.construct(value);
     }
 
-    public Class boolType() {
-        return getClasses().get("Bool");
+    public KnishObject str(String value) {
+        return stringMeta.construct(value);
     }
 
-    public Class stringType() {
-        return getClasses().get("String");
+    public KnishObject bool(boolean value) {
+        return booleanValues.get(value);
     }
 
-    public static KnishObject num(long value) {
-        return new KnishNumber(value);
-    }
-
-    public static KnishObject str(String value) {
-        return new KnishString(value);
-    }
-
-    public static KnishObject bool(boolean value) {
-        return new KnishBoolean(value);
-    }
-
-    public static KnishObject nil() {
-        return KnishNull.NULL;
-    }
-
-    public static final class KnishNumber extends AbstractKnishObject {
-        private final Long value;
-
-        private KnishNumber(Long value) {
-            this.value = value;
-
-            register("toString", null, (arguments) -> new KnishString(Long.toString(value)));
-            register("+", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return num(value + right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register("-", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return num(value - right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register("-", null, arguments -> num(-value));
-            register("*", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return num(value * right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register("/", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return num(value / right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-
-            register("<", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return bool(value < right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register(">", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return bool(value > right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register("<=", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return bool(value <= right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register(">=", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return bool(value >= right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register("==", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return bool(value.equals(right.value));
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-            register("!=", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishNumber) {
-                    KnishNumber right = (KnishNumber) arguments.get(0);
-                    return bool(!value.equals(right.value));
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a number.");
-                }
-            });
-        }
-
-        @Override
-        protected String getClassName() {
-            return "Number";
-        }
-    }
-
-    public static final class KnishString extends AbstractKnishObject {
-        private final String value;
-
-        private KnishString(String value) {
-            this.value = value;
-
-            register("toString", null, (arguments) -> this);
-            register("+", 1, arguments -> {
-                if (arguments.get(0) instanceof KnishString) {
-                    KnishString right = (KnishString) arguments.get(0);
-                    return new KnishString(value + right.value);
-                } else {
-                    throw new KnishRuntimeException("Right operand must be a string.");
-                }
-            });
-        }
-
-        @Override
-        protected String getClassName() {
-            return "String";
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-    }
-
-    public static final class KnishNull extends AbstractKnishObject {
-        private final static KnishNull NULL = new KnishNull();
-
-        @Override
-        protected String getClassName() {
-            return "Nil";
-        }
-
-        private KnishNull() {
-            register(
-                    new MethodId("toString", null),
-                    arguments -> str("nil")
-            );
-        }
-    }
-
-    public static final class KnishBoolean extends AbstractKnishObject {
-        public static final KnishBoolean TRUE = new KnishBoolean(true);
-        public static final KnishBoolean FALSE = new KnishBoolean(false);
-
-        private final Boolean value;
-
-        private KnishBoolean(Boolean value) {
-            this.value = value;
-
-            register("toString", null, arguments -> new KnishString(Boolean.toString(value)));
-        }
-
-        @Override
-        protected String getClassName() {
-            return "Boolean";
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            KnishBoolean that = (KnishBoolean) o;
-            return Objects.equals(value, that.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(value);
-        }
+    public KnishObject nil() {
+        return nullObject;
     }
 }

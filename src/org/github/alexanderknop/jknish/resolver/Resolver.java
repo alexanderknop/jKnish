@@ -2,6 +2,7 @@ package org.github.alexanderknop.jknish.resolver;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
+import org.github.alexanderknop.jknish.objects.KnishModule;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.parser.Statement;
@@ -14,8 +15,8 @@ import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsLi
 
 public class Resolver {
     public static ResolvedScript resolve(
-            KnishCore core, Statement.Block script, KnishErrorReporter reporter) {
-        return new ResolverVisitor(reporter).resolve(core, script);
+            Statement.Block script, KnishErrorReporter reporter, KnishModule... modules) {
+        return new ResolverVisitor(reporter).resolve(script, modules);
     }
 
     private static class ResolverVisitor implements
@@ -32,12 +33,13 @@ public class Resolver {
             this.reporter = reporter;
         }
 
-        private ResolvedScript resolve(KnishCore core, Statement.Block script) {
+        private ResolvedScript resolve(Statement.Block script, KnishModule[] modules) {
             beginScope();
 
-            for (String objectName : core.getObjects().keySet()) {
-                defineVariable(0, objectName);
+            for (KnishModule module : modules) {
+                module.getObjects().keySet().forEach(objectName -> defineVariable(0, objectName));
             }
+            KnishCore.core().getObjects().keySet().forEach(objectName -> defineVariable(0, objectName));
 
             return new ResolvedScript(visitBlockStatement(script), definedVariables());
         }

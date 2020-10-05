@@ -1,6 +1,7 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
+import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import static org.github.alexanderknop.jknish.interpreter.InterpreterMethodUtils.compileMethod;
@@ -12,7 +13,8 @@ class ClassInstance extends AbstractKnishObject {
     ClassInstance(String name,
                   ResolvedStatement.Class klass,
                   Environment enclosing,
-                  Interpreter.InterpreterVisitor evaluator) {
+                  Interpreter.InterpreterVisitor evaluator,
+                  KnishObject nilValue) {
         this.name = name;
 
         // define an environment with all the static fields
@@ -23,7 +25,7 @@ class ClassInstance extends AbstractKnishObject {
         // register all the static methods
         klass.staticMethods.forEach(
                 (methodId, method) ->
-                        register(methodId, compileMethod(method, classEnvironment, evaluator))
+                        register(methodId, compileMethod(method, classEnvironment, evaluator, nilValue))
         );
 
         // register all the constructors
@@ -31,7 +33,8 @@ class ClassInstance extends AbstractKnishObject {
                 methodId,
                 arguments -> new Instance(
                         name, klass, classEnvironment, evaluator,
-                        constructor, arguments
+                        constructor, arguments,
+                        nilValue
                 )
         ));
     }

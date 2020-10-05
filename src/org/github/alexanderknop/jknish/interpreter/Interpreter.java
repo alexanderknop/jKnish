@@ -1,21 +1,21 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
-import org.github.alexanderknop.jknish.objects.KnishCore;
-import org.github.alexanderknop.jknish.objects.KnishObject;
-import org.github.alexanderknop.jknish.objects.KnishRuntimeException;
+import org.github.alexanderknop.jknish.objects.*;
 import org.github.alexanderknop.jknish.resolver.ResolvedExpression;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
 
 public final class Interpreter {
-    public static void interpret(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
-        Environment globals = createEnvironment(core, script.globals);
+    public static void interpret(ResolvedScript script, KnishErrorReporter reporter, KnishModule... modules) {
+        Environment globals = createEnvironment(script.globals, modules);
 
         InterpreterVisitor interpreterVisitor = new InterpreterVisitor();
 
@@ -26,12 +26,14 @@ public final class Interpreter {
         }
     }
 
-    private static Environment createEnvironment(KnishCore core,
-                                                 Map<Integer, String> globalsIds) {
-        Map<String, KnishObject> moduleObjects = core.getObjects();
+    private static Environment createEnvironment(Map<Integer, String> globalsIds, KnishModule... modules) {
         Environment globals = new Environment(globalsIds.keySet());
 
-        globalsIds.forEach((id, name) -> globals.set(id, moduleObjects.get(name)));
+        Map<String, KnishObject> objects = new HashMap<>();
+
+        KnishCore.core().getObjects().forEach(objects::put);
+        Arrays.stream(modules).map(KnishModule::getObjects).forEach(objects::putAll);
+        globalsIds.forEach((id, name) -> globals.set(id, objects.get(name)));
 
         return globals;
     }
@@ -97,19 +99,19 @@ public final class Interpreter {
         @Override
         public KnishObject visitLiteralExpression(ResolvedExpression.Literal literal) {
             if (literal.value == null) {
-                return KnishCore.nil();
+                return KnishCore.core().nil();
             }
 
             if (literal.value instanceof Boolean) {
-                return KnishCore.bool((Boolean) literal.value);
+                return KnishCore.core().bool((Boolean) literal.value);
             }
 
             if (literal.value instanceof String) {
-                return KnishCore.str((String) literal.value);
+                return KnishCore.core().str((String) literal.value);
             }
 
             if (literal.value instanceof Long) {
-                return KnishCore.num((Long) literal.value);
+                return KnishCore.core().num((Long) literal.value);
             }
 
             throw new UnsupportedOperationException("Unknown type of literal " + literal.value);
@@ -123,30 +125,30 @@ public final class Interpreter {
         @Override
         public KnishObject visitLogicalExpression(ResolvedExpression.Logical logical) {
             KnishObject left = evaluate(logical.left);
-            if (!(left instanceof KnishCore.KnishBoolean)) {
-                throw new RuntimeExceptionWithLine(logical.line, "Left operand must be boolean.");
-            }
+            boolean leftValue = KnishWrappedObject.unwrap(
+                    left, Boolean.class,
+                    "Left operand must be a wrapped Boolean.");
 
             return switch (logical.operator) {
                 case AND -> {
-                    if (left.equals(KnishCore.KnishBoolean.TRUE)) {
+                    if (leftValue) {
                         KnishObject right = evaluate(logical.right);
-                        if (!(right instanceof KnishCore.KnishBoolean)) {
-                            throw new RuntimeExceptionWithLine(logical.line, "Right operand must be boolean.");
-                        }
+                        KnishWrappedObject.unwrap(
+                                right, Boolean.class,
+                                "Right operand must be a wrapped Boolean.");
                         yield right;
                     }
-                    yield KnishCore.KnishBoolean.FALSE;
+                    yield KnishCore.core().bool(false);
                 }
                 case OR -> {
-                    if (left.equals(KnishCore.KnishBoolean.FALSE)) {
+                    if (!leftValue) {
                         KnishObject right = evaluate(logical.right);
-                        if (!(right instanceof KnishCore.KnishBoolean)) {
-                            throw new RuntimeExceptionWithLine(logical.line, "Right operand must be boolean.");
-                        }
+                        KnishWrappedObject.unwrap(
+                                right, Boolean.class,
+                                "Right operand must be a wrapped Boolean.");
                         yield right;
                     }
-                    yield KnishCore.KnishBoolean.TRUE;
+                    yield KnishCore.core().bool(true);
                 }
             };
         }
@@ -161,38 +163,45 @@ public final class Interpreter {
         public Void visitorIfStatement(ResolvedStatement.If anIf) {
             KnishObject conditionValue = evaluate(anIf.condition);
 
-            if (conditionValue == KnishCore.nil()) {
+            if (conditionValue == KnishCore.core().nil()) {
                 throw new RuntimeExceptionWithLine(anIf.line,
                         "If condition cannot be nil.");
             }
 
-            if (conditionValue instanceof KnishCore.KnishBoolean) {
-                if (conditionValue.equals(KnishCore.KnishBoolean.TRUE)) {
+            try {
+                boolean value = KnishWrappedObject.unwrap(
+                        conditionValue, Boolean.class,
+                        "Condition must be a wrapped Boolean."
+                );
+
+                if (value) {
                     execute(anIf.thenBranch);
                 } else {
                     execute(anIf.elseBranch);
                 }
                 return null;
+            } catch (KnishRuntimeException e) {
+                throw new RuntimeExceptionWithLine(anIf.line, e.getMessage());
             }
-
-            throw new RuntimeExceptionWithLine(anIf.line,
-                    "Condition must have type Boolean.");
         }
 
         @Override
         public Void visitWhileStatement(ResolvedStatement.While aWhile) {
             while (true) {
                 KnishObject conditionValue = evaluate(aWhile.condition);
-                if (conditionValue == KnishCore.nil()) {
-                    throw new RuntimeExceptionWithLine(aWhile.line, "While condition cannot be nil.");
-                } else if (conditionValue instanceof KnishCore.KnishBoolean) {
-                    if (conditionValue.equals(KnishCore.KnishBoolean.TRUE)) {
+                if (conditionValue == KnishCore.core().nil()) {
+                    throw new RuntimeExceptionWithLine(aWhile.line,
+                            "While condition cannot be nil.");
+                } else if (conditionValue instanceof KnishWrappedObject<?> &&
+                        ((KnishWrappedObject<?>) conditionValue).getValue() instanceof Boolean) {
+                    if (conditionValue == KnishCore.core().bool(true)) {
                         execute(aWhile.body);
                     } else {
                         break;
                     }
                 } else {
-                    throw new RuntimeExceptionWithLine(aWhile.line, "Condition must have type Boolean.");
+                    throw new RuntimeExceptionWithLine(aWhile.line,
+                            "Condition must be a wrapped Boolean.");
                 }
             }
 
@@ -208,7 +217,8 @@ public final class Interpreter {
                             classId,
                             new ClassInstance(
                                     block.names.get(classId),
-                                    klass, environment, this
+                                    klass, environment, this,
+                                    KnishCore.core().nil()
                             )
                     )
             );
@@ -226,7 +236,7 @@ public final class Interpreter {
 
         @Override
         public Void visitReturnStatement(ResolvedStatement.Return aReturn) {
-            KnishObject value = KnishCore.nil();
+            KnishObject value = KnishCore.core().nil();
             if (aReturn.value != null) {
                 value = evaluate(aReturn.value);
             }

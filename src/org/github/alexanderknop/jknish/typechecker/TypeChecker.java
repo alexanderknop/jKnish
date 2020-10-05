@@ -11,10 +11,11 @@ import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 import java.util.*;
 
 public final class TypeChecker {
-    public static void check(KnishCore core, ResolvedScript script, KnishErrorReporter reporter) {
-        TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(core, reporter);
+    public static void check(ResolvedScript script, KnishErrorReporter reporter,
+                             KnishModule... modules) {
+        TypeCheckerVisitor typeCheckerVisitor = new TypeCheckerVisitor(reporter);
 
-        typeCheckerVisitor.check(script);
+        typeCheckerVisitor.check(script, modules);
     }
 
     private TypeChecker() {
@@ -22,7 +23,6 @@ public final class TypeChecker {
 
     private static final class TypeCheckerVisitor implements
             ResolvedStatement.Visitor<SimpleType>, ResolvedExpression.Visitor<SimpleType> {
-        private final KnishCore core;
         private final Constrainer constrainer = new Constrainer();
 
         private SimpleType numberType;
@@ -33,28 +33,43 @@ public final class TypeChecker {
 
         private final Stack<HashMap<Integer, TypedVariableInformation>> scopes = new Stack<>();
 
-        private TypeCheckerVisitor(KnishCore core, KnishErrorReporter reporter) {
-            this.core = core;
+        private TypeCheckerVisitor(KnishErrorReporter reporter) {
             this.reporter = reporter;
         }
 
-        private void check(ResolvedScript script) {
-            Map<KnishModule.Class, SimpleType> types = SimpleType.fromKnishModule(core);
+        private void check(ResolvedScript script, KnishModule[] modules) {
+            Map<KnishModule.Class, SimpleType> types =
+                    SimpleType.fromKnishModule(KnishCore.core());
+            Map<String, KnishModule.Class> objectTypes =
+                    KnishCore.core().getObjectTypes();
+            for (KnishModule module : modules) {
+                types.putAll(SimpleType.fromKnishModule(module));
+                objectTypes.putAll(module.getObjectTypes());
+            }
 
-            numberType = types.get(core.numType());
-            booleanType = types.get(core.boolType());
-            stringType = types.get(core.stringType());
+            numberType = types.get(KnishCore.core().numType());
+            booleanType = types.get(KnishCore.core().boolType());
+            stringType = types.get(KnishCore.core().stringType());
 
             // define globals, we expect that all the globals are defined in core
             HashMap<Integer, TypedVariableInformation> newScope = new HashMap<>();
             script.globals.forEach((id, name) ->
                     {
-                        KnishModule.Class objectType = core.getObjectType(name);
-                        String className = objectType.getName();
+                        KnishModule.Class objectType = objectTypes.get(name);
+                        String className = null;
+                        SimpleType simpleType = new SimpleType.Variable();
+
+                        if (objectType != null) {
+                            className =  objectType.getName();
+                            simpleType = types.get(objectType);
+                        } else {
+                            reporter.error(0, "Unknown type of '" + name + "'.");
+                        }
+
                         newScope.put(id,
                                 new TypedVariableInformation(
                                         name,
-                                        types.get(objectType),
+                                        simpleType,
                                         className == null ? name : className
                                 )
                         );

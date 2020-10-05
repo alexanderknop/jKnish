@@ -6,27 +6,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class KnishWrappedObject<V> implements KnishObject {
+public final class KnishWrappedObject<V> extends AbstractKnishObject {
     private final V value;
-    private final Map<MethodId, ? extends Method<V>> methods;
     private final String name;
 
-    private KnishWrappedObject(String name, V value,
-                               Map<MethodId, ? extends Method<V>> methods) {
+    public static <U> U unwrap(KnishObject object,
+                               Class<U> uClass,
+                               String message) {
+        if (object instanceof KnishWrappedObject &&
+                ((KnishWrappedObject<?>) object).getValue().getClass() == uClass) {
+            return ((KnishWrappedObject<U>) object).getValue();
+        }
+        throw new KnishRuntimeException(message);
+    }
+
+    private KnishWrappedObject(String name, V value) {
         this.value = value;
-        this.methods = methods;
         this.name = name;
     }
 
+    public V getValue() {
+        return value;
+    }
+
     @Override
-    public KnishObject call(String methodName, List<KnishObject> arguments) {
-        Integer arity = (arguments == null) ? null : arguments.size();
-        MethodId methodId = new MethodId(methodName, arity);
-        Method<V> method = methods.get(methodId);
-        if (method == null) {
-            throw new MethodNotFoundException(name, methodId);
-        }
-        return method.call(value, arguments);
+    protected String getClassName() {
+        return this.name;
     }
 
     interface Method<V> {
@@ -67,7 +72,10 @@ public final class KnishWrappedObject<V> implements KnishObject {
 
         public KnishWrappedObject<V> construct(V value) {
             closed = true;
-            return new KnishWrappedObject<>(name, value, methods);
+            KnishWrappedObject<V> object = new KnishWrappedObject<>(name, value);
+            methods.forEach((id, method) ->
+                    object.register(id, arguments -> method.call(value, arguments)));
+            return object;
         }
     }
 }

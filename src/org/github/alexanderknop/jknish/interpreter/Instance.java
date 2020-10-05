@@ -16,7 +16,8 @@ class Instance extends AbstractKnishObject {
                     Environment enclosing,
                     Interpreter.InterpreterVisitor evaluator,
                     ResolvedStatement.Method constructor,
-                    List<KnishObject> arguments) {
+                    List<KnishObject> arguments,
+                    KnishObject nilValue) {
         this.name = name;
 
         // define an environment with all the fields
@@ -27,10 +28,10 @@ class Instance extends AbstractKnishObject {
         // register all the methods
         klass.methods.forEach((methodId, method) ->
                 register(methodId,
-                        compileMethod(method, classEnvironment, evaluator)));
+                        compileMethod(method, classEnvironment, evaluator, nilValue)));
 
         // call the constructor
-        compileMethod(constructor, classEnvironment, evaluator).call(arguments);
+        compileMethod(constructor, classEnvironment, evaluator, nilValue).call(arguments);
     }
 
     @Override

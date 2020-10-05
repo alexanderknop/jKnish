@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ResolverTest {
 
-    private static final int SYSTEM_VARIABLE = 1;
-    private static final int NUM_VARIABLE = 0;
+    private static final int BOOL_VARIABLE_ID = 0;
+    private static final int NUM_VARIABLE_ID = 1;
     private static final int X_VARIABLE = 2;
     private static final int X2_VARIABLE = 3;
     private static final int TEST_VARIABLE = 3;
@@ -71,7 +71,7 @@ class ResolverTest {
                                 )
                         ),
                         // todo: fix the problem with multiple elements defined globally
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
 
@@ -98,7 +98,7 @@ class ResolverTest {
                                         new Variable(2, X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
 
@@ -165,7 +165,7 @@ class ResolverTest {
                                                 X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
     }
@@ -194,7 +194,7 @@ class ResolverTest {
                                         null
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
     }
@@ -206,7 +206,7 @@ class ResolverTest {
                         List.of(
                                 new Statement.Expression(1,
                                         new Expression.Call(1,
-                                                new Expression.Variable(1, "System"),
+                                                new Expression.Variable(1, "Bool"),
                                                 "print",
                                                 new Expression.Literal(1, 1L)
                                         )
@@ -218,13 +218,13 @@ class ResolverTest {
                                 new ResolvedStatement.Expression(1,
                                         new ResolvedExpression.Call(1,
                                                 new Variable(1,
-                                                        SYSTEM_VARIABLE),
+                                                        BOOL_VARIABLE_ID),
                                                 "print",
                                                 new ResolvedExpression.Literal(1, 1L)
                                         )
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
     }
@@ -273,7 +273,7 @@ class ResolverTest {
                                         new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
 
@@ -318,7 +318,7 @@ class ResolverTest {
                                         new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
 
@@ -365,7 +365,7 @@ class ResolverTest {
                                         new Variable(3, TEST_BEFORE_X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
                 )
         );
     }
@@ -512,7 +512,7 @@ class ResolverTest {
                                         new Variable(7, X_VARIABLE)
                                 )
                         ),
-                        Map.of(SYSTEM_VARIABLE, "System", NUM_VARIABLE, "Num")
+                        Map.of(NUM_VARIABLE_ID, "Num", BOOL_VARIABLE_ID, "Bool")
                 )
         );
     }
@@ -522,7 +522,7 @@ class ResolverTest {
         KnishErrorReporter reporter = new KnishErrorReporter(error);
         assertEquals(
                 expectedResolvedStatements,
-                Resolver.resolve(new KnishCore(new StringWriter()), statements, reporter)
+                Resolver.resolve(statements, reporter)
         );
 
         assertFalse(reporter.hadError(), "The script is correct; however, the resolver reported:\n" +
@@ -532,7 +532,7 @@ class ResolverTest {
     private void testIncorrect(Statement.Block statements, String message) {
         StringWriter errors = new StringWriter();
         KnishErrorReporter reporter = new KnishErrorReporter(errors);
-        Resolver.resolve(new KnishCore(new StringWriter()), statements, reporter);
+        Resolver.resolve(statements, reporter);
 
 
         assertTrue(reporter.hadError());

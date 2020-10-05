@@ -22,8 +22,21 @@ public abstract class KnishModule {
         return unmodifiableMap(classes);
     }
 
-    public Class getObjectType(String objectName) {
-        return objectsClasses.get(objectName);
+    protected KnishModule() {
+        importModules(KnishCore.core());
+    }
+
+    public void importModules(KnishModule... modules) {
+        Arrays.stream(modules).forEach(module -> {
+            if (module != null) {
+                objects.putAll(module.getObjects());
+                classes.putAll(module.getClasses());
+            }
+        });
+    }
+
+    public Map<String, Class> getObjectTypes() {
+        return new HashMap<>(objectsClasses);
     }
 
     protected Class declareClass(String className) {
@@ -68,6 +81,18 @@ public abstract class KnishModule {
 
     protected <U, V> ClassDefinition<U, V> defineClass(String name) {
         return new ClassDefinition<>(name);
+    }
+
+    public Class numType() {
+        return getClasses().get("Num");
+    }
+
+    public Class boolType() {
+        return getClasses().get("Bool");
+    }
+
+    public Class stringType() {
+        return getClasses().get("String");
     }
 
     public final static class Union {
@@ -170,15 +195,25 @@ public abstract class KnishModule {
         }
     }
 
-    public class ClassDefinition<U, V> {
+    protected class ClassDefinition<U, V> {
         private final String name;
         private final Class metaClass;
+        private final Class klass;
         private final KnishWrappedObjectConstructor<U> staticInstance;
+        private final KnishWrappedObjectConstructor<V> instance;
 
         private ClassDefinition(String name) {
             this.name = name;
             this.metaClass = declareClass(name + " metaclass");
-            staticInstance = KnishWrappedObject.object(name);
+            this.klass = declareClass(name);
+            staticInstance = KnishWrappedObject.object(name + " metaclass");
+            instance = KnishWrappedObject.object(name);
+
+            klass.method("===", List.of(top()), union(boolType()));
+            klass.method("!==", List.of(top()), union(boolType()));
+            metaClass.method("===", List.of(top()), union(boolType()));
+            metaClass.method("!==", List.of(top()), union(boolType()));
+
         }
 
         protected ClassDefinition<U, V> staticMethod(String methodName,
@@ -187,6 +222,15 @@ public abstract class KnishModule {
                                                      KnishWrappedObject.Method<U> method) {
             staticInstance.method(methodName, arityFromArgumentsList(arguments), method);
             metaClass.method(methodName, arguments, value);
+            return this;
+        }
+
+        protected ClassDefinition<U, V> method(String methodName,
+                                                     List<Class> arguments,
+                                                     Class value,
+                                                     KnishWrappedObject.Method<V> method) {
+            instance.method(methodName, arityFromArgumentsList(arguments), method);
+            klass.method(methodName, arguments, value);
             return this;
         }
 
@@ -200,6 +244,26 @@ public abstract class KnishModule {
 
         protected void finishDefinition(U state) {
             define(name, staticInstance.construct(state), metaClass);
+        }
+
+        protected KnishObject construct(V value) {
+            return instance.construct(value);
+        }
+
+        public Class getMetaClass() {
+            return metaClass;
+        }
+
+        public Class getInstanceClass() {
+            return klass;
+        }
+
+        public ClassDefinition<U, V> getter(String methodName,
+                                            Class value,
+                                            KnishWrappedObject.Method<V> method) {
+            instance.getter(methodName, method);
+            klass.getter(methodName, value);
+            return this;
         }
     }
 }

@@ -18,7 +18,7 @@ class Environment {
     public Environment(Environment enclosing,
                        Collection<Integer> variables) {
         this.enclosing = enclosing;
-        variables.forEach(variable -> define(variable, KnishCore.nil()));
+        variables.forEach(variable -> define(variable, KnishCore.core().nil()));
     }
 
     private void define(int id, KnishObject value) {

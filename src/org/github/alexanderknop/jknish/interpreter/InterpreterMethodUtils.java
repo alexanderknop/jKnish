@@ -1,7 +1,7 @@
 package org.github.alexanderknop.jknish.interpreter;
 
 import org.github.alexanderknop.jknish.objects.AbstractKnishObject;
-import org.github.alexanderknop.jknish.objects.KnishCore;
+import org.github.alexanderknop.jknish.objects.KnishObject;
 import org.github.alexanderknop.jknish.resolver.ResolvedStatement;
 
 import java.util.Collections;
@@ -10,7 +10,8 @@ import java.util.stream.IntStream;
 public class InterpreterMethodUtils {
     static AbstractKnishObject.Method compileMethod(ResolvedStatement.Method method,
                                                     Environment enclosing,
-                                                    Interpreter.InterpreterVisitor evaluator) {
+                                                    Interpreter.InterpreterVisitor evaluator,
+                                                    KnishObject nilValue) {
         return arguments -> {
             // CHECK ARITY
             Environment withParameters = new Environment(enclosing,
@@ -30,7 +31,7 @@ public class InterpreterMethodUtils {
             } catch (Return aReturn) {
                 return aReturn.value;
             }
-            return KnishCore.nil();
+            return nilValue;
         };
     }
 }

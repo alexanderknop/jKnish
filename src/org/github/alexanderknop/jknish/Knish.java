@@ -3,6 +3,7 @@ package org.github.alexanderknop.jknish;
 import org.github.alexanderknop.jknish.initializationchecker.InitializationChecker;
 import org.github.alexanderknop.jknish.interpreter.Interpreter;
 import org.github.alexanderknop.jknish.objects.KnishCore;
+import org.github.alexanderknop.jknish.objects.KnishStandardModule;
 import org.github.alexanderknop.jknish.parser.Parser;
 import org.github.alexanderknop.jknish.parser.Statement;
 import org.github.alexanderknop.jknish.resolver.ResolvedScript;
@@ -26,7 +27,7 @@ public class Knish {
             Writer output,
             KnishErrorReporter reporter) {
 
-        KnishCore core = new KnishCore(output);
+        KnishCore core = KnishCore.core();
 
         List<Token> tokens = Scanner.tokens(source, reporter);
         if (reporter.hadError()) {
@@ -39,15 +40,19 @@ public class Knish {
             return;
         }
 
-        ResolvedScript resolvedScript = Resolver.resolve(core, script, reporter);
+        KnishStandardModule standardModule = new KnishStandardModule(output);
+
+        ResolvedScript resolvedScript = Resolver.resolve(script, reporter, standardModule);
+
         InitializationChecker.check(resolvedScript, reporter);
         ReturnChecker.check(resolvedScript, reporter);
-        TypeChecker.check(core, resolvedScript, reporter);
+
+        TypeChecker.check(resolvedScript, reporter, standardModule);
         if (reporter.hadError()) {
             return;
         }
 
-        Interpreter.interpret(core, resolvedScript, reporter);
+        Interpreter.interpret(resolvedScript, reporter, standardModule);
     }
 
     private static void runFile(String path) throws IOException {
