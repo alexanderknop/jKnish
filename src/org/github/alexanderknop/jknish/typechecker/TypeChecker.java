@@ -188,7 +188,8 @@ public final class TypeChecker {
                 for (int i = 0; i < call.arguments.size(); i++) {
                     constrainer.constrain(expressionType(call.arguments.get(i)), arguments.get(i),
                             new TypeErrorMessage(reporter, call.line,
-                                    "The value of " + i + "th argument has incompatible type."));
+                                    "The value of " + i + "th argument of " + methodId +
+                                            " has incompatible type."));
                 }
             }
 

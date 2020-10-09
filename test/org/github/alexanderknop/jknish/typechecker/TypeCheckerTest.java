@@ -313,7 +313,7 @@ class TypeCheckerTest {
                         ),
                         emptyMap()
                 ),
-                "[line 4] Error: The value of 0th argument has incompatible type."
+                "[line 4] Error: The value of 0th argument of test(_) has incompatible type."
         );
 
         ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
@@ -593,7 +593,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 4] Error: The value of 0th argument has incompatible type."
+                "[line 4] Error: The value of 0th argument of +(_) has incompatible type."
         );
 
         testIncorrect(
@@ -618,7 +618,7 @@ class TypeCheckerTest {
                         ),
                         Map.of(SYSTEM_VARIABLE, "System")
                 ),
-                "[line 4] Error: The value of 0th argument has incompatible type."
+                "[line 4] Error: The value of 0th argument of +(_) has incompatible type."
         );
 
         ResolvedStatement.Class testClass3 = new ResolvedStatement.Class(1,
@@ -698,7 +698,7 @@ class TypeCheckerTest {
                         ),
                         emptyMap()
                 ),
-                "[line 1] Error: The value of 0th argument has incompatible type."
+                "[line 1] Error: The value of 0th argument of +(_) has incompatible type."
         );
 
         testIncorrect(
@@ -749,7 +749,7 @@ class TypeCheckerTest {
                         ),
                         emptyMap()
                 ),
-                "[line 1] Error: The value of 0th argument has incompatible type."
+                "[line 1] Error: The value of 0th argument of +(_) has incompatible type."
         );
     }
 
@@ -851,7 +851,7 @@ class TypeCheckerTest {
                         ),
                         emptyMap()
                 ),
-                "[line 2] Error: The value of 0th argument has incompatible type.");
+                "[line 2] Error: The value of 0th argument of +(_) has incompatible type.");
     }
 
     @Test
@@ -960,7 +960,7 @@ class TypeCheckerTest {
                         ),
                         emptyMap()
                 ),
-                "[line 3] Error: The value of 0th argument has incompatible type."
+                "[line 3] Error: The value of 0th argument of +(_) has incompatible type."
         );
 
         testIncorrect(
@@ -989,7 +989,7 @@ class TypeCheckerTest {
                         ),
                         emptyMap()
                 ),
-                "[line 3] Error: The value of 0th argument has incompatible type."
+                "[line 3] Error: The value of 0th argument of +(_) has incompatible type."
         );
 
         testIncorrect(
