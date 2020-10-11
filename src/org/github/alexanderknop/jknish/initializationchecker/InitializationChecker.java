@@ -138,13 +138,19 @@ public class InitializationChecker {
             }
 
             if (!beforeMethod.get(klass).containsKey(method)) {
-                beforeMethod.get(klass).put(method, newBefore);
-                afterMethod.get(klass).put(method, newBefore);
+                beforeMethod.get(klass).put(method, (BitSet) newBefore.clone());
+                afterMethod.get(klass).put(method, (BitSet) newBefore.clone());
             } else {
                 beforeMethod.get(klass).get(method).and(newBefore);
             }
 
-            return beforeMethod.get(klass).get(method);
+            return (BitSet) beforeMethod.get(klass).get(method).clone();
+        }
+
+        private static boolean isSubset(BitSet left, BitSet right) {
+            BitSet copyOfLeft = (BitSet) left.clone();
+            copyOfLeft.and(right);
+            return left.equals(left);
         }
 
         private boolean hasBeforeChanged(ResolvedStatement.Class klass,
@@ -152,7 +158,7 @@ public class InitializationChecker {
                                          BitSet newBefore) {
             return !(beforeMethod.containsKey(klass) &&
                     beforeMethod.get(klass).containsKey(method) &&
-                    beforeMethod.get(klass).get(method).equals(newBefore));
+                    isSubset(beforeMethod.get(klass).get(method), newBefore));
         }
 
         private void checkMethod(ResolvedStatement.Class klass,
