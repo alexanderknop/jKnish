@@ -234,9 +234,7 @@ class ParserTest {
                                 new Expression.Call(1,
                                         new Expression.Variable(1, "x"),
                                         "method",
-                                        List.of(
-                                                new Expression.Literal(1, 1L)
-                                        )
+                                        new Expression.Literal(1, 1L)
                                 )
                         )
                 );
@@ -251,9 +249,29 @@ class ParserTest {
                                 new Expression.Call(1,
                                         new Expression.Variable(1, "x"),
                                         "method",
-                                        List.of(
-                                                new Expression.Literal(1, 1L),
-                                                new Expression.Literal(1, 2L)
+                                        new Expression.Literal(1, 1L),
+                                        new Expression.Literal(1, 2L)
+                                )
+                        )
+                );
+        testCorrect(expected, builder.tokens());
+
+        builder = new TokenBuilder();
+        builder.identifier("x").dot().identifier("method")
+                .leftBrace().identifier("y").semicolon().rightBrace().semicolon().eof();
+        expected =
+                List.of(
+                        new Statement.Expression(1,
+                                new Expression.Call(1,
+                                        new Expression.Variable(1, "x"),
+                                        "method",
+                                        new Statement.MethodBody(1,
+                                                null,
+                                                new Statement.Block(1,
+                                                        new Statement.Expression(1,
+                                                                new Expression.Variable(1, "y")
+                                                        )
+                                                )
                                         )
                                 )
                         )
@@ -272,13 +290,14 @@ class ParserTest {
                 List.of(
                         new Statement.Class(0,
                                 "T",
-                                emptyList(), emptyList(), List.of(
-                                new Statement.Method(1,
-                                        "method",
-                                        null,
-                                        emptyList()
+                                emptyList(), emptyList(),
+                                List.of(
+                                        new Statement.Method(1,
+                                                "method",
+                                                null,
+                                                emptyList()
+                                        )
                                 )
-                        )
                         )
                 );
         testCorrect(expected, builder.tokens());

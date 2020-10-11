@@ -309,17 +309,15 @@ public abstract class Statement {
     }
 
     public final static class Method {
-        public final int line;
         public final String name;
-        public final List<String> argumentsNames;
-        public final Statement.Block body;
+        public final MethodBody body;
 
         public Method(int line,
                       String name, List<String> argumentsNames, List<Statement> body) {
-            this.line = line;
             this.name = name;
-            this.argumentsNames = argumentsNames;
-            this.body = new Block(line, body);
+            this.body = new MethodBody(
+                    line, argumentsNames, new Block(line, body)
+            );
         }
 
         public Method(int line,
@@ -337,24 +335,56 @@ public abstract class Statement {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Method method = (Method) o;
-            return line == method.line &&
-                    Objects.equals(name, method.name) &&
-                    Objects.equals(argumentsNames, method.argumentsNames) &&
+            return Objects.equals(name, method.name) &&
                     Objects.equals(body, method.body);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(line, name, argumentsNames, body);
+            return Objects.hash(name, body);
         }
 
         @Override
         public String toString() {
             return "Method{" +
-                    "line=" + line +
-                    ", name='" + name + '\'' +
-                    ", argumentsNames=" + argumentsNames +
+                    "name='" + name + '\'' +
                     ", body=" + body +
+                    '}';
+        }
+    }
+
+    public final static class MethodBody {
+        public final int line;
+        public final List<String> argumentsNames;
+        public final Statement.Block block;
+
+        public MethodBody(int line, List<String> argumentsNames, Block block) {
+            this.line = line;
+            this.argumentsNames = argumentsNames;
+            this.block = block;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            MethodBody that = (MethodBody) o;
+            return line == that.line &&
+                    Objects.equals(argumentsNames, that.argumentsNames) &&
+                    Objects.equals(block, that.block);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(line, argumentsNames, block);
+        }
+
+        @Override
+        public String toString() {
+            return "MethodBody{" +
+                    "line=" + line +
+                    ", argumentsNames=" + argumentsNames +
+                    ", block=" + block +
                     '}';
         }
     }

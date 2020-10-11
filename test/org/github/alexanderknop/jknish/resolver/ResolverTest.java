@@ -1,7 +1,6 @@
 package org.github.alexanderknop.jknish.resolver;
 
 import org.github.alexanderknop.jknish.KnishErrorReporter;
-import org.github.alexanderknop.jknish.objects.KnishCore;
 import org.github.alexanderknop.jknish.parser.Expression;
 import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.parser.Statement;
@@ -31,6 +30,7 @@ class ResolverTest {
     public static final int TEST_BEFORE_X_VARIABLE = 2;
     public static final int STATIC_THIS_BEFORE_X_VARIABLE = 3;
     public static final int THIS_BEFORE_X_VARIABLE = 4;
+    public static final int BLOCK_VARIABLE_ID = 2;
 
     @Test
     void testVar() {
@@ -221,6 +221,78 @@ class ResolverTest {
                                                         BOOL_VARIABLE_ID),
                                                 "print",
                                                 new ResolvedExpression.Literal(1, 1L)
+                                        )
+                                )
+                        ),
+                        Map.of(BOOL_VARIABLE_ID, "Bool", NUM_VARIABLE_ID, "Num")
+                )
+        );
+
+        testCorrect(
+                new Statement.Block(0,
+                        List.of(
+                                new Statement.Expression(1,
+                                        new Expression.Call(1,
+                                                new Expression.Variable(1, "Bool"),
+                                                "print",
+                                                new Statement.MethodBody(1,
+                                                        emptyList(),
+                                                        new Statement.Block(1,
+                                                                new Statement.Expression(2,
+                                                                        new Expression.Variable(2, "Bool")
+                                                                )
+                                                        )
+                                                ),
+                                                new Expression.Literal(1, 1L)
+                                        )
+                                )
+                        )
+                ),
+                new ResolvedScript(
+                        new Block(0,
+                                Map.of(BLOCK_VARIABLE_ID, "+block_2"),
+                                Map.of(BLOCK_VARIABLE_ID,
+                                        new ResolvedStatement.Class(1,
+                                                emptyMap(),
+                                                Map.of(
+                                                        new MethodId("new", 0),
+                                                        new Method(1,
+                                                                emptyList(),
+                                                                new Block(1),
+                                                                emptyMap()
+                                                        )
+                                                ),
+                                                Map.of(
+                                                        new MethodId("call", 0),
+                                                        new Method(1,
+                                                                emptyList(),
+                                                                new Block(1,
+                                                                        new ResolvedStatement.Expression(1,
+                                                                                new Variable(1,
+                                                                                        BOOL_VARIABLE_ID)
+                                                                        )
+                                                                ),
+                                                                emptyMap()
+                                                        )
+                                                ),
+                                                Map.of(THIS_BEFORE_X_VARIABLE, "this"),
+                                                Map.of(STATIC_THIS_BEFORE_X_VARIABLE, "this"),
+                                                THIS_BEFORE_X_VARIABLE, STATIC_THIS_BEFORE_X_VARIABLE
+                                        )
+                                ),
+                                new ResolvedStatement.Expression(1,
+                                        new ResolvedExpression.Call(1,
+                                                new Variable(1,
+                                                        BOOL_VARIABLE_ID),
+                                                "print",
+                                                new ResolvedExpression.Literal(1, 1L),
+                                                new ResolvedExpression.Call(1,
+                                                        new ResolvedExpression.Variable(1,
+                                                                BLOCK_VARIABLE_ID
+                                                        ),
+                                                        "new",
+                                                        emptyList()
+                                                )
                                         )
                                 )
                         ),

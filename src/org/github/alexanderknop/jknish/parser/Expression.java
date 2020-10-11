@@ -150,23 +150,39 @@ public abstract class Expression {
     public static class Call extends Expression {
         public final Expression object;
         public final String method;
+        public final Statement.MethodBody block;
         public final List<Expression> arguments;
 
-        public Call(int line, Expression object, String method, Expression... arguments) {
-            this(line, object, method, Arrays.asList(arguments));
+        public Call(int line, Expression object, String method,
+                    Statement.MethodBody block, Expression... arguments) {
+            this(line, object, method, block, Arrays.asList(arguments));
         }
 
         public Call(int line, Expression object, String method) {
-            super(line);
-            this.object = object;
-            this.method = method;
-            this.arguments = null;
+            this(line, object, method, null, (List<Expression>) null);
         }
 
-        public Call(int line, Expression object, String method, List<Expression> arguments) {
+        public Call(int line, Expression object, String method, Expression... arguments) {
+            this(line, object, method, null, Arrays.asList(arguments));
+        }
+
+        public Call(int line, Expression object, String method,
+                    Statement.MethodBody block) {
+            this(line, object, method, block, (List<Expression>) null);
+        }
+
+        public Call(int line, Expression object, String method,
+                    List<Expression> arguments) {
+            this(line, object, method, null, arguments);
+        }
+
+
+        public Call(int line, Expression object, String method,
+                    Statement.MethodBody block, List<Expression> arguments) {
             super(line);
             this.object = object;
             this.method = method;
+            this.block = block;
             this.arguments = arguments;
         }
 

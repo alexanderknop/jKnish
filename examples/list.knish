@@ -22,10 +22,10 @@ class List {
         _head = Node.new(_head, value);
     }
 
-    print() {
+    forEach(callback) {
         var head = _head;
         while(head !== nil) {
-            System.print(head.value);
+            callback.call(head.value);
             head = head.next;
         }
     }
@@ -37,4 +37,7 @@ while(i < 10) {
     list.add(i);
     i = i + 1;
 }
-list.print();
+
+list.forEach() {|x|
+    System.print(x);
+};

@@ -8,7 +8,6 @@ import org.github.alexanderknop.jknish.parser.MethodId;
 import org.github.alexanderknop.jknish.parser.Statement;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.github.alexanderknop.jknish.parser.MethodId.arityFromArgumentsList;
 import static org.github.alexanderknop.jknish.parser.MethodId.processArgumentsList;
@@ -295,13 +294,48 @@ public class Resolver {
 
         @Override
         public ResolvedExpression visitCallExpression(Expression.Call call) {
+            List<ResolvedExpression> arguments = processArgumentsList(call.arguments, this::resolveExpression);
+
+            if (call.block != null) {
+                String blockClassName = "+block_" + currentVariable;
+                int blockId = defineVariable(call.line, blockClassName);
+                useVariable(call.line, blockClassName);
+                defineClass(blockId,
+                        new Statement.Class(call.line, blockClassName,
+                                Collections.emptyList(),
+                                List.of(
+                                        new Statement.Method(call.line,
+                                                "new",
+                                                Collections.emptyList()
+                                        )
+                                ),
+                                List.of(
+                                        new Statement.Method(call.line,
+                                                "call",
+                                                call.block.argumentsNames,
+                                                call.block.block.statements
+                                        )
+                                )
+                        )
+                );
+
+                if (arguments == null) {
+                    arguments = new ArrayList<>();
+                }
+
+                arguments.add(
+                        new ResolvedExpression.Call(call.line,
+                                new ResolvedExpression.Variable(call.line, blockId),
+                                "new",
+                                Collections.emptyList()
+                        )
+                );
+            }
+
             return new ResolvedExpression.Call(call.line,
                     resolveExpression(call.object),
                     call.method,
-                    //  CHECK ARITY
-                    call.arguments == null ? null : call.arguments.stream()
-                            .map(this::resolveExpression)
-                            .collect(Collectors.toList())
+                    arguments
             );
         }
 
@@ -446,15 +480,15 @@ public class Resolver {
                 beginScope();
                 List<Integer> argumentsIds =
                         processArgumentsList(
-                                method.argumentsNames,
-                                name -> defineVariable(method.line, name)
+                                method.body.argumentsNames,
+                                name -> defineVariable(method.body.line, name)
                         );
                 resolvedMethods.put(
                         new MethodId(method.name, arityFromArgumentsList(argumentsIds)),
                         new ResolvedStatement.Method(
-                                method.line,
+                                method.body.line,
                                 argumentsIds,
-                                visitBlockStatement(method.body),
+                                visitBlockStatement(method.body.block),
                                 definedVariables()
                         )
                 );

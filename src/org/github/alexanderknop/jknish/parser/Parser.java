@@ -5,6 +5,7 @@ import org.github.alexanderknop.jknish.scanner.Token;
 import org.github.alexanderknop.jknish.scanner.TokenType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
@@ -307,17 +308,40 @@ public final class Parser {
 
         while (match(DOT)) {
             Token name = consume(IDENTIFIER, "Expect property name after '.'.");
+            List<Expression> arguments = null;
             if (match(LEFT_PAREN)) {
-                expression = finishCall(previous().line, name, expression);
-            } else {
-                expression = new Expression.Call(name.line, expression, name.lexeme);
+                arguments = parseArguments();
             }
+
+            Statement.MethodBody block = null;
+            if (match(LEFT_BRACE)) {
+                block = new Statement.MethodBody(name.line,
+                        parseBlockArguments(),
+                        new Statement.Block(name.line, block())
+                );
+            }
+
+            expression = new Expression.Call(name.line, expression, name.lexeme,
+                    block,
+                    arguments);
         }
 
         return expression;
     }
 
-    private Expression finishCall(int line, Token name, Expression callee) {
+    private List<String> parseBlockArguments() {
+        List<String> argumentsNames = null;
+        if (match(VERTICAL)) {
+            argumentsNames = new ArrayList<>();
+            do {
+                argumentsNames.add(consume(IDENTIFIER, "Expect variable name.").lexeme);
+            } while (match(COMMA));
+            consume(VERTICAL, "Expect '|' after block parameters.");
+        }
+        return argumentsNames;
+    }
+
+    private List<Expression> parseArguments() {
         List<Expression> arguments = new ArrayList<>();
         if (!check(RIGHT_PAREN)) {
             do {
@@ -327,7 +351,7 @@ public final class Parser {
 
         consume(RIGHT_PAREN, "Expect ')' after arguments.");
 
-        return new Expression.Call(line, callee, name.lexeme, arguments);
+        return arguments;
     }
 
     private Expression primary() {
