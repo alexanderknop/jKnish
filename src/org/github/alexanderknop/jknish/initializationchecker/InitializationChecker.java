@@ -164,15 +164,15 @@ public class InitializationChecker {
         private void checkMethod(ResolvedStatement.Class klass,
                                  ResolvedStatement.Method method) {
             if (hasBeforeChanged(klass, method, initialized)) {
-                this.initialized = setBefore(klass, method, initialized);
+                initialized = setBefore(klass, method, initialized);
                 if (method.argumentsIds != null) {
                     method.argumentsIds.forEach(initialized::set);
                 }
                 method.argumentNames.forEach(variableNames::put);
                 check(method.body);
-                afterMethod.get(klass).put(method, this.initialized);
+                afterMethod.get(klass).put(method, initialized);
             } else {
-                this.initialized = (BitSet) afterMethod.get(klass).get(method).clone();
+                initialized.or(afterMethod.get(klass).get(method));
             }
         }
 
