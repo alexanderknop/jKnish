@@ -40,7 +40,7 @@ public abstract class ResolvedExpression {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Assign assign = (Assign) o;
-            return Objects.equals(variableId, assign.variableId) &&
+            return variableId == assign.variableId &&
                     Objects.equals(value, assign.value);
         }
 
@@ -52,7 +52,8 @@ public abstract class ResolvedExpression {
         @Override
         public String toString() {
             return "Assign{" +
-                    "variable='" + variableId + '\'' +
+                    "line=" + line +
+                    ", variableId=" + variableId +
                     ", value=" + value +
                     '}';
         }
@@ -104,7 +105,8 @@ public abstract class ResolvedExpression {
         @Override
         public String toString() {
             return "Call{" +
-                    "object=" + object +
+                    "line=" + line +
+                    ", object=" + object +
                     ", method='" + method + '\'' +
                     ", arguments=" + arguments +
                     '}';
@@ -140,7 +142,8 @@ public abstract class ResolvedExpression {
         @Override
         public String toString() {
             return "Literal{" +
-                    "value=" + value +
+                    "line=" + line +
+                    ", value=" + value +
                     '}';
         }
 
@@ -174,7 +177,8 @@ public abstract class ResolvedExpression {
         @Override
         public String toString() {
             return "Variable{" +
-                    "name='" + variableId + '\'' +
+                    "line=" + line +
+                    ", variableId=" + variableId +
                     '}';
         }
 
@@ -215,7 +219,8 @@ public abstract class ResolvedExpression {
         @Override
         public String toString() {
             return "Logical{" +
-                    "expression=" + left +
+                    "line=" + line +
+                    ", left=" + left +
                     ", operator=" + operator +
                     ", right=" + right +
                     '}';
