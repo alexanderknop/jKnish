@@ -5,7 +5,6 @@ import org.github.alexanderknop.jknish.scanner.Token;
 import org.github.alexanderknop.jknish.scanner.TokenType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.github.alexanderknop.jknish.scanner.TokenType.*;
@@ -98,10 +97,34 @@ public final class Parser {
     }
 
     private Statement.Method methodStatement() {
-        Token name = consume(IDENTIFIER, "Expect method name.");
+        Token name = advance();
+        int maxNumberOfArguments;
+        int minNumberOfArguments;
+        boolean canBeGetter;
+        switch (name.type) {
+            case IDENTIFIER -> {
+                maxNumberOfArguments = Integer.MAX_VALUE;
+                minNumberOfArguments = 0;
+                canBeGetter = true;
+            }
+            case PLUS, STAR, SLASH -> {
+                maxNumberOfArguments = 1;
+                minNumberOfArguments = 1;
+                canBeGetter = false;
+            }
+            case MINUS -> {
+                maxNumberOfArguments = 1;
+                minNumberOfArguments = 1;
+                canBeGetter = true;
+            }
+            default -> throw error(name, "Expect method or operator name.");
+        }
+
         List<String> argumentsNames = null;
         if (match(LEFT_PAREN)) {
-            argumentsNames = methodParameters();
+            argumentsNames = methodParameters(minNumberOfArguments, maxNumberOfArguments);
+        } else if (!canBeGetter) {
+            throw error(peek(), "Expect '(' after operator name.");
         }
 
         consume(LEFT_BRACE, "Expect '{' to begin method body.");
@@ -115,14 +138,19 @@ public final class Parser {
                 name.lexeme, argumentsNames, statements);
     }
 
-    private List<String> methodParameters() {
+    private List<String> methodParameters(int minNumberOfArguments, int maxNumberOfArguments) {
         List<String> argumentsNames = new ArrayList<>();
         if (!check(RIGHT_PAREN)) {
             do {
                 Token argument = consume(IDENTIFIER, "Expect variable name.");
                 argumentsNames.add(argument.lexeme);
-            } while (match(COMMA));
+            } while (match(COMMA) && argumentsNames.size() < maxNumberOfArguments);
         }
+
+        if (argumentsNames.size() < minNumberOfArguments) {
+            throw error(peek(), "Expect variable name.");
+        }
+
         consume(RIGHT_PAREN, "Expect ')' after arguments.");
         return argumentsNames;
     }

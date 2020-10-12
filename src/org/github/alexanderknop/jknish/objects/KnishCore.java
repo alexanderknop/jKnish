@@ -130,6 +130,22 @@ public class KnishCore extends KnishModule {
                                             "Argument must be a wrapped Long.");
                             return bool(value >= argumentValue);
                         })
+                .method("==",
+                        List.of(num), bool,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return bool(value.equals(argumentValue));
+                        })
+                .method("!=",
+                        List.of(num), bool,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return bool(!value.equals(argumentValue));
+                        })
                 .finishDefinition(null);
 
         booleanValues.put(true, boolMeta.construct(true));

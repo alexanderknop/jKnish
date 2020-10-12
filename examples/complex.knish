@@ -1,0 +1,36 @@
+class Complex {
+  construct cartesian(a, b) {
+    _a = a;
+    _b = b;
+  }
+
+  real {
+    return _a;
+  }
+
+  imaginary {
+    return _b;
+  }
+
+  +(right) {
+    return Complex.cartesian(_a + right.real, _b + right.imaginary);
+  }
+
+  -(right) {
+    return Complex.cartesian(_a - right.real, _b - right.imaginary);
+  }
+
+  - {
+    return Complex.cartesian(-_a, -_b);
+  }
+
+  toString {
+    return _a.toString + " " + _b.toString;
+  }
+}
+
+
+var p = Complex.cartesian(1, 2);
+System.print(p + p);
+System.print(p - p);
+System.print(-p);

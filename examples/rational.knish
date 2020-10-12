@@ -1,0 +1,97 @@
+class Rational {
+    construct fraction(a, b) {
+        _a = a / Rational.gcd(a, b);
+        _b = b / Rational.gcd(a, b);
+    }
+
+    construct integer(a) {
+        _a = a;
+        _b = 1;
+    }
+
+    numerator {
+        return _a;
+    }
+
+    denominator {
+        return _b;
+    }
+
+    *(right) {
+        return Rational.fraction(
+            this.numerator * right.numerator,
+            this.denominator * right.denominator
+        );
+    }
+
+    /(right) {
+        return Rational.fraction(
+            this.numerator * right.denominator,
+            this.denominator * right.numerator
+        );
+    }
+
+    +(right) {
+        return Rational.fraction(
+            this.numerator * right.denominator +
+                right.numerator * this.denominator,
+            this.denominator * right.denominator
+        );
+    }
+
+    -(right) {
+        return Rational.fraction(
+            this.numerator * right.denominator -
+                right.numerator * this.denominator,
+            this.denominator * right.denominator
+        );
+    }
+
+    - {
+        return Rational.fraction(
+            -this.numerator,
+            this.denominator
+        );
+    }
+
+    toString {
+        if (this.denominator != 1) {
+            return this.numerator.toString + " / " + this.denominator.toString;
+        } else {
+            return this.numerator.toString;
+        }
+    }
+
+    static gcd(a, b) {
+        if (a < 0) {
+            a = -a;
+        }
+
+        if (b < 0) {
+            b = -b;
+        }
+
+        if (a == 0) {
+            return b;
+        }
+
+        if (b == 0) {
+            return a;
+        }
+
+        if (a > b) {
+            return Rational.gcd(a - b, b);
+        } else {
+            return Rational.gcd(b - a, a);
+        }
+    }
+}
+
+
+System.print(Rational.gcd(2, 4));
+var q = Rational.fraction(2, 4);
+System.print(q * q);
+System.print(q + q);
+System.print(q - q);
+System.print(-q);
+System.print(Rational.integer(1) / q);
