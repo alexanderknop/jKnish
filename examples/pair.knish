@@ -12,11 +12,20 @@ class Pair {
         _x = a;
     }
 
+    y {
+        return _y;
+    }
+
+    y=(a) {
+        _y = a;
+    }
+
     toString {
         return "(" + _x.toString + ", " + _y.toString + ")";
     }
 }
-var p = Pair.of(1, 2);
+var p = Pair.of(1, "hello");
 System.print(p);
-p.x = 2;
+p.x = p.x + 1;
+p.y = 1;
 System.print(p);
