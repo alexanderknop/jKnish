@@ -97,16 +97,27 @@ public final class Parser {
     }
 
     private Statement.Method methodStatement() {
-        Token name = advance();
+        Token nameToken = advance();
+        String name = nameToken.lexeme;
+
         int maxNumberOfArguments;
         int minNumberOfArguments;
         boolean canBeGetter;
-        switch (name.type) {
+
+        switch (nameToken.type) {
             case IDENTIFIER -> {
-                maxNumberOfArguments = Integer.MAX_VALUE;
-                minNumberOfArguments = 0;
-                canBeGetter = true;
+                if (match(EQUAL)) {
+                    maxNumberOfArguments = 1;
+                    minNumberOfArguments = 1;
+                    canBeGetter = false;
+                    name += "=";
+                } else {
+                    maxNumberOfArguments = Integer.MAX_VALUE;
+                    minNumberOfArguments = 0;
+                    canBeGetter = true;
+                }
             }
+
             case PLUS,
                     STAR, SLASH,
                     GREATER, GREATER_EQUAL,
@@ -122,7 +133,7 @@ public final class Parser {
                 canBeGetter = true;
             }
 
-            default -> throw error(name, "Expect method or operator name.");
+            default -> throw error(nameToken, "Expect method or operator name.");
         }
 
         List<String> argumentsNames = null;
@@ -139,8 +150,8 @@ public final class Parser {
         }
         consume(RIGHT_BRACE, "Expect '}' after class definition.");
 
-        return new Statement.Method(name.line,
-                name.lexeme, argumentsNames, statements);
+        return new Statement.Method(nameToken.line,
+                name, argumentsNames, statements);
     }
 
     private List<String> methodParameters(int minNumberOfArguments, int maxNumberOfArguments) {
@@ -340,23 +351,33 @@ public final class Parser {
         Expression expression = primary();
 
         while (match(DOT)) {
-            Token name = consume(IDENTIFIER, "Expect property name after '.'.");
+            Token nameToken = consume(IDENTIFIER, "Expect property name after '.'.");
+            String name = nameToken.lexeme;
             List<Expression> arguments = null;
-            if (match(LEFT_PAREN)) {
-                arguments = parseArguments();
-            }
-
             Statement.MethodBody block = null;
-            if (match(LEFT_BRACE)) {
-                block = new Statement.MethodBody(name.line,
-                        parseBlockArguments(),
-                        new Statement.Block(name.line, block())
-                );
+
+            if (match(EQUAL)) {
+                arguments = new ArrayList<>();
+                arguments.add(expression());
+                name += "=";
+            } else {
+                if (match(LEFT_PAREN)) {
+                    arguments = parseArguments();
+                }
+
+                if (match(LEFT_BRACE)) {
+                    block = new Statement.MethodBody(nameToken.line,
+                            parseBlockArguments(),
+                            new Statement.Block(nameToken.line, block())
+                    );
+                }
             }
 
-            expression = new Expression.Call(name.line, expression, name.lexeme,
+            expression = new Expression.Call(
+                    nameToken.line, expression, name,
                     block,
-                    arguments);
+                    arguments
+            );
         }
 
         return expression;

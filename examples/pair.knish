@@ -1,0 +1,22 @@
+class Pair {
+    construct of(a, b) {
+        _x = a;
+        _y = b;
+    }
+
+    x {
+        return _x;
+    }
+
+    x=(a) {
+        _x = a;
+    }
+
+    toString {
+        return "(" + _x.toString + ", " + _y.toString + ")";
+    }
+}
+var p = Pair.of(1, 2);
+System.print(p);
+p.x = 2;
+System.print(p);
