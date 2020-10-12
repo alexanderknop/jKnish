@@ -107,7 +107,11 @@ public final class Parser {
                 minNumberOfArguments = 0;
                 canBeGetter = true;
             }
-            case PLUS, STAR, SLASH -> {
+            case PLUS,
+                    STAR, SLASH,
+                    GREATER, GREATER_EQUAL,
+                    LESS, LESS_EQUAL,
+                    EQUAL_EQUAL, BANG_EQUAL -> {
                 maxNumberOfArguments = 1;
                 minNumberOfArguments = 1;
                 canBeGetter = false;
@@ -117,6 +121,7 @@ public final class Parser {
                 minNumberOfArguments = 1;
                 canBeGetter = true;
             }
+
             default -> throw error(name, "Expect method or operator name.");
         }
 

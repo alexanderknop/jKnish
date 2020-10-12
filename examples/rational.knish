@@ -54,6 +54,11 @@ class Rational {
         );
     }
 
+    ==(right) {
+        return this.numerator == right.numerator and
+            this.denominator == right.denominator;
+    }
+
     toString {
         if (this.denominator != 1) {
             return this.numerator.toString + " / " + this.denominator.toString;
@@ -95,3 +100,5 @@ System.print(q + q);
 System.print(q - q);
 System.print(-q);
 System.print(Rational.integer(1) / q);
+System.print(q == q);
+System.print(Rational.integer(1) == q);
