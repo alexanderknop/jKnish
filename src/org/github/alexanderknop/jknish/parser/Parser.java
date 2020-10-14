@@ -119,7 +119,7 @@ public final class Parser {
             }
 
             case PLUS,
-                    STAR, SLASH,
+                    STAR, SLASH, PERCENT,
                     GREATER, GREATER_EQUAL,
                     LESS, LESS_EQUAL,
                     EQUAL_EQUAL, BANG_EQUAL -> {
@@ -326,7 +326,7 @@ public final class Parser {
     private Expression multiplication() {
         Expression expression = unary();
 
-        while (match(SLASH, STAR)) {
+        while (match(SLASH, STAR, PERCENT)) {
             Token operator = previous();
             Expression right = unary();
             expression = new Expression.Call(operator.line,

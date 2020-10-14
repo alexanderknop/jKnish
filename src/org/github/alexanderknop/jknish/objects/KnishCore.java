@@ -47,6 +47,25 @@ public class KnishCore extends KnishModule {
                 .getter("toString",
                         str,
                         (value, argument) -> str(value))
+                .method("==",
+                        List.of(str), bool,
+                        (value, arguments) -> {
+                            String argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), String.class,
+                                            "Argument must be a wrapped String.");
+                            return boolMeta.construct(value.equals(argumentValue));
+                        })
+                .method("!=",
+                        List.of(str), bool,
+                        (value, arguments) -> {
+                            String argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), String.class,
+                                            "Argument must be a wrapped String.");
+                            return boolMeta.construct(!value.equals(argumentValue));
+                        })
+                .getter("count",
+                        num,
+                        (value, arguments) -> numMeta.construct((long) value.length()))
                 .method("+",
                         List.of(str), str,
                         (value, arguments) -> {
@@ -96,8 +115,17 @@ public class KnishCore extends KnishModule {
                         List.of(num), num,
                         (value, arguments) -> {
                             Long argumentValue =
-                                    ((KnishWrappedObject<Long>) arguments.get(0)).getValue();
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
                             return numMeta.construct(value / argumentValue);
+                        })
+                .method("%",
+                        List.of(num), num,
+                        (value, arguments) -> {
+                            Long argumentValue =
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
+                            return numMeta.construct(value % argumentValue);
                         })
                 .method("<",
                         List.of(num), bool,
@@ -111,7 +139,8 @@ public class KnishCore extends KnishModule {
                         List.of(num), bool,
                         (value, arguments) -> {
                             Long argumentValue =
-                                    ((KnishWrappedObject<Long>) arguments.get(0)).getValue();
+                                    KnishWrappedObject.unwrap(arguments.get(0), Long.class,
+                                            "Argument must be a wrapped Long.");
                             return bool(value > argumentValue);
                         })
                 .method("<=",
@@ -145,6 +174,20 @@ public class KnishCore extends KnishModule {
                                     KnishWrappedObject.unwrap(arguments.get(0), Long.class,
                                             "Argument must be a wrapped Long.");
                             return bool(!value.equals(argumentValue));
+                        })
+                .getter("abs",
+                        num,
+                        (value, arguments) -> numMeta.construct(Math.abs(value)))
+                .getter("sign",
+                        num,
+                        (value, arguments) -> {
+                            if (value > 0) {
+                                return numMeta.construct(1L);
+                            } else if (value == 0) {
+                                return numMeta.construct(0L);
+                            } else {
+                                return numMeta.construct(-1L);
+                            }
                         })
                 .finishDefinition(null);
 

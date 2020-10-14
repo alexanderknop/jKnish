@@ -1,7 +1,8 @@
 class Rational {
     construct fraction(a, b) {
-        _a = a / Rational.gcd(a, b);
-        _b = b / Rational.gcd(a, b);
+        var sign = a.sign * b.sign;
+        _a = sign * a.abs / Rational.gcd(a, b);
+        _b = b.abs / Rational.gcd(a, b);
     }
 
     construct integer(a) {
@@ -68,13 +69,8 @@ class Rational {
     }
 
     static gcd(a, b) {
-        if (a < 0) {
-            a = -a;
-        }
-
-        if (b < 0) {
-            b = -b;
-        }
+        a = a.abs;
+        b = b.abs;
 
         if (a == 0) {
             return b;
@@ -85,20 +81,29 @@ class Rational {
         }
 
         if (a > b) {
-            return Rational.gcd(a - b, b);
+            return Rational.gcd(b, a % b);
         } else {
-            return Rational.gcd(b - a, a);
+            return Rational.gcd(a, b % a);
         }
     }
 }
 
-
+// expect: 2
 System.print(Rational.gcd(2, 4));
 var q = Rational.fraction(2, 4);
+// expect: 1 / 4
 System.print(q * q);
+// expect: 1
 System.print(q + q);
+// expect: 0
 System.print(q - q);
+// expect: -1 / 2
 System.print(-q);
+// expect: 2
 System.print(Rational.integer(1) / q);
+// expect: true
 System.print(q == q);
+// expect: false
 System.print(Rational.integer(1) == q);
+// expect: -1
+System.print(Rational.fraction(1, -1));

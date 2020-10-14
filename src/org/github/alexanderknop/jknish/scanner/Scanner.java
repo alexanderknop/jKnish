@@ -55,6 +55,7 @@ public final class Scanner {
             case '+' -> addToken(PLUS);
             case ';' -> addToken(SEMICOLON);
             case '*' -> addToken(STAR);
+            case '%' -> addToken(PERCENT);
 
             case '!' -> addToken(match('=') ?
                     match('=') ?
