@@ -113,10 +113,10 @@ These are getters and have no parentheses:
 "string".count
 -12.abs
 ```
-A getter is not the same as a method with an empty argument list. The () is 
-part of the signature, so count and count() have different signatures. Unlike 
-Ruby’s optional parentheses, Knish wants to make sure you call a getter like
-a getter and a () method like a () method. These don’t work:
+A getter is not the same as a method with an empty argument list. The ``()``
+is part of the signature, so count and count() have different signatures. 
+Unlike Ruby’s optional parentheses, Knish wants to make sure you call a getter
+like a getter and a ``()`` method like a ``()`` method. These don’t work:
 ```dart
 "string".count()
 ```
@@ -126,8 +126,8 @@ The general rules are:
 
 - If it modifies the object or has some other side effect, make it a method:
   ``list.clear()``
-- If the method supports multiple arities, make the zero-parameter case a ()
-  method to be consistent with the other versions:
+- If the method supports multiple arities, make the zero-parameter case a 
+  ``()`` method to be consistent with the other versions:
   ``System.print()`` and ``System.print("Hi!")``
 - Otherwise, it can probably be a getter.
 
@@ -147,7 +147,7 @@ Since the ``=(_)`` is in a part of the setter’s signature, an object can have 
 a getter and setter with the same name without a collision. Defining both lets you
 provide a read/write property.
 
-## Operators
+### Operators
 Knish has most of the standard operators from other langiages:
 ```dart
 ! -
