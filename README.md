@@ -66,8 +66,8 @@ and a single statement for the else:
 
 ```dart
 if (happy and knowIt) {
-  hands.clap()
-} else System.print("sad")
+  hands.clap();
+} else System.print("sad");
 ```
 
 ## Literals
@@ -87,17 +87,17 @@ nil
 Knish is an object oriented language, so most code consists of invoking methods
 on objects; e.g.,
 ```dart
-System.print("Hi!")
+System.print("Hi!");
 ```
 You have a receiver expression (here ``System``) followed by a ``.``, and 
 then a name (``print``) and an argument list in parentheses (``("Hi!")``). 
 Multiple arguments are separated by commas:
 ```dart
-list.insert(3, "item")
+list.insert(3, "item");
 ```
 The argument list can also be empty:
 ```dart
-list.clear()
+list.clear();
 ```
 
 ### Signature
@@ -110,15 +110,15 @@ it takes. In technical terms, this means you can overload by arity.
 Some methods exist to expose a stored or computed property of an object. 
 These are getters and have no parentheses:
 ```dart
-"string".count
--12.abs
+"string".count;
+-12.abs;
 ```
 A getter is not the same as a method with an empty argument list. The ``()``
 is part of the signature, so count and count() have different signatures. 
 Unlike Ruby’s optional parentheses, Knish wants to make sure you call a getter
 like a getter and a ``()`` method like a ``()`` method. These don’t work:
 ```dart
-"string".count()
+"string".count();
 ```
 If you’re defining some member that doesn’t need any parameters, you need to
 decide if it should be a getter or a method with an empty () parameter list. 
@@ -137,7 +137,7 @@ A getter lets an object expose a public “property” that you can read. Likewi
 a setter lets you write to a property:
 
 ```dart
-person.height = 178
+person.height = 178;
 ```
 This is a syntactic sugar for method call; from the language’s perspective,
 the above line is just a call to the ``height=(_)`` method on person, passing in 
@@ -163,3 +163,72 @@ is semantically interpreted as “call the +(_) method on a, passing it b“.
 
 Note that ``-`` is both a prefix and an infix operator. Since they have different 
 signatures (``-`` and ``-(_)``), there’s no ambiguity between them.
+
+## Control Flow
+
+Control flow is used to determine in which order statments are executed and how many times. 
+Branching statements and expressions decide whether or not to execute some code and cycles
+execute something more than once.
+
+### Truth
+
+All control flow is based on deciding whether or not to do something. This decision depends
+on some expression’s value; like in Java this expresion should compute a Boolean value.
+
+### If statements
+
+The simplest branching statement, ``if`` lets you conditionally skip a chunk of code:
+```dart
+if (ready) System.print("go!");
+```
+That evaluates the parenthesized expression after if. If it’s true, then the statement
+after the condition is evaluated.
+
+You may also provide an else branch. It will be executed if the condition is false:
+```dart
+if (ready) System.print("go!"); else System.print("not ready!");
+```
+
+### Logical operators
+
+Unlike most other operators in Knisg which are just a special syntax for method calls,
+the ``and`` and ``or`` operators are special: they only conditionally
+evaluate right operand (i.e., they short-circuit).
+
+A ``and`` (“logical and”) expression evaluates the left-hand argument. If it’s 
+false, it returns ``false``. Otherwise it evaluates and returns the value of the 
+right-hand argument.
+```dart
+System.print(false and 1);  //> false
+System.print(1 && 2);      //> 2
+```
+A ``or`` (“logical or”) expression is reversed. If the left-hand argument is true,
+it’s returned, otherwise the right-hand argument is evaluated and returned:
+```dart
+System.print(false or 1);  //> 1
+System.print(1 or 2);      //> 1
+```
+
+### While statements
+
+It’s hard to write a useful program without executing some code several time; 
+to do that, you use looping statements. A while statement executes a chunk of 
+code as long as a condition continues to hold. For example:
+```dart
+// Fibonacci numbers
+var n = 1;
+var a = 1;
+var b = 1;
+while (n < 10) {
+  var tmp = b;
+  a = a + tmp;
+  b = a;
+  n = n + 1;
+}
+```
+This evaluates the expression ``n < 10``. If it is true, then it executes the following
+body. After that, it loops back to the top, and evaluates the condition again. 
+It keeps doing this as long as the condition evaluates to something true.
+
+The condition for a while loop can be any expression, and must be surrounded by 
+parentheses.
