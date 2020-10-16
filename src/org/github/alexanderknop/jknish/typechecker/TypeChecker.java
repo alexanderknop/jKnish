@@ -57,7 +57,7 @@ public final class TypeChecker {
                     {
                         KnishModule.Class objectType = objectTypes.get(name);
                         String className = null;
-                        SimpleType simpleType = new SimpleType.Variable();
+                        SimpleType simpleType = SimpleType.variable();
 
                         if (objectType != null) {
                             className =  objectType.getName();
@@ -94,7 +94,7 @@ public final class TypeChecker {
                     newScope.put(id,
                             new TypedVariableInformation(
                                     name,
-                                    new SimpleType.Variable(),
+                                    SimpleType.variable(),
                                     classVariables.contains(id) ? name + " metaclass" : null
                             )
                     )
@@ -108,7 +108,7 @@ public final class TypeChecker {
                     newScope.put(id,
                             new TypedVariableInformation(
                                     name,
-                                    new SimpleType.Variable(),
+                                    SimpleType.variable(),
                                     classNames.get(id)
                             )
                     )
@@ -157,14 +157,14 @@ public final class TypeChecker {
                 methodId = new MethodId(call.method, call.arguments.size());
                 arguments = new ArrayList<>();
                 for (int i = 0; i < call.arguments.size(); i++) {
-                    arguments.add(new SimpleType.Variable());
+                    arguments.add(SimpleType.variable());
                 }
             } else {
                 methodId = new MethodId(call.method, null);
                 arguments = null;
             }
 
-            SimpleType.Variable value = new SimpleType.Variable();
+            SimpleType.Variable value = SimpleType.variable();
             SimpleType.Class klass = new SimpleType.Class(
                     Map.of(methodId,
                             new SimpleType.Method(arguments, value))
@@ -199,7 +199,7 @@ public final class TypeChecker {
         @Override
         public SimpleType visitLiteralExpression(ResolvedExpression.Literal literal) {
             if (literal.value == null) {
-                return new SimpleType.Variable();
+                return SimpleType.variable();
             } else if (literal.value instanceof Long) {
                 return numberType;
             } else if (literal.value instanceof String) {
@@ -244,7 +244,7 @@ public final class TypeChecker {
             if (anIf.elseBranch != null) {
                 elseReturnType = checkStatement(anIf.elseBranch);
             }
-            SimpleType returnType = new SimpleType.Variable();
+            SimpleType returnType = SimpleType.variable();
             // the following error statements are impossible
             constrainer.constrain(thenReturnType, returnType,
                     new TypeErrorMessage(reporter, anIf.line, ""));
@@ -267,7 +267,7 @@ public final class TypeChecker {
 
             block.classes.forEach(this::defineClass);
 
-            SimpleType returnType = new SimpleType.Variable();
+            SimpleType returnType = SimpleType.variable();
             for (ResolvedStatement statement : block.resolvedStatements) {
                 // this error is impossible since returnType is a fresh variable
                 constrainer.constrain(checkStatement(statement), returnType,
@@ -322,7 +322,7 @@ public final class TypeChecker {
 
             // add all the constructors
             klass.constructors.forEach((constructorId, constructor) -> {
-                SimpleType.Variable classType = new SimpleType.Variable();
+                SimpleType.Variable classType = SimpleType.variable();
 
                 // restrict the list of methods, before we check their types
                 Map<MethodId, SimpleType.Method> methods = instanceSignature(klass);

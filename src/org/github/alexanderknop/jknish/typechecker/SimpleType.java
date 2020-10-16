@@ -14,6 +14,10 @@ class SimpleType {
         return Bottom.BOTTOM;
     }
 
+    static Variable variable() {
+        return new Variable();
+    }
+
     static Method functionVariable(Integer arity) {
         List<SimpleType> arguments = null;
         if (arity != null) {
@@ -45,7 +49,7 @@ class SimpleType {
         public final Set<SimpleType> upperBound;
         public final Set<SimpleType> lowerBound;
 
-        public Variable() {
+        private Variable() {
             this.upperBound = new HashSet<>();
             this.lowerBound = new HashSet<>();
         }
